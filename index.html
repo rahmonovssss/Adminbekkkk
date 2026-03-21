@@ -70,8 +70,7 @@
     <div id="admin-login">
         <div class="login-card">
             <h1 style="color: #ffd700; margin-bottom: 10px;">Admin Kirish</h1>
-            <p style="opacity: 0.6; font-size: 14px; margin-bottom: 20px;">Maxfiy kalitni kiriting</p>
-            <input type="password" id="admin-password" class="admin-input" placeholder="Parol">
+            <input type="password" id="admin-password" class="admin-input" placeholder="Maxfiy parolni kiriting">
             <button class="btn-gold" onclick="checkAdmin()">KIRISH</button>
         </div>
     </div>
@@ -79,18 +78,18 @@
     <div id="admin-dashboard">
         <div class="admin-header">
             <h2>Xush kelibsiz, Admin!</h2>
-            <p style="font-size: 12px; opacity: 0.6;">Tizimni boshqarish paneli</p>
+            <p style="font-size: 12px; opacity: 0.6;">Barcha foydalanuvchilar uchun xabarnoma yuboring</p>
         </div>
 
         <div class="admin-grid">
             <div class="admin-card" onclick="openMsgModal()">
-                <i>📩</i><span>Xabar yuborish</span>
+                <i>📢</i><span>Hammaga xabar</span>
             </div>
             <div class="admin-card" onclick="alert('Tez kunda: Test qo\'shish')">
                 <i>📝</i><span>Test qo'shish</span>
             </div>
-            <div class="admin-card" onclick="alert('Tez kunda: Foydalanuvchilar')">
-                <i>👥</i><span>Foydalanuvchilar</span>
+            <div class="admin-card" onclick="alert('Tez kunda: Balanslar')">
+                <i>💰</i><span>Moliya</span>
             </div>
             <div class="admin-card" onclick="location.reload()">
                 <i>🚪</i><span>Chiqish</span>
@@ -100,11 +99,10 @@
 
     <div id="msgModal" class="modal">
         <div class="modal-content">
-            <h3>Xabar yuborish</h3>
-            <input type="text" id="target-uid" class="admin-input" placeholder="User UID (yoki 'all')">
-            <input type="text" id="msg-title" class="admin-input" placeholder="Sarlavha">
-            <textarea id="msg-text" class="admin-input" style="height: 100px;" placeholder="Xabar matni"></textarea>
-            <button class="btn-gold" id="send-btn" onclick="sendMessage()">YUBORISH</button>
+            <h3 style="color: #ffd700; margin-bottom: 15px; text-align: center;">Yangi xabar (Barchaga)</h3>
+            <input type="text" id="msg-title" class="admin-input" placeholder="Xabar sarlavhasi">
+            <textarea id="msg-text" class="admin-input" style="height: 120px; text-align: left;" placeholder="Xabar matnini kiriting..."></textarea>
+            <button class="btn-gold" id="send-btn" onclick="sendToAll()">YUBORISH</button>
             <p onclick="closeMsgModal()" style="text-align: center; margin-top: 15px; cursor: pointer; opacity: 0.6;">Bekor qilish</p>
         </div>
     </div>
@@ -125,15 +123,13 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Splashni o'chirish
         setTimeout(() => {
             document.getElementById('splash').style.display = 'none';
         }, 2000);
 
-        // Admin parolni tekshirish (Hozircha oddiy usulda)
         window.checkAdmin = () => {
             const pass = document.getElementById('admin-password').value;
-            if(pass === "admin777") { // O'zingizga yoqqan parolni qo'ying
+            if(pass === "sardorbek") { 
                 document.getElementById('admin-login').style.display = 'none';
                 document.getElementById('admin-dashboard').style.display = 'block';
             } else {
@@ -144,31 +140,35 @@
         window.openMsgModal = () => document.getElementById('msgModal').style.display = 'flex';
         window.closeMsgModal = () => document.getElementById('msgModal').style.display = 'none';
 
-        // Xabar yuborish funksiyasi
-        window.sendMessage = async () => {
-            const uid = document.getElementById('target-uid').value;
+        // --- HAMMAGA XABAR YUBORISH ---
+        window.sendToAll = async () => {
             const title = document.getElementById('msg-title').value;
             const text = document.getElementById('msg-text').value;
             const btn = document.getElementById('send-btn');
 
-            if(!uid || !title || !text) return alert("Hamma joyni to'ldiring!");
+            if(!title || !text) return alert("Sarlavha va matnni to'ldiring!");
 
-            btn.disabled = true; btn.innerText = "YUBORILMOQDA...";
+            btn.disabled = true;
+            btn.innerText = "YUBORILMOQDA...";
 
             try {
                 await addDoc(collection(db, "messages"), {
-                    userId: uid,
+                    userId: "all", // Barcha foydalanuvchilar uchun umumiy identifikator
                     title: title,
                     text: text,
                     status: 'unread',
                     createdAt: serverTimestamp()
                 });
-                alert("Xabar yuborildi!");
+                
+                alert("Muvaffaqiyatli! Xabar barcha foydalanuvchilarga yuborildi.");
+                document.getElementById('msg-title').value = "";
+                document.getElementById('msg-text').value = "";
                 closeMsgModal();
             } catch (e) {
-                alert("Xato: " + e.message);
+                alert("Xato yuz berdi: " + e.message);
             } finally {
-                btn.disabled = false; btn.innerText = "YUBORISH";
+                btn.disabled = false;
+                btn.innerText = "YUBORISH";
             }
         };
     </script>
