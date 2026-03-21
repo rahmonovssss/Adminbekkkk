@@ -8,7 +8,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background: #0f2027; color: white; overflow-x: hidden; }
 
-        /* --- 1. SPLASH SCREEN --- */
+        /* --- SPLASH SCREEN --- */
         #splash {
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
             background: #0f2027; display: flex; flex-direction: column;
@@ -20,10 +20,8 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* --- 2. LOGIN QISMI --- */
-        #admin-login {
-            height: 100vh; display: flex; align-items: center; justify-content: center;
-        }
+        /* --- LOGIN SECTION --- */
+        #admin-login { height: 100vh; display: flex; align-items: center; justify-content: center; }
         .login-card {
             background: #1a2a33; padding: 40px; border-radius: 25px;
             width: 90%; max-width: 400px; text-align: center;
@@ -35,25 +33,23 @@
             border-radius: 12px; color: white; outline: none; text-align: center;
         }
 
-        /* --- 3. DASHBOARD --- */
+        /* --- DASHBOARD --- */
         #admin-dashboard { display: none; padding: 20px; }
         .admin-header { padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
-        
         .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .admin-card {
             background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px;
             text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid transparent;
         }
         .admin-card:hover { background: rgba(255,215,0,0.1); border-color: #ffd700; }
-        .admin-card i { font-size: 30px; display: block; margin-bottom: 10px; }
+        .admin-card i { font-size: 30px; display: block; margin-bottom: 10px; font-style: normal; }
 
-        /* --- XABAR YUBORISH MODALI --- */
+        /* --- MODAL --- */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); align-items: center; justify-content: center; z-index: 2000;
         }
         .modal-content { background: #1a2a33; padding: 25px; border-radius: 20px; width: 90%; max-width: 450px; }
-
         .btn-gold {
             width: 100%; padding: 15px; background: #ffd700; color: #000;
             border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px;
@@ -70,7 +66,7 @@
     <div id="admin-login">
         <div class="login-card">
             <h1 style="color: #ffd700; margin-bottom: 10px;">Admin Kirish</h1>
-            <input type="password" id="admin-password" class="admin-input" placeholder="Maxfiy parolni kiriting">
+            <input type="password" id="admin-password" class="admin-input" placeholder="Parol">
             <button class="btn-gold" onclick="checkAdmin()">KIRISH</button>
         </div>
     </div>
@@ -78,18 +74,14 @@
     <div id="admin-dashboard">
         <div class="admin-header">
             <h2>Xush kelibsiz, Admin!</h2>
-            <p style="font-size: 12px; opacity: 0.6;">Barcha foydalanuvchilar uchun xabarnoma yuboring</p>
+            <p style="font-size: 12px; opacity: 0.6;">Barcha foydalanuvchilar uchun xabarnoma</p>
         </div>
-
         <div class="admin-grid">
             <div class="admin-card" onclick="openMsgModal()">
                 <i>📢</i><span>Hammaga xabar</span>
             </div>
-            <div class="admin-card" onclick="alert('Tez kunda: Test qo\'shish')">
+            <div class="admin-card" onclick="alert('Tez kunda...')">
                 <i>📝</i><span>Test qo'shish</span>
-            </div>
-            <div class="admin-card" onclick="alert('Tez kunda: Balanslar')">
-                <i>💰</i><span>Moliya</span>
             </div>
             <div class="admin-card" onclick="location.reload()">
                 <i>🚪</i><span>Chiqish</span>
@@ -99,9 +91,9 @@
 
     <div id="msgModal" class="modal">
         <div class="modal-content">
-            <h3 style="color: #ffd700; margin-bottom: 15px; text-align: center;">Yangi xabar (Barchaga)</h3>
+            <h3 style="color: #ffd700; margin-bottom: 15px; text-align: center;">Yangi xabar</h3>
             <input type="text" id="msg-title" class="admin-input" placeholder="Xabar sarlavhasi">
-            <textarea id="msg-text" class="admin-input" style="height: 120px; text-align: left;" placeholder="Xabar matnini kiriting..."></textarea>
+            <textarea id="msg-text" class="admin-input" style="height: 120px; text-align: left;" placeholder="Xabar matni..."></textarea>
             <button class="btn-gold" id="send-btn" onclick="sendToAll()">YUBORISH</button>
             <p onclick="closeMsgModal()" style="text-align: center; margin-top: 15px; cursor: pointer; opacity: 0.6;">Bekor qilish</p>
         </div>
@@ -111,6 +103,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        // Dr. Rahmonov, JSON faylingizdagi aniq ma'lumotlar bilan yangilandi
         const firebaseConfig = {
             apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
             authDomain: "quiz-app-3692d.firebaseapp.com",
@@ -123,52 +116,45 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        setTimeout(() => {
-            document.getElementById('splash').style.display = 'none';
-        }, 2000);
+        setTimeout(() => { document.getElementById('splash').style.display = 'none'; }, 2000);
 
         window.checkAdmin = () => {
-            const pass = document.getElementById('admin-password').value;
-            if(pass === "sardorbek") { 
+            if(document.getElementById('admin-password').value === "admin777") {
                 document.getElementById('admin-login').style.display = 'none';
                 document.getElementById('admin-dashboard').style.display = 'block';
-            } else {
-                alert("Parol noto'g'ri!");
-            }
+            } else { alert("Xato!"); }
         };
 
         window.openMsgModal = () => document.getElementById('msgModal').style.display = 'flex';
         window.closeMsgModal = () => document.getElementById('msgModal').style.display = 'none';
 
-        // --- HAMMAGA XABAR YUBORISH ---
         window.sendToAll = async () => {
             const title = document.getElementById('msg-title').value;
             const text = document.getElementById('msg-text').value;
             const btn = document.getElementById('send-btn');
 
-            if(!title || !text) return alert("Sarlavha va matnni to'ldiring!");
+            if(!title || !text) return alert("To'ldiring!");
 
-            btn.disabled = true;
-            btn.innerText = "YUBORILMOQDA...";
+            btn.disabled = true; btn.innerText = "YUBORILMOQDA...";
 
             try {
+                // messages kolleksiyasiga userId: "all" bilan yuborish
                 await addDoc(collection(db, "messages"), {
-                    userId: "all", // Barcha foydalanuvchilar uchun umumiy identifikator
+                    userId: "all",
                     title: title,
                     text: text,
                     status: 'unread',
                     createdAt: serverTimestamp()
                 });
-                
-                alert("Muvaffaqiyatli! Xabar barcha foydalanuvchilarga yuborildi.");
+                alert("Xabar hammaga yuborildi!");
                 document.getElementById('msg-title').value = "";
                 document.getElementById('msg-text').value = "";
                 closeMsgModal();
             } catch (e) {
-                alert("Xato yuz berdi: " + e.message);
+                console.error(e);
+                alert("Xatolik yuz berdi! Internetni yoki Firebase qoidalarini tekshiring.");
             } finally {
-                btn.disabled = false;
-                btn.innerText = "YUBORISH";
+                btn.disabled = false; btn.innerText = "YUBORISH";
             }
         };
     </script>
