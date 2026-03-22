@@ -3,37 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testlarni Boshqarish - Dr. Rahmonov</title>
+    <title>Testlarni Tahrirlash - Dr. Rahmonov</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background: #0f2027; color: white; padding: 20px; }
-        
-        /* --- FILTRLAR --- */
-        .filter-section { 
-            background: #1a2a33; padding: 20px; border-radius: 15px; 
-            margin-bottom: 25px; display: flex; flex-wrap: wrap; gap: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        select { 
-            flex: 1; min-width: 150px; padding: 12px; border-radius: 10px;
-            background: #0f2027; color: white; border: 1px solid #00d2ff; outline: none;
-        }
 
+        /* --- FILTRLAR --- */
+        .admin-panel { 
+            background: #1a2a33; padding: 20px; border-radius: 20px; 
+            margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        
+        select, .edit-input { 
+            width: 100%; padding: 12px; border-radius: 10px;
+            background: #0f2027; color: white; border: 1px solid rgba(255,255,255,0.2); outline: none;
+        }
+        select:focus { border-color: #ffd700; }
+
+        .section-title { color: #ffd700; margin-bottom: 15px; font-size: 18px; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 10px; }
+
+        /* --- TEST KARTALARI --- */
         .quiz-card { 
             background: #1a2a33; padding: 20px; border-radius: 15px; 
-            margin-bottom: 20px; border-left: 5px solid #ffd700; 
-            animation: slideIn 0.3s ease;
+            margin-bottom: 15px; border-left: 5px solid #ffd700; 
+            position: relative; animation: fadeIn 0.4s ease;
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .edit-input { 
-            width: 100%; background: rgba(255,255,255,0.05); 
-            border: 1px solid rgba(255,255,255,0.1); color: white; 
-            padding: 12px; border-radius: 8px; margin-top: 8px; 
-        }
-        .btn-save { background: #00d2ff; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; font-weight: bold; }
-        .btn-del { background: #ff4b2b; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; margin-left: 10px; }
+        .grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
         
+        .btn-save { background: #00d2ff; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .btn-del { background: #ff4b2b; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; margin-left: 10px; }
+
         #toast {
             position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
             background: #ffd700; color: #000; padding: 12px 25px; border-radius: 50px;
@@ -44,32 +47,34 @@
 </head>
 <body>
 
-    <h2 style="text-align:center; margin-bottom: 20px; color: #ffd700;">Testlar Bazasini Tahrirlash</h2>
+    <div class="admin-panel">
+        <h2 class="section-title">Filtrlash va Qidirish</h2>
+        <div class="filter-group">
+            <select id="filter-type" onchange="loadQuizzes()">
+                <option value="free">🎁 Bepul Testlar</option>
+                <option value="premium">💎 Premium Testlar</option>
+            </select>
 
-    <div class="filter-section">
-        <select id="filter-type" onchange="loadQuizzes()">
-            <option value="free">🎁 Bepul Testlar</option>
-            <option value="premium">💎 Premium Testlar</option>
-        </select>
-
-        <select id="filter-subject" onchange="loadQuizzes()">
-            <optgroup label="Majburiy Fanlar">
-                <option value="Matematika">Matematika (Majburiy)</option>
-                <option value="Ona tili">Ona tili (Majburiy)</option>
-                <option value="Tarix">O'zbekiston Tarixi (Majburiy)</option>
-            </optgroup>
-            <optgroup label="Asosiy Fanlar">
-                <option value="Kimyo">Kimyo</option>
-                <option value="Biologiya">Biologiya</option>
-                <option value="Ingiliz tili">Ingiliz tili</option>
-                <option value="Huquq">Huquq</option>
-                <option value="Geografiya">Geografiya</option>
-            </optgroup>
-        </select>
+            <select id="filter-subject" onchange="loadQuizzes()">
+                <optgroup label="Majburiy Fanlar">
+                    <option value="Matematika">Matematika (Majburiy)</option>
+                    <option value="Ona tili">Ona tili (Majburiy)</option>
+                    <option value="Tarix">O'zbekiston Tarixi (Majburiy)</option>
+                </optgroup>
+                <optgroup label="Asosiy Fanlar">
+                    <option value="Kimyo">Kimyo</option>
+                    <option value="Biologiya">Biologiya</option>
+                    <option value="Ingiliz tili">Ingiliz tili</option>
+                    <option value="Huquq">Huquq</option>
+                    <option value="Geografiya">Geografiya</option>
+                </optgroup>
+            </select>
+        </div>
     </div>
 
+    <h2 class="section-title" id="list-title">Yangi yuklanganlar (0 ta)</h2>
     <div id="quiz-list">
-        <p style="text-align: center; opacity: 0.5;">Tanlangan bo'lim bo'yicha testlar yuklanmoqda...</p>
+        <p style="text-align: center; opacity: 0.5;">Tanlangan bo'lim bo'yicha testlar qidirilmoqda...</p>
     </div>
 
     <div id="toast">Yangilandi!</div>
@@ -89,18 +94,16 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
         let unsubscribe = null;
 
         window.loadQuizzes = () => {
             const type = document.getElementById('filter-type').value;
             const subject = document.getElementById('filter-subject').value;
-            const list = document.getElementById('quiz-list');
+            const listContainer = document.getElementById('quiz-list');
+            const title = document.getElementById('list-title');
 
-            // Avvalgi streamni to'xtatish
             if (unsubscribe) unsubscribe();
 
-            // Firebase Query: Tur va Fanga ko'ra filtrlash
             const q = query(
                 collection(db, "quizzes"), 
                 where("type", "==", type),
@@ -108,10 +111,12 @@
             );
 
             unsubscribe = onSnapshot(q, (snapshot) => {
-                list.innerHTML = "";
-                if(snapshot.empty) { 
-                    list.innerHTML = `<p style="text-align:center; opacity:0.5; margin-top:20px;">Bu bo'limda hali testlar yo'q.</p>`; 
-                    return; 
+                listContainer.innerHTML = "";
+                title.innerText = `Yangi yuklanganlar (${snapshot.size} ta)`;
+
+                if(snapshot.empty) {
+                    listContainer.innerHTML = `<p style="text-align:center; opacity:0.5; margin-top:20px;">Ushbu fanda hali testlar yo'q.</p>`;
+                    return;
                 }
 
                 snapshot.forEach((qDoc) => {
@@ -119,19 +124,18 @@
                     const div = document.createElement('div');
                     div.className = "quiz-card";
                     div.innerHTML = `
-                        <label style="font-size:12px; opacity:0.6;">Savol matni:</label>
                         <textarea class="edit-input" id="q-${qDoc.id}" rows="2">${data.question}</textarea>
                         
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-                            <div><label style="font-size:10px;">A variant:</label><input class="edit-input" id="a-${qDoc.id}" value="${data.options.A}"></div>
-                            <div><label style="font-size:10px;">B variant:</label><input class="edit-input" id="b-${qDoc.id}" value="${data.options.B}"></div>
-                            <div><label style="font-size:10px;">C variant:</label><input class="edit-input" id="c-${qDoc.id}" value="${data.options.C}"></div>
-                            <div><label style="font-size:10px;">D variant:</label><input class="edit-input" id="d-${qDoc.id}" value="${data.options.D}"></div>
+                        <div class="grid-options">
+                            <input class="edit-input" id="a-${qDoc.id}" value="${data.options.A}" placeholder="A variant">
+                            <input class="edit-input" id="b-${qDoc.id}" value="${data.options.B}" placeholder="B variant">
+                            <input class="edit-input" id="c-${qDoc.id}" value="${data.options.C}" placeholder="C variant">
+                            <input class="edit-input" id="d-${qDoc.id}" value="${data.options.D}" placeholder="D variant">
                         </div>
 
-                        <div style="margin-top:15px; display:flex; align-items:center; gap:15px;">
-                            <label>To'g'ri javob:</label>
-                            <select id="cor-${qDoc.id}" style="flex:none; width:80px; padding:5px;">
+                        <div style="display:flex; align-items:center; gap:15px; margin-bottom:10px;">
+                            <label style="font-size:14px; color:#ffd700;">To'g'ri javob:</label>
+                            <select id="cor-${qDoc.id}" style="width:80px; padding:5px;">
                                 <option value="A" ${data.correctAnswer === 'A' ? 'selected' : ''}>A</option>
                                 <option value="B" ${data.correctAnswer === 'B' ? 'selected' : ''}>B</option>
                                 <option value="C" ${data.correctAnswer === 'C' ? 'selected' : ''}>C</option>
@@ -139,17 +143,17 @@
                             </select>
                         </div>
 
-                        <button class="btn-save" onclick="updateQuiz('${qDoc.id}')">💾 SAQLASH</button>
-                        <button class="btn-del" onclick="deleteQuiz('${qDoc.id}')">🗑 O'CHIRISH</button>
+                        <button class="btn-save" onclick="updateQuiz('${qDoc.id}')">SAQLASH</button>
+                        <button class="btn-del" onclick="deleteQuiz('${qDoc.id}')">O'CHIRISH</button>
                     `;
-                    list.appendChild(div);
+                    listContainer.appendChild(div);
                 });
             });
         };
 
         window.updateQuiz = async (id) => {
-            const ref = doc(db, "quizzes", id);
             try {
+                const ref = doc(db, "quizzes", id);
                 await updateDoc(ref, {
                     question: document.getElementById(`q-${id}`).value,
                     "options.A": document.getElementById(`a-${id}`).value,
@@ -158,14 +162,14 @@
                     "options.D": document.getElementById(`d-${id}`).value,
                     correctAnswer: document.getElementById(`cor-${id}`).value
                 });
-                showToast("Muvaffaqiyatli yangilandi!");
+                showToast("Yangilandi!");
             } catch (e) { showToast("Xatolik!"); }
         };
 
         window.deleteQuiz = async (id) => {
-            if(confirm("Ushbu savolni bazadan butunlay o'chirmoqchimisiz?")) {
+            if(confirm("Haqiqatan ham o'chirmoqchimisiz?")) {
                 await deleteDoc(doc(db, "quizzes", id));
-                showToast("O'chirildi");
+                showToast("O'chirildi!");
             }
         };
 
@@ -175,7 +179,6 @@
             setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        // Birinchi marta yuklash
         loadQuizzes();
     </script>
 </body>
