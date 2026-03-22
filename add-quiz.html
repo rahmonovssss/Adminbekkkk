@@ -3,71 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Dr. Rahmonov</title>
+    <title>Testlarni Tahrirlash - Dr. Rahmonov</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: #0f2027; color: white; padding: 20px; }
-        .card { background: #1a2a33; padding: 25px; border-radius: 20px; max-width: 650px; margin: auto; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        h3 { color: #ffd700; margin-bottom: 20px; text-align: center; text-transform: uppercase; border-bottom: 1px solid #ffd70033; padding-bottom: 10px; }
+        body { background: #0f2027; color: white; padding: 15px; }
         
-        .section-label { font-size: 13px; color: #ffd700; margin: 15px 0 8px; font-weight: 600; }
-        .grid-select { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        .header { max-width: 800px; margin: auto; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .back-btn { background: #ffd700; color: #000; padding: 8px 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 14px; }
+
+        .filter-section { max-width: 800px; margin: auto; background: #1a2a33; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        select { width: 100%; padding: 10px; background: #0f2027; color: white; border: 1px solid #ffd700; border-radius: 8px; outline: none; margin-top: 5px; }
+
+        .quiz-card { background: #1a2a33; padding: 15px; border-radius: 15px; margin: auto; max-width: 800px; margin-bottom: 15px; border-left: 5px solid #ffd700; position: relative; }
+        .quiz-card h4 { font-size: 15px; margin-bottom: 8px; color: #ffd700; }
+        .quiz-info { font-size: 12px; opacity: 0.7; margin-bottom: 10px; }
+        .options-list { font-size: 13px; margin-bottom: 10px; }
+        .correct { color: #00ff00; font-weight: bold; }
+
+        .actions { display: flex; gap: 10px; }
+        .btn-del { background: #ff4b2b; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; }
         
-        .choice-btn {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; font-size: 12px; color: #aaa;
-        }
-        .choice-btn.active { border-color: #ffd700; background: rgba(255, 215, 0, 0.15); color: #ffd700; font-weight: 600; }
-
-        /* Majburiy tugmalari uchun maxsus rang */
-        .choice-btn.mandatory-btn.active { border-color: #00d2ff; background: rgba(0, 210, 255, 0.15); color: #00d2ff; }
-
-        .admin-input { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; margin-bottom: 10px; outline: none; }
-        .btn-gold { width: 100%; padding: 15px; background: #ffd700; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: #ffd700; color: #000; padding: 12px 25px; border-radius: 50px; transition: 0.5s; font-weight: bold; }
-        #toast.show { bottom: 30px; }
+        #loader { text-align: center; margin-top: 20px; color: #ffd700; display: none; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h3>Savol Yuklash</h3>
-
-        <div class="section-label">1. Test turini tanlang:</div>
-        <div class="grid-select">
-            <div class="choice-btn active" id="type-free" onclick="setType('free')">🎁 Bepul (Mutaxassislik)</div>
-            <div class="choice-btn" id="type-premium" onclick="setType('premium')">💎 Premium (Mutaxassislik)</div>
-            <div class="choice-btn mandatory-btn" id="type-free_mandatory" onclick="setType('free_mandatory')">📌 Bepul uchun Majburiy</div>
-            <div class="choice-btn mandatory-btn" id="type-premium_mandatory" onclick="setType('premium_mandatory')">🔥 Premium uchun Majburiy</div>
-        </div>
-
-        <div class="section-label">2. Fanni tanlang:</div>
-        <div class="grid-select" id="subject-container"></div>
-
-        <div class="section-label">3. Savol:</div>
-        <textarea id="m-q" class="admin-input" rows="3" placeholder="Savol matni..."></textarea>
-        
-        <div class="grid-select">
-            <input type="text" id="m-a" class="admin-input" placeholder="A variant">
-            <input type="text" id="m-b" class="admin-input" placeholder="B variant">
-            <input type="text" id="m-c" class="admin-input" placeholder="C variant">
-            <input type="text" id="m-d" class="admin-input" placeholder="D variant">
-        </div>
-
-        <select id="m-cor" class="admin-input">
-            <option value="A">A variant</option><option value="B">B variant</option>
-            <option value="C">C variant</option><option value="D">D variant</option>
-        </select>
-
-        <button class="btn-gold" onclick="saveData()">BAZAGA SAQLASH</button>
+    <div class="header">
+        <h2>Bazadagi Testlar</h2>
+        <a href="admin.html" class="back-btn">⬅ Orqaga</a>
     </div>
 
-    <div id="toast">Saqlandi!</div>
+    <div class="filter-section">
+        <label style="font-size: 12px; color: #ffd700;">Test turini tanlang:</label>
+        <select id="filter-type" onchange="loadQuizzes()">
+            <option value="free">🎁 Bepul (Mutaxassislik)</option>
+            <option value="premium">💎 Premium (Mutaxassislik)</option>
+            <option value="free_mandatory">📌 Bepul uchun Majburiy</option>
+            <option value="premium_mandatory">🔥 Premium uchun Majburiy</option>
+        </select>
+    </div>
+
+    <div id="loader">Yuklanmoqda...</div>
+    <div id="quiz-list"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where, deleteDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -80,68 +62,66 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let currentType = 'free';
-        let currentSub = 'Matematika';
+        window.loadQuizzes = async () => {
+            const listContainer = document.getElementById('quiz-list');
+            const loader = document.getElementById('loader');
+            const type = document.getElementById('filter-type').value;
 
-        const allSubs = ["Matematika", "Ona tili", "Tarix", "Kimyo", "Biologiya", "Ingiliz tili", "Huquq", "Geografiya", "Fizika"];
-        const mandatorySubs = ["Matematika", "Ona tili", "Tarix"];
-
-        window.renderSubs = () => {
-            const container = document.getElementById('subject-container');
-            container.innerHTML = "";
-            // Agar tur majburiy bo'lsa, faqat 3ta fanni chiqaradi
-            const list = (currentType.includes('mandatory')) ? mandatorySubs : allSubs;
-            
-            list.forEach(s => {
-                const btn = document.createElement('div');
-                btn.className = `choice-btn ${s === currentSub ? 'active' : ''}`;
-                btn.innerText = s;
-                btn.onclick = () => { currentSub = s; renderSubs(); };
-                container.appendChild(btn);
-            });
-        };
-
-        window.setType = (t) => {
-            currentType = t;
-            document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`type-${t}`).classList.add('active');
-            
-            if(t.includes('mandatory') && !mandatorySubs.includes(currentSub)) {
-                currentSub = 'Matematika';
-            }
-            renderSubs();
-        };
-
-        window.saveData = async () => {
-            const q = document.getElementById('m-q').value;
-            if(!q) return;
+            listContainer.innerHTML = "";
+            loader.style.display = "block";
 
             try {
-                await addDoc(collection(db, "quizzes"), {
-                    type: currentType,
-                    subject: currentSub,
-                    question: q,
-                    options: { 
-                        A: document.getElementById('m-a').value, 
-                        B: document.getElementById('m-b').value,
-                        C: document.getElementById('m-c').value, 
-                        D: document.getElementById('m-d').value 
-                    },
-                    correctAnswer: document.getElementById('m-cor').value,
-                    createdAt: serverTimestamp()
+                const q = query(
+                    collection(db, "quizzes"), 
+                    where("type", "==", type),
+                    orderBy("createdAt", "desc")
+                );
+                const snap = await getDocs(q);
+                
+                if(snap.empty) {
+                    listContainer.innerHTML = "<p style='text-align:center; opacity:0.5;'>Bu turda savollar topilmadi.</p>";
+                }
+
+                snap.forEach(testDoc => {
+                    const data = testDoc.data();
+                    const id = testDoc.id;
+
+                    const card = document.createElement('div');
+                    card.className = "quiz-card";
+                    card.innerHTML = `
+                        <div class="quiz-info">Fan: ${data.subject} | Tur: ${data.type}</div>
+                        <h4>${data.question}</h4>
+                        <div class="options-list">
+                            A) ${data.options.A} <br>
+                            B) ${data.options.B} <br>
+                            C) ${data.options.C} <br>
+                            D) ${data.options.D} <br>
+                            <span class="correct">To'g'ri javob: ${data.correctAnswer}</span>
+                        </div>
+                        <div class="actions">
+                            <button class="btn-del" onclick="deleteQuiz('${id}')">O'chirish</button>
+                        </div>
+                    `;
+                    listContainer.appendChild(card);
                 });
-                showToast("✅ Muvaffaqiyatli saqlandi!");
-                document.getElementById('m-q').value = "";
-            } catch (e) { alert("Xatolik!"); }
+            } catch (e) {
+                console.error(e);
+                alert("Xatolik: Ehtimol bazada 'createdAt' bo'yicha Index yaratilmagan. Console'ni tekshiring.");
+            } finally {
+                loader.style.display = "none";
+            }
         };
 
-        function showToast(m) {
-            const t = document.getElementById('toast');
-            t.innerText = m; t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
+        window.deleteQuiz = async (id) => {
+            if(confirm("Ushbu savolni o'chirishni xohlaysizmi?")) {
+                await deleteDoc(doc(db, "quizzes", id));
+                alert("O'chirildi!");
+                loadQuizzes();
+            }
+        };
 
-        renderSubs();
+        // Sahifa yuklanganda bepul testlarni ko'rsatish
+        loadQuizzes();
     </script>
 </body>
 </html>
