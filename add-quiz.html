@@ -4,91 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - Dr. Rahmonov</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: #0f2027; color: white; padding: 20px; line-height: 1.6; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #0f2027; color: white; padding: 20px; }
+        .card { background: #1a2a33; padding: 25px; border-radius: 20px; max-width: 650px; margin: auto; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h3 { color: #ffd700; margin-bottom: 20px; text-align: center; text-transform: uppercase; border-bottom: 1px solid #ffd70033; padding-bottom: 10px; }
         
-        .card { background: #1a2a33; padding: 25px; border-radius: 20px; margin-bottom: 20px; max-width: 650px; margin-inline: auto; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        h3 { color: #ffd700; margin-bottom: 20px; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 10px; font-size: 18px; text-transform: uppercase; }
-
-        .section-label { font-size: 13px; color: #ffd700; margin: 15px 0 8px; font-weight: 600; opacity: 0.9; }
-        .grid-select { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .section-label { font-size: 13px; color: #ffd700; margin: 15px 0 8px; font-weight: 600; }
+        .grid-select { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
         
         .choice-btn {
             background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; font-size: 13px; color: #ccc;
+            padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; font-size: 12px; color: #aaa;
         }
-        .choice-btn.active { border-color: #ffd700; background: rgba(255, 215, 0, 0.15); color: #ffd700; font-weight: 600; box-shadow: 0 0 15px rgba(255, 215, 0, 0.1); }
+        .choice-btn.active { border-color: #ffd700; background: rgba(255, 215, 0, 0.15); color: #ffd700; font-weight: 600; }
 
-        .admin-input { width: 100%; padding: 12px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; margin-bottom: 10px; outline: none; transition: 0.3s; }
-        .admin-input:focus { border-color: #ffd700; }
-        
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; text-transform: uppercase; }
-        .btn-gold { background: #ffd700; color: #000; }
-        .btn-outline { background: transparent; border: 2px dashed #ffd700; color: #ffd700; }
-        .btn-blue { background: #00d2ff; color: white; }
-        .btn:active { transform: scale(0.98); }
+        /* Majburiy tugmalari uchun maxsus rang */
+        .choice-btn.mandatory-btn.active { border-color: #00d2ff; background: rgba(0, 210, 255, 0.15); color: #00d2ff; }
 
-        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: #ffd700; color: #000; padding: 12px 25px; border-radius: 50px; transition: 0.5s; z-index: 3000; font-weight: bold; }
+        .admin-input { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; margin-bottom: 10px; outline: none; }
+        .btn-gold { width: 100%; padding: 15px; background: #ffd700; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: #ffd700; color: #000; padding: 12px 25px; border-radius: 50px; transition: 0.5s; font-weight: bold; }
         #toast.show { bottom: 30px; }
-        
-        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 4000; align-items: center; justify-content: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
-    <div class="loading-overlay" id="loader">
-        <div style="color:#ffd700; margin-bottom: 10px;">Yuklanmoqda...</div>
-    </div>
-
     <div class="card">
-        <h3>📝 Yangi Test Qo'shish</h3>
+        <h3>Savol Yuklash</h3>
 
         <div class="section-label">1. Test turini tanlang:</div>
         <div class="grid-select">
-            <div class="choice-btn active" id="m-type-free" onclick="setType('free')">🎁 Bepul</div>
-            <div class="choice-btn" id="m-type-premium" onclick="setType('premium')">💎 Premium</div>
-            <div class="choice-btn" id="m-type-mandatory" onclick="setType('mandatory')">📌 Majburiy</div>
+            <div class="choice-btn active" id="type-free" onclick="setType('free')">🎁 Bepul (Mutaxassislik)</div>
+            <div class="choice-btn" id="type-premium" onclick="setType('premium')">💎 Premium (Mutaxassislik)</div>
+            <div class="choice-btn mandatory-btn" id="type-free_mandatory" onclick="setType('free_mandatory')">📌 Bepul uchun Majburiy</div>
+            <div class="choice-btn mandatory-btn" id="type-premium_mandatory" onclick="setType('premium_mandatory')">🔥 Premium uchun Majburiy</div>
         </div>
 
         <div class="section-label">2. Fanni tanlang:</div>
         <div class="grid-select" id="subject-container"></div>
 
-        <div class="section-label">3. Savol matni:</div>
-        <textarea id="m-q" class="admin-input" rows="3" placeholder="Savolni kiriting..."></textarea>
+        <div class="section-label">3. Savol:</div>
+        <textarea id="m-q" class="admin-input" rows="3" placeholder="Savol matni..."></textarea>
         
-        <div class="section-label">4. Variantlar:</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="grid-select">
             <input type="text" id="m-a" class="admin-input" placeholder="A variant">
             <input type="text" id="m-b" class="admin-input" placeholder="B variant">
             <input type="text" id="m-c" class="admin-input" placeholder="C variant">
             <input type="text" id="m-d" class="admin-input" placeholder="D variant">
         </div>
 
-        <div class="section-label">5. To'g'ri javob:</div>
         <select id="m-cor" class="admin-input">
             <option value="A">A variant</option><option value="B">B variant</option>
             <option value="C">C variant</option><option value="D">D variant</option>
         </select>
 
-        <button class="btn btn-gold" onclick="saveToFirebase()">BAZAGA SAQLASH</button>
+        <button class="btn-gold" onclick="saveData()">BAZAGA SAQLASH</button>
     </div>
 
-    <div class="card">
-        <h3>📄 PDF orqali yuklash</h3>
-        <p style="font-size: 11px; opacity: 0.6; margin-bottom: 10px;">PDF'dagi savollar yuqorida tanlangan <b>Tur</b> va <b>Fan</b>ga qarab saqlanadi.</p>
-        <input type="file" id="pdf-file" hidden accept="application/pdf">
-        <button class="btn btn-outline" onclick="document.getElementById('pdf-file').click()">PDF FAYL TANLASH</button>
-        <div id="pdf-info" style="margin-top:10px; font-size:12px; color:#00d2ff;"></div>
-    </div>
-
-    <div style="max-width: 650px; margin-inline: auto; margin-bottom: 40px;">
-        <button class="btn btn-blue" onclick="location.href='edit-quizzes.html'">⚙️ BARCHA TESTLARNI TAHRIRLASH</button>
-    </div>
-
-    <div id="toast">Xabar!</div>
+    <div id="toast">Saqlandi!</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -102,7 +77,6 @@
             messagingSenderId: "526836020845",
             appId: "1:526836020845:android:3ea991380c104c75e8b164"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
@@ -112,11 +86,11 @@
         const allSubs = ["Matematika", "Ona tili", "Tarix", "Kimyo", "Biologiya", "Ingiliz tili", "Huquq", "Geografiya", "Fizika"];
         const mandatorySubs = ["Matematika", "Ona tili", "Tarix"];
 
-        // Fanlarni chizish
         window.renderSubs = () => {
             const container = document.getElementById('subject-container');
             container.innerHTML = "";
-            const list = (currentType === 'mandatory') ? mandatorySubs : allSubs;
+            // Agar tur majburiy bo'lsa, faqat 3ta fanni chiqaradi
+            const list = (currentType.includes('mandatory')) ? mandatorySubs : allSubs;
             
             list.forEach(s => {
                 const btn = document.createElement('div');
@@ -127,28 +101,20 @@
             });
         };
 
-        // Turni o'zgartirish
         window.setType = (t) => {
             currentType = t;
             document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`m-type-${t}`).classList.add('active');
+            document.getElementById(`type-${t}`).classList.add('active');
             
-            if(t === 'mandatory' && !mandatorySubs.includes(currentSub)) {
+            if(t.includes('mandatory') && !mandatorySubs.includes(currentSub)) {
                 currentSub = 'Matematika';
             }
             renderSubs();
         };
 
-        // Firebasega saqlash
-        window.saveToFirebase = async () => {
-            const q = document.getElementById('m-q').value.trim();
-            const a = document.getElementById('m-a').value.trim();
-            const b = document.getElementById('m-b').value.trim();
-
-            if(!q || !a || !b) return showToast("Savol va variantlarni to'ldiring!");
-
-            const loader = document.getElementById('loader');
-            loader.style.display = 'flex';
+        window.saveData = async () => {
+            const q = document.getElementById('m-q').value;
+            if(!q) return;
 
             try {
                 await addDoc(collection(db, "quizzes"), {
@@ -156,26 +122,22 @@
                     subject: currentSub,
                     question: q,
                     options: { 
-                        A: a, B: b, 
-                        C: document.getElementById('m-c').value.trim(), 
-                        D: document.getElementById('m-d').value.trim() 
+                        A: document.getElementById('m-a').value, 
+                        B: document.getElementById('m-b').value,
+                        C: document.getElementById('m-c').value, 
+                        D: document.getElementById('m-d').value 
                     },
                     correctAnswer: document.getElementById('m-cor').value,
                     createdAt: serverTimestamp()
                 });
-                showToast("Muvaffaqiyatli saqlandi!");
+                showToast("✅ Muvaffaqiyatli saqlandi!");
                 document.getElementById('m-q').value = "";
-                ['m-a','m-b','m-c','m-d'].forEach(id => document.getElementById(id).value = "");
-            } catch (e) {
-                showToast("Xatolik yuz berdi!");
-            } finally {
-                loader.style.display = 'none';
-            }
+            } catch (e) { alert("Xatolik!"); }
         };
 
-        function showToast(msg) {
+        function showToast(m) {
             const t = document.getElementById('toast');
-            t.innerText = msg; t.classList.add('show');
+            t.innerText = m; t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 3000);
         }
 
