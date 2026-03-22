@@ -3,53 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testlarni Tahrirlash - Dr. Rahmonov</title>
+    <title>Admin Panel - Dr. Rahmonov</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: #0f2027; color: white; padding: 15px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: #0f2027; color: white; padding: 20px; line-height: 1.6; }
         
-        .header { max-width: 800px; margin: auto; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .back-btn { background: #ffd700; color: #000; padding: 8px 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 14px; }
+        .card { background: #1a2a33; padding: 25px; border-radius: 20px; margin-bottom: 20px; max-width: 650px; margin-inline: auto; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h3 { color: #ffd700; margin-bottom: 20px; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 10px; font-size: 18px; text-transform: uppercase; }
 
-        .filter-section { max-width: 800px; margin: auto; background: #1a2a33; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
-        select { width: 100%; padding: 10px; background: #0f2027; color: white; border: 1px solid #ffd700; border-radius: 8px; outline: none; margin-top: 5px; }
-
-        .quiz-card { background: #1a2a33; padding: 15px; border-radius: 15px; margin: auto; max-width: 800px; margin-bottom: 15px; border-left: 5px solid #ffd700; position: relative; }
-        .quiz-card h4 { font-size: 15px; margin-bottom: 8px; color: #ffd700; }
-        .quiz-info { font-size: 12px; opacity: 0.7; margin-bottom: 10px; }
-        .options-list { font-size: 13px; margin-bottom: 10px; }
-        .correct { color: #00ff00; font-weight: bold; }
-
-        .actions { display: flex; gap: 10px; }
-        .btn-del { background: #ff4b2b; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+        .section-label { font-size: 13px; color: #ffd700; margin: 15px 0 8px; font-weight: 600; opacity: 0.9; }
+        .grid-select { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
         
-        #loader { text-align: center; margin-top: 20px; color: #ffd700; display: none; }
+        .choice-btn {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; font-size: 12px; color: #ccc;
+        }
+        .choice-btn.active { border-color: #ffd700; background: rgba(255, 215, 0, 0.15); color: #ffd700; font-weight: 600; box-shadow: 0 0 15px rgba(255, 215, 0, 0.1); }
+        .choice-btn.mandatory-btn.active { border-color: #00d2ff; background: rgba(0, 210, 255, 0.1); color: #00d2ff; }
+
+        .admin-input { width: 100%; padding: 12px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; margin-bottom: 10px; outline: none; transition: 0.3s; }
+        .admin-input:focus { border-color: #ffd700; }
+        
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; text-transform: uppercase; }
+        .btn-gold { background: #ffd700; color: #000; }
+        .btn-outline { background: transparent; border: 2px dashed #ffd700; color: #ffd700; }
+        .btn-blue { background: #00d2ff; color: white; }
+
+        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: #ffd700; color: #000; padding: 12px 25px; border-radius: 50px; transition: 0.5s; z-index: 3000; font-weight: bold; }
+        #toast.show { bottom: 30px; }
+        
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 4000; align-items: center; justify-content: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2>Bazadagi Testlar</h2>
-        <a href="admin.html" class="back-btn">⬅ Orqaga</a>
+    <div class="loading-overlay" id="loader">
+        <div style="color:#ffd700; font-weight: bold;">SAQLANMOQDA...</div>
     </div>
 
-    <div class="filter-section">
-        <label style="font-size: 12px; color: #ffd700;">Test turini tanlang:</label>
-        <select id="filter-type" onchange="loadQuizzes()">
-            <option value="free">🎁 Bepul (Mutaxassislik)</option>
-            <option value="premium">💎 Premium (Mutaxassislik)</option>
-            <option value="free_mandatory">📌 Bepul uchun Majburiy</option>
-            <option value="premium_mandatory">🔥 Premium uchun Majburiy</option>
+    <div class="card">
+        <h3>📝 Savol Qo'shish</h3>
+
+        <div class="section-label">1. Test turini tanlang:</div>
+        <div class="grid-select">
+            <div class="choice-btn active" id="m-type-free" onclick="setType('free')">🎁 Bepul Blok</div>
+            <div class="choice-btn" id="m-type-premium" onclick="setType('premium')">💎 Premium Imtihon</div>
+            <div class="choice-btn mandatory-btn" id="m-type-free_mandatory" onclick="setType('free_mandatory')">📌 Bepul Majburiy</div>
+            <div class="choice-btn mandatory-btn" id="m-type-premium_mandatory" onclick="setType('premium_mandatory')">🔥 Premium Majburiy</div>
+        </div>
+
+        <div class="section-label">2. Fanni tanlang:</div>
+        <div class="grid-select" id="subject-container"></div>
+
+        <div class="section-label">3. Savol:</div>
+        <textarea id="m-q" class="admin-input" rows="3" placeholder="Savol matnini kiriting..."></textarea>
+        
+        <div class="grid-select">
+            <input type="text" id="m-a" class="admin-input" placeholder="A variant">
+            <input type="text" id="m-b" class="admin-input" placeholder="B variant">
+            <input type="text" id="m-c" class="admin-input" placeholder="C variant">
+            <input type="text" id="m-d" class="admin-input" placeholder="D variant">
+        </div>
+
+        <select id="m-cor" class="admin-input">
+            <option value="A">To'g'ri javob: A</option>
+            <option value="B">To'g'ri javob: B</option>
+            <option value="C">To'g'ri javob: C</option>
+            <option value="D">To'g'ri javob: D</option>
         </select>
+
+        <button class="btn btn-gold" onclick="saveToFirebase()">BAZAGA SAQLASH</button>
     </div>
 
-    <div id="loader">Yuklanmoqda...</div>
-    <div id="quiz-list"></div>
+    <div style="max-width: 650px; margin-inline: auto; margin-bottom: 40px;">
+        <button class="btn btn-blue" onclick="location.href='edit-quizzes.html'">⚙️ BARCHA TESTLARNI TAHRIRLASH</button>
+    </div>
+
+    <div id="toast">Xabar!</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, deleteDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -59,69 +95,79 @@
             messagingSenderId: "526836020845",
             appId: "1:526836020845:android:3ea991380c104c75e8b164"
         };
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        window.loadQuizzes = async () => {
-            const listContainer = document.getElementById('quiz-list');
-            const loader = document.getElementById('loader');
-            const type = document.getElementById('filter-type').value;
+        let currentType = 'free';
+        let currentSub = 'Matematika';
 
-            listContainer.innerHTML = "";
-            loader.style.display = "block";
+        const allSubs = ["Matematika", "Ona tili", "Tarix", "Kimyo", "Biologiya", "Ingiliz tili", "Huquq", "Geografiya", "Fizika"];
+        const mandatorySubs = ["Matematika", "Ona tili", "Tarix"];
+
+        window.renderSubs = () => {
+            const container = document.getElementById('subject-container');
+            container.innerHTML = "";
+            const list = (currentType.includes('mandatory')) ? mandatorySubs : allSubs;
+            
+            list.forEach(s => {
+                const btn = document.createElement('div');
+                btn.className = `choice-btn ${s === currentSub ? 'active' : ''}`;
+                btn.innerText = s;
+                btn.onclick = () => { currentSub = s; renderSubs(); };
+                container.appendChild(btn);
+            });
+        };
+
+        window.setType = (t) => {
+            currentType = t;
+            document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`m-type-${t}`).classList.add('active');
+            
+            // Majburiy tur tanlansa, fanni filtrlaymiz
+            if(t.includes('mandatory') && !mandatorySubs.includes(currentSub)) {
+                currentSub = 'Matematika';
+            }
+            renderSubs();
+        };
+
+        window.saveToFirebase = async () => {
+            const q = document.getElementById('m-q').value.trim();
+            if(!q) return showToast("Savolni to'ldiring!");
+
+            document.getElementById('loader').style.display = 'flex';
 
             try {
-                const q = query(
-                    collection(db, "quizzes"), 
-                    where("type", "==", type),
-                    orderBy("createdAt", "desc")
-                );
-                const snap = await getDocs(q);
-                
-                if(snap.empty) {
-                    listContainer.innerHTML = "<p style='text-align:center; opacity:0.5;'>Bu turda savollar topilmadi.</p>";
-                }
-
-                snap.forEach(testDoc => {
-                    const data = testDoc.data();
-                    const id = testDoc.id;
-
-                    const card = document.createElement('div');
-                    card.className = "quiz-card";
-                    card.innerHTML = `
-                        <div class="quiz-info">Fan: ${data.subject} | Tur: ${data.type}</div>
-                        <h4>${data.question}</h4>
-                        <div class="options-list">
-                            A) ${data.options.A} <br>
-                            B) ${data.options.B} <br>
-                            C) ${data.options.C} <br>
-                            D) ${data.options.D} <br>
-                            <span class="correct">To'g'ri javob: ${data.correctAnswer}</span>
-                        </div>
-                        <div class="actions">
-                            <button class="btn-del" onclick="deleteQuiz('${id}')">O'chirish</button>
-                        </div>
-                    `;
-                    listContainer.appendChild(card);
+                await addDoc(collection(db, "quizzes"), {
+                    type: currentType,
+                    subject: currentSub,
+                    question: q,
+                    options: { 
+                        A: document.getElementById('m-a').value.trim(), 
+                        B: document.getElementById('m-b').value.trim(), 
+                        C: document.getElementById('m-c').value.trim(), 
+                        D: document.getElementById('m-d').value.trim() 
+                    },
+                    correctAnswer: document.getElementById('m-cor').value,
+                    createdAt: serverTimestamp()
                 });
+                showToast("✅ Muvaffaqiyatli saqlandi!");
+                document.getElementById('m-q').value = "";
+                ['m-a','m-b','m-c','m-d'].forEach(id => document.getElementById(id).value = "");
             } catch (e) {
-                console.error(e);
-                alert("Xatolik: Ehtimol bazada 'createdAt' bo'yicha Index yaratilmagan. Console'ni tekshiring.");
+                showToast("❌ Xatolik yuz berdi!");
             } finally {
-                loader.style.display = "none";
+                document.getElementById('loader').style.display = 'none';
             }
         };
 
-        window.deleteQuiz = async (id) => {
-            if(confirm("Ushbu savolni o'chirishni xohlaysizmi?")) {
-                await deleteDoc(doc(db, "quizzes", id));
-                alert("O'chirildi!");
-                loadQuizzes();
-            }
-        };
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
 
-        // Sahifa yuklanganda bepul testlarni ko'rsatish
-        loadQuizzes();
+        renderSubs();
     </script>
 </body>
 </html>
