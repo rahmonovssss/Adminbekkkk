@@ -2,40 +2,52 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Edit Quiz - Dr. Rahmonov</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: #0f2027; color: white; padding: 20px; }
+        body { background: #0f2027; color: white; padding: 15px; }
 
-        .section-title { color: #ffd700; margin: 20px 0 10px; font-size: 18px; font-weight: 600; }
-
-        /* --- VIZUAL TUGMALAR (ASOSIY SAHIFADAGIDEK) --- */
-        .grid-select { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
-        .grid-subjects { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
-
-        .btn-select {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s;
-            font-size: 14px; color: white;
+        /* --- XUSH KELIBSIZ ADMIN QISMI --- */
+        .admin-welcome {
+            background: linear-gradient(135deg, #ffd700, #ffb900);
+            padding: 25px; border-radius: 20px; color: #000;
+            text-align: center; margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
-        .btn-select.active { border-color: #ffd700; background: rgba(255, 215, 0, 0.1); color: #ffd700; font-weight: 600; }
+        .admin-welcome h1 { font-size: 22px; font-weight: 600; }
+        .admin-welcome p { font-size: 13px; opacity: 0.8; }
+
+        .section-title { color: #ffd700; font-size: 15px; margin: 20px 0 10px; font-weight: 600; }
+
+        /* --- VIZUAL TUGMALAR --- */
+        .filter-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        
+        .btn-choice {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 14px; border-radius: 12px; text-align: center; cursor: pointer; 
+            transition: 0.3s; font-size: 13px;
+        }
+        .btn-choice.active { 
+            background: rgba(255, 215, 0, 0.15); border-color: #ffd700; color: #ffd700; font-weight: 600;
+        }
 
         /* --- TEST KARTALARI --- */
+        #quiz-list { margin-top: 20px; }
         .quiz-card { 
-            background: #1a2a33; padding: 20px; border-radius: 15px; 
+            background: #1a2a33; padding: 18px; border-radius: 15px; 
             margin-bottom: 15px; border-left: 5px solid #ffd700; 
         }
         .edit-input { 
-            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
-            color: white; padding: 12px; border-radius: 8px; margin-top: 8px; font-size: 14px;
+            width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); 
+            color: white; padding: 12px; border-radius: 10px; margin-top: 8px;
         }
-        .grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+        .grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
         
         .action-btns { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-save { flex: 2; background: #00d2ff; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-del { flex: 1; background: #ff4b2b; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; }
+        .btn-save { flex: 2; background: #00d2ff; color: white; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn-del { flex: 1; background: #ff4b2b; color: white; padding: 12px; border: none; border-radius: 10px; cursor: pointer; }
 
         #toast {
             position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
@@ -47,24 +59,26 @@
 </head>
 <body>
 
-    <h2 style="text-align:center; color:#ffd700;">Tahrirlash Paneli</h2>
-
-    <div class="section-title">1. Test turini tanlang</div>
-    <div class="grid-select">
-        <div class="btn-select active" id="type-free" onclick="changeType('free')">🎁 Bepul Testlar</div>
-        <div class="btn-select" id="type-premium" onclick="changeType('premium')">💎 Premium Testlar</div>
+    <div class="admin-welcome">
+        <h1>Xush kelibsiz, Admin!</h1>
+        <p>Testlar bazasini shu yerdan boshqaring</p>
     </div>
 
-    <div class="section-title">2. Fanni tanlang</div>
-    <div class="grid-subjects" id="subject-container">
+    <div class="section-title">Test turi:</div>
+    <div class="filter-grid">
+        <div class="btn-choice active" id="type-free" onclick="updateType('free')">🎁 Bepul</div>
+        <div class="btn-choice" id="type-premium" onclick="updateType('premium')">💎 Premium</div>
+    </div>
+
+    <div class="section-title">Fanni tanlang:</div>
+    <div class="filter-grid" id="subject-btns">
         </div>
 
-    <h2 class="section-title" id="status-text">Yuklanmoqda...</h2>
-    
-    <div id="quiz-list">
-        </div>
+    <h3 id="list-status" style="color: #ffd700; margin: 20px 0 10px; font-size: 16px;">Yuklanmoqda...</h3>
 
-    <div id="toast">Xabar!</div>
+    <div id="quiz-list"></div>
+
+    <div id="toast">Tayyor!</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -82,78 +96,61 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let selectedType = 'free';
-        let selectedSubject = 'Matematika';
-        let unsubscribe = null;
+        let curType = 'free';
+        let curSub = 'Matematika';
+        let unsub = null;
 
         const fanlar = ["Matematika", "Ona tili", "Tarix", "Kimyo", "Biologiya", "Ingiliz tili", "Huquq", "Geografiya"];
 
         // Fan tugmalarini yaratish
-        const subContainer = document.getElementById('subject-container');
-        fanlar.forEach(fan => {
-            const div = document.createElement('div');
-            div.className = `btn-select ${fan === 'Matematika' ? 'active' : ''}`;
-            div.id = `sub-${fan}`;
-            div.innerText = fan;
-            div.onclick = () => changeSubject(fan);
-            subContainer.appendChild(div);
+        const btnBox = document.getElementById('subject-btns');
+        fanlar.forEach(f => {
+            const d = document.createElement('div');
+            d.className = `btn-choice ${f === 'Matematika' ? 'active' : ''}`;
+            d.id = `f-${f}`; d.innerText = f;
+            d.onclick = () => updateSub(f);
+            btnBox.appendChild(d);
         });
 
-        window.changeType = (type) => {
-            selectedType = type;
-            document.getElementById('type-free').classList.toggle('active', type === 'free');
-            document.getElementById('type-premium').classList.toggle('active', type === 'premium');
-            loadData();
+        window.updateType = (t) => {
+            curType = t;
+            document.getElementById('type-free').classList.toggle('active', t === 'free');
+            document.getElementById('type-premium').classList.toggle('active', t === 'premium');
+            loadQuizzes();
         };
 
-        window.changeSubject = (fan) => {
-            selectedSubject = fan;
-            document.querySelectorAll('#subject-container .btn-select').forEach(b => b.classList.remove('active'));
-            document.getElementById(`sub-${fan}`).classList.add('active');
-            loadData();
+        window.updateSub = (s) => {
+            curSub = s;
+            document.querySelectorAll('#subject-btns .btn-choice').forEach(b => b.classList.remove('active'));
+            document.getElementById(`f-${s}`).classList.add('active');
+            loadQuizzes();
         };
 
-        window.loadData = () => {
-            if (unsubscribe) unsubscribe();
+        window.loadQuizzes = () => {
+            if(unsub) unsub();
             const list = document.getElementById('quiz-list');
-            const status = document.getElementById('status-text');
+            const status = document.getElementById('list-status');
 
-            const q = query(
-                collection(db, "quizzes"),
-                where("type", "==", selectedType),
-                where("subject", "==", selectedSubject)
-            );
+            const q = query(collection(db, "quizzes"), where("type", "==", curType), where("subject", "==", curSub));
 
-            unsubscribe = onSnapshot(q, (snapshot) => {
+            unsub = onSnapshot(q, (snap) => {
                 list.innerHTML = "";
-                status.innerText = `${selectedSubject} (${snapshot.size} ta test)`;
+                status.innerText = `${curSub} (${snap.size} ta test)`;
+                if(snap.empty) { list.innerHTML = "<p style='text-align:center; opacity:0.5;'>Hali test yo'q.</p>"; return; }
 
-                if(snapshot.empty) {
-                    list.innerHTML = "<p style='text-align:center; opacity:0.5;'>Hali test yo'q.</p>";
-                    return;
-                }
-
-                snapshot.forEach(qDoc => {
-                    const d = qDoc.data();
+                snap.forEach(qDoc => {
+                    const data = qDoc.data();
                     const div = document.createElement('div');
                     div.className = "quiz-card";
                     div.innerHTML = `
-                        <textarea class="edit-input" id="q-${qDoc.id}">${d.question}</textarea>
+                        <textarea class="edit-input" id="q-${qDoc.id}" rows="2">${data.question}</textarea>
                         <div class="grid-options">
-                            <input class="edit-input" id="a-${qDoc.id}" value="${d.options.A}">
-                            <input class="edit-input" id="b-${qDoc.id}" value="${d.options.B}">
-                            <input class="edit-input" id="c-${qDoc.id}" value="${d.options.C}">
-                            <input class="edit-input" id="d-${qDoc.id}" value="${d.options.D}">
+                            <input class="edit-input" id="a-${qDoc.id}" value="${data.options.A}">
+                            <input class="edit-input" id="b-${qDoc.id}" value="${data.options.B}">
+                            <input class="edit-input" id="c-${qDoc.id}" value="${data.options.C}">
+                            <input class="edit-input" id="d-${qDoc.id}" value="${data.options.D}">
                         </div>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <span>Javob:</span>
-                            <select id="cor-${qDoc.id}" style="padding:5px; background:#0f2027; color:white; border-radius:5px;">
-                                <option value="A" ${d.correctAnswer==='A'?'selected':''}>A</option>
-                                <option value="B" ${d.correctAnswer==='B'?'selected':''}>B</option>
-                                <option value="C" ${d.correctAnswer==='C'?'selected':''}>C</option>
-                                <option value="D" ${d.correctAnswer==='D'?'selected':''}>D</option>
-                            </select>
-                        </div>
+                        <p style="font-size:12px;">To'g'ri: <input id="cor-${qDoc.id}" value="${data.correctAnswer}" style="width:30px; background:none; border:1px solid #555; color:yellow; text-align:center;"></p>
                         <div class="action-btns">
                             <button class="btn-save" onclick="updateQuiz('${qDoc.id}')">SAQLASH</button>
                             <button class="btn-del" onclick="deleteQuiz('${qDoc.id}')">O'CHIRISH</button>
@@ -165,23 +162,19 @@
         };
 
         window.updateQuiz = async (id) => {
-            const ref = doc(db, "quizzes", id);
-            await updateDoc(ref, {
+            await updateDoc(doc(db, "quizzes", id), {
                 question: document.getElementById(`q-${id}`).value,
                 "options.A": document.getElementById(`a-${id}`).value,
                 "options.B": document.getElementById(`b-${id}`).value,
                 "options.C": document.getElementById(`c-${id}`).value,
                 "options.D": document.getElementById(`d-${id}`).value,
-                correctAnswer: document.getElementById(`cor-${id}`).value
+                correctAnswer: document.getElementById(`cor-${id}`).value.toUpperCase()
             });
-            showToast("O'zgarish saqlandi!");
+            showToast("Saqlandi!");
         };
 
         window.deleteQuiz = async (id) => {
-            if(confirm("O'chirilsinmi?")) {
-                await deleteDoc(doc(db, "quizzes", id));
-                showToast("O'chirildi!");
-            }
+            if(confirm("O'chirilsinmi?")) { await deleteDoc(doc(db, "quizzes", id)); showToast("O'chirildi!"); }
         };
 
         function showToast(m) {
@@ -190,7 +183,7 @@
             setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        loadData();
+        loadQuizzes();
     </script>
 </body>
 </html>
