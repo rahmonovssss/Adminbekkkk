@@ -3,80 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Qo'shish - Dr. Rahmonov</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <title>Admin: Test Qo'shish - Dr. Rahmonov</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: #0f2027; color: white; padding: 20px; }
         
         .card { background: #1a2a33; padding: 25px; border-radius: 20px; margin-bottom: 20px; max-width: 600px; margin-inline: auto; border: 1px solid rgba(255,255,255,0.05); }
-        h3 { color: #ffd700; margin-bottom: 15px; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 8px; font-size: 18px; }
+        h3 { color: #ffd700; margin-bottom: 15px; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 8px; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* --- VIZUAL TUGMALAR --- */
         .section-label { font-size: 13px; color: #ffd700; margin: 15px 0 8px; font-weight: 600; opacity: 0.9; }
-        .grid-select { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        .grid-select { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px; }
         
         .choice-btn {
             background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; font-size: 13px;
         }
-        .choice-btn.active { border-color: #ffd700; background: rgba(255, 215, 0, 0.15); color: #ffd700; font-weight: 600; }
+        .choice-btn.active { border-color: #ffd700; background: rgba(255, 215, 0, 0.15); color: #ffd700; font-weight: 600; transform: scale(1.02); }
 
-        .admin-input { width: 100%; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; margin-bottom: 10px; outline: none; }
+        .admin-input { width: 100%; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; margin-bottom: 10px; outline: none; transition: 0.3s; }
+        .admin-input:focus { border-color: #ffd700; background: rgba(0,0,0,0.4); }
+        
         .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
-        .btn-gold { background: #ffd700; color: #000; }
-        .btn-outline { background: transparent; border: 2px dashed #ffd700; color: #ffd700; }
-        .btn-blue { background: #00d2ff; color: white; }
+        .btn-gold { background: #ffd700; color: #000; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2); }
+        .btn-gold:active { transform: scale(0.98); }
+        .btn-blue { background: #00d2ff; color: white; margin-top: 20px; }
 
-        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: #ffd700; color: #000; padding: 12px 25px; border-radius: 50px; transition: 0.5s; z-index: 3000; font-weight: bold; }
+        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: #ffd700; color: #000; padding: 12px 25px; border-radius: 50px; transition: 0.5s; z-index: 3000; font-weight: bold; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
         #toast.show { bottom: 30px; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h3>Qo'lda kiritish</h3>
+        <h3>Savol Qo'shish Panel</h3>
 
         <div class="section-label">1. Test turini tanlang:</div>
         <div class="grid-select">
-            <div class="choice-btn active" id="m-type-free" onclick="setManualType('free')">🎁 Bepul Test</div>
-            <div class="choice-btn" id="m-type-premium" onclick="setManualType('premium')">💎 Premium Test</div>
+            <div class="choice-btn active" id="m-type-free" onclick="setManualType('free')">🎁 Bepul</div>
+            <div class="choice-btn" id="m-type-premium" onclick="setManualType('premium')">💎 Premium</div>
+            <div class="choice-btn" id="m-type-mandatory" onclick="setManualType('mandatory')">📌 Majburiy</div>
         </div>
 
         <div class="section-label">2. Fanni tanlang:</div>
         <div class="grid-select" id="manual-subjects">
             </div>
 
-        <div class="section-label">3. Savol va javoblar:</div>
-        <input type="text" id="m-q" class="admin-input" placeholder="Savol matni">
+        <div class="section-label">3. Savol matni:</div>
+        <textarea id="m-q" class="admin-input" rows="3" placeholder="Savolni yozing..."></textarea>
+        
+        <div class="section-label">4. Variantlar:</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <input type="text" id="m-a" class="admin-input" placeholder="A variant">
             <input type="text" id="m-b" class="admin-input" placeholder="B variant">
             <input type="text" id="m-c" class="admin-input" placeholder="C variant">
             <input type="text" id="m-d" class="admin-input" placeholder="D variant">
         </div>
+
+        <div class="section-label">5. To'g'ri javob:</div>
         <select id="m-cor" class="admin-input">
-            <option value="A">A variant</option><option value="B">B variant</option>
-            <option value="C">C variant</option><option value="D">D variant</option>
+            <option value="A">A variant</option>
+            <option value="B">B variant</option>
+            <option value="C">C variant</option>
+            <option value="D">D variant</option>
         </select>
+
         <button class="btn btn-gold" onclick="addManual()">BAZAGA SAQLASH</button>
     </div>
 
-    <div class="card">
-        <h3>PDF Fayl orqali</h3>
-        
-        <div class="section-label">PDF uchun fanni tanlang:</div>
-        <div class="grid-select" id="pdf-subjects">
-            </div>
-
-        <input type="file" id="pdf-f" hidden accept="application/pdf" onchange="processPDF(this)">
-        <button class="btn btn-outline" onclick="document.getElementById('pdf-f').click()">PDF TANLASH</button>
-        <button class="btn btn-gold" id="save-btn" style="display:none;" onclick="uploadPDFQuizzes()">BARCHASINI BAZAGA SAQLASH</button>
-    </div>
-
-    <div style="max-width: 600px; margin-inline: auto; margin-bottom: 40px;">
-        <button class="btn btn-blue" onclick="location.href='edit-quizzes.html'">⚙️ BAZADAGI BARCHA TESTLARNI TAHRIRLASH</button>
+    <div style="max-width: 600px; margin-inline: auto; text-align: center;">
+        <button class="btn btn-blue" onclick="location.href='edit-quizzes.html'">⚙️ TESTLARNI TAHRIRLASH</button>
     </div>
 
     <div id="toast">Saqlandi!</div>
@@ -97,22 +93,24 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Tanlovlar
         let manualType = 'free';
         let manualSubject = 'Matematika';
-        let pdfSubject = 'Matematika';
 
-        const fanlar = ["Matematika", "Ona tili", "Tarix", "Kimyo", "Biologiya", "Ingiliz tili", "Huquq", "Geografiya"];
+        const barchaFanlar = ["Matematika", "Ona tili", "Tarix", "Kimyo", "Biologiya", "Ingiliz tili", "Huquq", "Geografiya", "Fizika"];
+        const majburiyFanlar = ["Matematika", "Ona tili", "Tarix"];
 
-        // Fan tugmalarini chizish funksiyasi
-        function renderSubjects(containerId, activeSub, callbackName) {
-            const container = document.getElementById(containerId);
+        function renderSubjects(activeSub, type) {
+            const container = document.getElementById('manual-subjects');
             container.innerHTML = "";
-            fanlar.forEach(f => {
+            
+            // Tanlangan turga qarab fanlarni saralash
+            const ruyxat = (type === 'mandatory') ? majburiyFanlar : barchaFanlar;
+            
+            ruyxat.forEach(f => {
                 const btn = document.createElement('div');
                 btn.className = `choice-btn ${f === activeSub ? 'active' : ''}`;
                 btn.innerText = f;
-                btn.onclick = () => window[callbackName](f);
+                btn.onclick = () => setManualSub(f);
                 container.appendChild(btn);
             });
         }
@@ -121,29 +119,37 @@
             manualType = t;
             document.getElementById('m-type-free').classList.toggle('active', t === 'free');
             document.getElementById('m-type-premium').classList.toggle('active', t === 'premium');
+            document.getElementById('m-type-mandatory').classList.toggle('active', t === 'mandatory');
+            
+            // Agar majburiy tanlansa, fanni faqat majburiy fanlar ichidan tanlatamiz
+            if(t === 'mandatory' && !majburiyFanlar.includes(manualSubject)) {
+                manualSubject = 'Matematika';
+            }
+            renderSubjects(manualSubject, t);
         };
 
-        window.setManualSub = (s) => {
+        function setManualSub(s) {
             manualSubject = s;
-            renderSubjects('manual-subjects', s, 'setManualSub');
-        };
-
-        window.setPdfSub = (s) => {
-            pdfSubject = s;
-            renderSubjects('pdf-subjects', s, 'setPdfSub');
-        };
+            renderSubjects(s, manualType);
+        }
 
         window.addManual = async () => {
-            const qMatn = document.getElementById('m-q').value;
-            if(!qMatn) return showToast("Savolni kiriting!");
+            const qMatn = document.getElementById('m-q').value.trim();
+            const a = document.getElementById('m-a').value.trim();
+            const b = document.getElementById('m-b').value.trim();
+
+            if(!qMatn || !a || !b) {
+                return showToast("Savol va kamida 2 ta variantni to'ldiring!");
+            }
 
             const data = {
                 type: manualType,
                 subject: manualSubject,
                 question: qMatn,
                 options: {
-                    A: document.getElementById('m-a').value, B: document.getElementById('m-b').value,
-                    C: document.getElementById('m-c').value, D: document.getElementById('m-d').value
+                    A: a, B: b,
+                    C: document.getElementById('m-c').value.trim(),
+                    D: document.getElementById('m-d').value.trim()
                 },
                 correctAnswer: document.getElementById('m-cor').value,
                 createdAt: serverTimestamp()
@@ -151,10 +157,13 @@
             
             try {
                 await addDoc(collection(db, "quizzes"), data);
-                showToast("Bazaga qo'shildi!");
+                showToast("✅ Bazaga qo'shildi!");
                 // Tozalash
-                ['m-q','m-a','m-b','m-c','m-d'].forEach(id => document.getElementById(id).value = "");
-            } catch (e) { showToast("Xatolik!"); }
+                document.getElementById('m-q').value = "";
+                ['m-a','m-b','m-c','m-d'].forEach(id => document.getElementById(id).value = "");
+            } catch (e) { 
+                showToast("❌ Xatolik yuz berdi!"); 
+            }
         };
 
         function showToast(msg) {
@@ -163,9 +172,8 @@
             setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        // Boshlang'ich chizish
-        renderSubjects('manual-subjects', 'Matematika', 'setManualSub');
-        renderSubjects('pdf-subjects', 'Matematika', 'setPdfSub');
+        // Dastlabki yuklash
+        renderSubjects('Matematika', 'free');
     </script>
 </body>
 </html>
