@@ -3,82 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testlarni Tahrirlash - Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Barcha Testlar - Dr. Rahmonov</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: #0f2027; color: white; padding: 20px; min-height: 100vh; }
-
-        .header { 
-            max-width: 900px; margin: 0 auto 20px auto; 
-            display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; background: #0f2027; padding: 10px 0; z-index: 100;
-        }
-        .back-btn { text-decoration: none; color: white; font-size: 24px; }
-        
-        .search-box {
-            width: 100%; max-width: 900px; margin: 0 auto 20px auto;
-        }
-        .search-input {
-            width: 100%; padding: 12px 20px; background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
-            color: white; outline: none; font-size: 15px;
-        }
-
-        .quiz-container { max-width: 900px; margin: 0 auto; }
-        
-        /* TEST CARD */
-        .quiz-card {
-            background: #1a2a33; border-radius: 20px; padding: 20px;
-            margin-bottom: 20px; border-left: 5px solid #ffd700;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            animation: fadeIn 0.5s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } }
-
-        .label-tag { font-size: 11px; opacity: 0.6; text-transform: uppercase; margin-bottom: 5px; display: block; }
-        
-        .edit-input {
-            width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
-            color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; outline: none;
-        }
-        .edit-input:focus { border-color: #00d2ff; }
-
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        
-        .card-actions {
-            display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;
-            border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;
-        }
-
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; }
-        .btn-save { background: #00d2ff; color: #fff; }
-        .btn-delete { background: #ff4b2b; color: #fff; }
-        .btn-save:active, .btn-delete:active { transform: scale(0.95); }
-
-        .loader { text-align: center; padding: 50px; opacity: 0.5; }
-        
-        /* TO'G'RI JAVOB SELECT */
-        .correct-select {
-            background: #00d2ff22; border: 1px solid #00d2ff; color: #00d2ff;
-            padding: 5px 10px; border-radius: 5px; outline: none; cursor: pointer;
-        }
+        body { background: #0f2027; color: white; padding: 20px; }
+        .quiz-card { background: #1a2a33; padding: 20px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid #ffd700; }
+        .edit-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px; border-radius: 8px; margin-top: 5px; }
+        .btn-save { background: #00d2ff; color: white; padding: 10px; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        .btn-del { background: #ff4b2b; color: white; padding: 10px; border: none; border-radius: 8px; cursor: pointer; margin-left: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <a href="admin.html" class="back-btn">⬅</a>
-        <h2>Testlarni Tahrirlash</h2>
-        <span id="total-count" style="color: #ffd700; font-weight: bold;">0 ta</span>
-    </div>
-
-    <div class="search-box">
-        <input type="text" id="search" class="search-input" placeholder="Savollardan qidirish..." oninput="filterQuizzes()">
-    </div>
-
-    <div class="quiz-container" id="quiz-list">
-        <div class="loader">Testlar yuklanmoqda...</div>
+    <h2 style="text-align:center; margin-bottom: 20px; color: #ffd700;">Bazadagi barcha testlar</h2>
+    <div id="quiz-list">
+        <p style="text-align: center; opacity: 0.5;">Yuklanmoqda...</p>
     </div>
 
     <script type="module">
@@ -97,102 +36,47 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let allQuizzes = [];
-
-        // --- BAZADAGI TESTLARNI REAL-TIME ESHITISH ---
+        // REAL-Vaqtda testlarni olish
         onSnapshot(collection(db, "quizzes"), (snapshot) => {
-            allQuizzes = [];
-            snapshot.forEach(doc => {
-                allQuizzes.push({ id: doc.id, ...doc.data() });
+            const list = document.getElementById('quiz-list');
+            list.innerHTML = "";
+            if(snapshot.empty) { list.innerHTML = "Bazada testlar yo'q."; return; }
+
+            snapshot.forEach((qDoc) => {
+                const q = qDoc.data();
+                const div = document.createElement('div');
+                div.className = "quiz-card";
+                div.innerHTML = `
+                    <input class="edit-input" id="q-${qDoc.id}" value="${q.question}">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <input class="edit-input" id="a-${qDoc.id}" value="${q.options.A}">
+                        <input class="edit-input" id="b-${qDoc.id}" value="${q.options.B}">
+                        <input class="edit-input" id="c-${qDoc.id}" value="${q.options.C}">
+                        <input class="edit-input" id="d-${qDoc.id}" value="${q.options.D}">
+                    </div>
+                    <p style="margin-top:10px;">Javob: <input style="width:50px" class="edit-input" id="cor-${qDoc.id}" value="${q.correctAnswer}"></p>
+                    <button class="btn-save" onclick="updateQuiz('${qDoc.id}')">SAQLASH</button>
+                    <button class="btn-del" onclick="deleteQuiz('${qDoc.id}')">O'CHIRISH</button>
+                `;
+                list.appendChild(div);
             });
-            // Vaqti bo'yicha tartiblash (eng yangisi tepada)
-            allQuizzes.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-            displayQuizzes(allQuizzes);
         });
 
-        function displayQuizzes(data) {
-            const list = document.getElementById('quiz-list');
-            document.getElementById('total-count').innerText = data.length + " ta";
-            list.innerHTML = "";
-
-            if(data.length === 0) {
-                list.innerHTML = "<div class='loader'>Testlar topilmadi.</div>";
-                return;
-            }
-
-            data.forEach(q => {
-                const card = document.createElement('div');
-                card.className = "quiz-card";
-                card.innerHTML = `
-                    <span class="label-tag">Savol matni</span>
-                    <textarea class="edit-input" id="q-${q.id}" style="height: 60px;">${q.question}</textarea>
-                    
-                    <div class="options-grid">
-                        <div><span class="label-tag">A Variant</span><input class="edit-input" id="a-${q.id}" value="${q.options.A}"></div>
-                        <div><span class="label-tag">B Variant</span><input class="edit-input" id="b-${q.id}" value="${q.options.B}"></div>
-                        <div><span class="label-tag">C Variant</span><input class="edit-input" id="c-${q.id}" value="${q.options.C}"></div>
-                        <div><span class="label-tag">D Variant</span><input class="edit-input" id="d-${q.id}" value="${q.options.D}"></div>
-                    </div>
-
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
-                        <div>
-                            <span class="label-tag">To'g'ri javob</span>
-                            <select class="correct-select" id="cor-${q.id}">
-                                <option value="A" ${q.correctAnswer === 'A' ? 'selected' : ''}>A</option>
-                                <option value="B" ${q.correctAnswer === 'B' ? 'selected' : ''}>B</option>
-                                <option value="C" ${q.correctAnswer === 'C' ? 'selected' : ''}>C</option>
-                                <option value="D" ${q.correctAnswer === 'D' ? 'selected' : ''}>D</option>
-                            </select>
-                        </div>
-                        <div class="card-actions">
-                            <button class="btn btn-delete" onclick="deleteQuiz('${q.id}')">O'CHIRISH</button>
-                            <button class="btn btn-save" onclick="updateQuiz('${q.id}')">SAQLASH</button>
-                        </div>
-                    </div>
-                `;
-                list.appendChild(card);
-            });
-        }
-
-        // --- QIDIRISH ---
-        window.filterQuizzes = () => {
-            const term = document.getElementById('search').value.toLowerCase();
-            const filtered = allQuizzes.filter(q => q.question.toLowerCase().includes(term));
-            displayQuizzes(filtered);
-        };
-
-        // --- YANGILASH (TAHRIRLASH) ---
         window.updateQuiz = async (id) => {
-            const btn = document.querySelector(`button[onclick="updateQuiz('${id}')"]`);
-            btn.innerText = "WAIT...";
-            
-            try {
-                const docRef = doc(db, "quizzes", id);
-                await updateDoc(docRef, {
-                    question: document.getElementById(`q-${id}`).value,
-                    "options.A": document.getElementById(`a-${id}`).value,
-                    "options.B": document.getElementById(`b-${id}`).value,
-                    "options.C": document.getElementById(`c-${id}`).value,
-                    "options.D": document.getElementById(`d-${id}`).value,
-                    correctAnswer: document.getElementById(`cor-${id}`).value
-                });
-                alert("Muvaffaqiyatli yangilandi!");
-            } catch (e) {
-                alert("Xato: " + e.message);
-            } finally {
-                btn.innerText = "SAQLASH";
-            }
+            const ref = doc(db, "quizzes", id);
+            await updateDoc(ref, {
+                question: document.getElementById(`q-${id}`).value,
+                "options.A": document.getElementById(`a-${id}`).value,
+                "options.B": document.getElementById(`b-${id}`).value,
+                "options.C": document.getElementById(`c-${id}`).value,
+                "options.D": document.getElementById(`d-${id}`).value,
+                correctAnswer: document.getElementById(`cor-${id}`).value
+            });
+            alert("Yangilandi!");
         };
 
-        // --- O'CHIRISH ---
         window.deleteQuiz = async (id) => {
-            if(confirm("Haqiqatan ham ushbu savolni o'chirmoqchimisiz?")) {
-                try {
-                    await deleteDoc(doc(db, "quizzes", id));
-                } catch (e) {
-                    alert("O'chirishda xatolik!");
-                }
-            }
+            if(confirm("O'chirilsinmi?")) await deleteDoc(doc(db, "quizzes", id));
         };
     </script>
 </body>
