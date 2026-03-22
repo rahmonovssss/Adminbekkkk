@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testlarni Tahrirlash</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #0f2027; color: white; padding: 20px; }
+        .header { display: flex; align-items: center; margin-bottom: 20px; }
+        .back-btn { color: white; text-decoration: none; font-size: 20px; margin-right: 20px; }
+        .quiz-item { background: #1a2a33; padding: 20px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid #ffd700; }
+        .quiz-input { width: 100%; background: none; border: 1px solid rgba(255,255,255,0.1); color: white; padding: 8px; border-radius: 5px; margin-top: 5px; }
+        .actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-update { background: #00d2ff; color: white; }
+        .btn-delete { background: #ff4b2b; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="admin.html" class="back-btn">⬅</a>
+        <h2>Barcha testlar</h2>
+    </div>
+
+    <div id="quiz-list">
+        <p style="text-align: center; opacity: 0.5;">Yuklanmoqda...</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
+            authDomain: "quiz-app-3692d.firebaseapp.com",
+            projectId: "quiz-app-3692d",
+            storageBucket: "quiz-app-3692d.firebasestorage.app",
+            messagingSenderId: "526836020845",
+            appId: "1:526836020845:android:3ea991380c104c75e8b164"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadQuizzes() {
+            const container = document.getElementById('quiz-list');
+            const snapshot = await getDocs(collection(db, "quizzes"));
+            container.innerHTML = "";
+
+            snapshot.forEach((qDoc) => {
+                const data = qDoc.data();
+                const div = document.createElement('div');
+                div.className = "quiz-item";
+                div.innerHTML = `
+                    <input class="quiz-input" style="font-weight: bold; font-size: 16px;" id="q-${qDoc.id}" value="${data.question}">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                        <input class="quiz-input" id="a-${qDoc.id}" value="${data.options.A}">
+                        <input class="quiz-input" id="b-${qDoc.id}" value="${data.options.B}">
+                        <input class="quiz-input" id="c-${qDoc.id}" value="${data.options.C}">
+                        <input class="quiz-input" id="d-${qDoc.id}" value="${data.options.D}">
+                    </div>
+                    <label style="font-size: 12px; margin-top: 10px; display: block;">To'g'ri javob:</label>
+                    <input class="quiz-input" style="width: 50px;" id="cor-${qDoc.id}" value="${data.correctAnswer}">
+                    <div class="actions">
+                        <button class="btn btn-update" onclick="updateQuiz('${qDoc.id}')">Saqlash</button>
+                        <button class="btn btn-delete" onclick="deleteQuiz('${qDoc.id}')">O'chirish</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.updateQuiz = async (id) => {
+            const ref = doc(db, "quizzes", id);
+            await updateDoc(ref, {
+                question: document.getElementById(`q-${id}`).value,
+                "options.A": document.getElementById(`a-${id}`).value,
+                "options.B": document.getElementById(`b-${id}`).value,
+                "options.C": document.getElementById(`c-${id}`).value,
+                "options.D": document.getElementById(`d-${id}`).value,
+                correctAnswer: document.getElementById(`cor-${id}`).value
+            });
+            alert("Yangilandi!");
+        };
+
+        window.deleteQuiz = async (id) => {
+            if(confirm("Haqiqatan ham o'chirmoqchimisiz?")) {
+                await deleteDoc(doc(db, "quizzes", id));
+                loadQuizzes();
+            }
+        };
+
+        loadQuizzes();
+    </script>
+</body>
+</html>
