@@ -3,35 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testlarni Tahrirlash</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <title>Test Qo'shish - Admin Panel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: #0f2027; color: white; padding: 20px; }
-        .header { display: flex; align-items: center; margin-bottom: 20px; }
-        .back-btn { color: white; text-decoration: none; font-size: 20px; margin-right: 20px; }
-        .quiz-item { background: #1a2a33; padding: 20px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid #ffd700; }
-        .quiz-input { width: 100%; background: none; border: 1px solid rgba(255,255,255,0.1); color: white; padding: 8px; border-radius: 5px; margin-top: 5px; }
-        .actions { display: flex; gap: 10px; margin-top: 15px; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-update { background: #00d2ff; color: white; }
-        .btn-delete { background: #ff4b2b; color: white; }
+        body { background: #0f2027; color: white; padding: 20px; min-height: 100vh; }
+        
+        .header { display: flex; align-items: center; margin-bottom: 25px; max-width: 1000px; margin-inline: auto; }
+        .back-btn { text-decoration: none; color: white; font-size: 24px; margin-right: 20px; }
+
+        .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 850px) { .container { grid-template-columns: 1fr; } }
+
+        .card { background: #1a2a33; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+        h3 { margin-bottom: 20px; color: #ffd700; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; opacity: 0.7; margin-bottom: 5px; }
+        
+        .admin-input {
+            width: 100%; padding: 12px; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; outline: none;
+        }
+        .admin-input:focus { border-color: #ffd700; background: rgba(255,215,0,0.05); }
+
+        .btn {
+            width: 100%; padding: 14px; border: none; border-radius: 12px; 
+            font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; font-size: 14px;
+        }
+        .btn-gold { background: #ffd700; color: #000; }
+        .btn-gold:hover { background: #ffc800; transform: translateY(-2px); }
+        .btn-outline { background: transparent; border: 2px dashed #ffd700; color: #ffd700; }
+
+        /* PREVIEW TABLE */
+        .preview-area { grid-column: 1 / -1; background: #1a2a33; border-radius: 20px; padding: 25px; margin-top: 10px; }
+        .table-wrapper { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { text-align: left; color: #ffd700; padding: 12px; border-bottom: 2px solid rgba(255,255,255,0.1); }
+        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        .edit-field { background: none; border: 1px solid transparent; color: white; width: 100%; padding: 5px; border-radius: 4px; }
+        .edit-field:focus { border-color: #ffd700; background: rgba(255,255,255,0.1); }
+        
+        .del-btn { color: #ff4b2b; cursor: pointer; font-size: 18px; text-align: center; }
+        .status-msg { margin-top: 10px; text-align: center; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <a href="admin.html" class="back-btn">⬅</a>
-        <h2>Barcha testlar</h2>
+        <h2>Yangi Testlar Qo'shish</h2>
     </div>
 
-    <div id="quiz-list">
-        <p style="text-align: center; opacity: 0.5;">Yuklanmoqda...</p>
+    <div class="container">
+        <div class="card">
+            <h3>Qo'lda kiritish</h3>
+            <div class="input-group">
+                <label>Savol matni</label>
+                <textarea id="m-q" class="admin-input" style="height: 80px;" placeholder="Savolni kiriting..."></textarea>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="input-group"><label>A variant</label><input type="text" id="m-a" class="admin-input"></div>
+                <div class="input-group"><label>B variant</label><input type="text" id="m-b" class="admin-input"></div>
+                <div class="input-group"><label>C variant</label><input type="text" id="m-c" class="admin-input"></div>
+                <div class="input-group"><label>D variant</label><input type="text" id="m-d" class="admin-input"></div>
+            </div>
+            <div class="input-group">
+                <label>To'g'ri javob</label>
+                <select id="m-correct" class="admin-input">
+                    <option value="A">A variant</option>
+                    <option value="B">B variant</option>
+                    <option value="C">C variant</option>
+                    <option value="D">D variant</option>
+                </select>
+            </div>
+            <button class="btn btn-gold" onclick="addManual()">RO'YXATGA QO'SHISH</button>
+        </div>
+
+        <div class="card">
+            <h3>PDF Fayldan yuklash</h3>
+            <p style="font-size: 11px; opacity: 0.6; margin-bottom: 20px;">
+                PDF ichidagi savollar "1. Savol... A) Variant" formatida bo'lsa yaxshi ajratiladi.
+            </p>
+            <input type="file" id="pdf-file" hidden accept="application/pdf" onchange="processPDF(this)">
+            <button class="btn btn-outline" onclick="document.getElementById('pdf-file').click()">PDF FAYL TANLASH</button>
+            
+            <div style="margin-top: 30px;">
+                <button class="btn btn-gold" id="save-all" onclick="uploadToFirebase()">BARCHASINI BAZAGA SAQLASH</button>
+                <div id="status" class="status-msg"></div>
+            </div>
+        </div>
+
+        <div class="preview-area">
+            <h3>Tasdiqlash va Tahrirlash (<span id="count">0</span> ta savol)</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">Savol</th>
+                            <th>A</th>
+                            <th>B</th>
+                            <th>C</th>
+                            <th>D</th>
+                            <th>Javob</th>
+                            <th>#</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -45,55 +134,119 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function loadQuizzes() {
-            const container = document.getElementById('quiz-list');
-            const snapshot = await getDocs(collection(db, "quizzes"));
-            container.innerHTML = "";
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-            snapshot.forEach((qDoc) => {
-                const data = qDoc.data();
-                const div = document.createElement('div');
-                div.className = "quiz-item";
-                div.innerHTML = `
-                    <input class="quiz-input" style="font-weight: bold; font-size: 16px;" id="q-${qDoc.id}" value="${data.question}">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                        <input class="quiz-input" id="a-${qDoc.id}" value="${data.options.A}">
-                        <input class="quiz-input" id="b-${qDoc.id}" value="${data.options.B}">
-                        <input class="quiz-input" id="c-${qDoc.id}" value="${data.options.C}">
-                        <input class="quiz-input" id="d-${qDoc.id}" value="${data.options.D}">
-                    </div>
-                    <label style="font-size: 12px; margin-top: 10px; display: block;">To'g'ri javob:</label>
-                    <input class="quiz-input" style="width: 50px;" id="cor-${qDoc.id}" value="${data.correctAnswer}">
-                    <div class="actions">
-                        <button class="btn btn-update" onclick="updateQuiz('${qDoc.id}')">Saqlash</button>
-                        <button class="btn btn-delete" onclick="deleteQuiz('${qDoc.id}')">O'chirish</button>
-                    </div>
+        let quizzes = [];
+
+        // --- QO'LDA QO'SHISH ---
+        window.addManual = () => {
+            const q = {
+                question: document.getElementById('m-q').value,
+                A: document.getElementById('m-a').value,
+                B: document.getElementById('m-b').value,
+                C: document.getElementById('m-c').value,
+                D: document.getElementById('m-d').value,
+                correct: document.getElementById('m-correct').value
+            };
+            if(!q.question || !q.A || !q.B) return alert("Kamida savol va 2ta variant bo'lishi shart!");
+            quizzes.push(q);
+            renderTable();
+            // Tozalash
+            ['m-q','m-a','m-b','m-c','m-d'].forEach(id => document.getElementById(id).value = "");
+        };
+
+        // --- PDF PROTSESSING ---
+        window.processPDF = async (input) => {
+            const file = input.files[0];
+            if(!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = async function() {
+                const typedarray = new Uint8Array(this.result);
+                const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                let fullText = "";
+
+                for(let i=1; i<=pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    fullText += content.items.map(it => it.str).join(" ") + " ";
+                }
+                
+                // PDF dan savollarni ajratish (Oddiy Regex mantiqi)
+                const rawQuestions = fullText.split(/\d+[\.\)]/).filter(t => t.trim().length > 10);
+                
+                rawQuestions.forEach(block => {
+                    const parts = block.split(/[A-D][\)\.]/);
+                    if(parts.length >= 3) {
+                        quizzes.push({
+                            question: parts[0].trim(),
+                            A: parts[1]?.trim() || "",
+                            B: parts[2]?.trim() || "",
+                            C: parts[3]?.trim() || "",
+                            D: parts[4]?.trim() || "",
+                            correct: "A"
+                        });
+                    }
+                });
+                renderTable();
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        // --- JADVALNI CHIZISH ---
+        function renderTable() {
+            const body = document.getElementById('table-body');
+            document.getElementById('count').innerText = quizzes.length;
+            body.innerHTML = "";
+
+            quizzes.forEach((q, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input class="edit-field" value="${q.question}" onchange="updateQ(${i},'question',this.value)"></td>
+                    <td><input class="edit-field" value="${q.A}" onchange="updateQ(${i},'A',this.value)"></td>
+                    <td><input class="edit-field" value="${q.B}" onchange="updateQ(${i},'B',this.value)"></td>
+                    <td><input class="edit-field" value="${q.C}" onchange="updateQ(${i},'C',this.value)"></td>
+                    <td><input class="edit-field" value="${q.D}" onchange="updateQ(${i},'D',this.value)"></td>
+                    <td><input class="edit-field" style="width:30px; text-align:center" value="${q.correct}" onchange="updateQ(${i},'correct',this.value)"></td>
+                    <td class="del-btn" onclick="removeQ(${i})">✕</td>
                 `;
-                container.appendChild(div);
+                body.appendChild(tr);
             });
         }
 
-        window.updateQuiz = async (id) => {
-            const ref = doc(db, "quizzes", id);
-            await updateDoc(ref, {
-                question: document.getElementById(`q-${id}`).value,
-                "options.A": document.getElementById(`a-${id}`).value,
-                "options.B": document.getElementById(`b-${id}`).value,
-                "options.C": document.getElementById(`c-${id}`).value,
-                "options.D": document.getElementById(`d-${id}`).value,
-                correctAnswer: document.getElementById(`cor-${id}`).value
-            });
-            alert("Yangilandi!");
-        };
+        window.updateQ = (index, key, val) => quizzes[index][key] = val;
+        window.removeQ = (index) => { quizzes.splice(index, 1); renderTable(); };
 
-        window.deleteQuiz = async (id) => {
-            if(confirm("Haqiqatan ham o'chirmoqchimisiz?")) {
-                await deleteDoc(doc(db, "quizzes", id));
-                loadQuizzes();
+        // --- FIREBASEGA SAQLASH ---
+        window.uploadToFirebase = async () => {
+            if(quizzes.length === 0) return alert("Yuklash uchun test yo'q!");
+            
+            const btn = document.getElementById('save-all');
+            const status = document.getElementById('status');
+            btn.disabled = true;
+            btn.innerText = "SAQLANMOQDA...";
+
+            try {
+                for(let q of quizzes) {
+                    await addDoc(collection(db, "quizzes"), {
+                        question: q.question,
+                        options: { A: q.A, B: q.B, C: q.C, D: q.D },
+                        correctAnswer: q.correct,
+                        createdAt: serverTimestamp()
+                    });
+                }
+                status.style.color = "#00ff88";
+                status.innerText = "Barcha testlar muvaffaqiyatli yuklandi!";
+                quizzes = [];
+                renderTable();
+            } catch (e) {
+                status.style.color = "#ff4b2b";
+                status.innerText = "Xato: " + e.message;
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "BARCHASINI BAZAGA SAQLASH";
             }
         };
-
-        loadQuizzes();
     </script>
 </body>
 </html>
