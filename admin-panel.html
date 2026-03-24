@@ -19,9 +19,10 @@
         .btn { border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.3s; }
         .btn-ok { background: var(--success); color: white; }
         .btn-no { background: var(--danger); color: white; margin-left: 8px; }
-        table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 15px; overflow: hidden; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 15px; margin-top: 15px; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .status-msg { text-align: center; padding: 30px; color: #888; }
+        .status-msg { text-align: center; padding: 30px; color: #888; font-style: italic; }
+        .debug-info { font-size: 10px; color: #555; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -30,9 +31,9 @@
     <button onclick="window.location.href='admin-panel.html'" style="background:none; border:1px solid #555; color:white; padding:8px 20px; border-radius:10px; cursor:pointer; margin-bottom:20px;">⬅ Admin Panel</button>
     
     <h2>📩 Yangi so'rovlar (Pending)</h2>
-    <div id="request-list" class="status-msg">Yuklanmoqda...</div>
+    <div id="request-list" class="status-msg">Firestore ulanmoqda...</div>
 
-    <h2>📜 Tarix (Approved)</h2>
+    <h2>📜 Tasdiqlanganlar tarixi</h2>
     <table>
         <thead>
             <tr>
@@ -64,73 +65,83 @@
     const db = getFirestore(app);
     const colRef = collection(db, "payment_requests");
 
-    // 1. PENDING ESHITISH
+    // 1. PENDING (Yangi so'rovlarni o'qish)
+    // orderBy ishlatmadim, chunki bu Indeks xatosini berishi mumkin.
     onSnapshot(query(colRef, where("status", "==", "pending")), (snap) => {
         const list = document.getElementById('request-list');
-        if (snap.empty) { list.innerHTML = "Hozircha yangi so'rovlar yo'q."; return; }
+        if (snap.empty) {
+            list.innerHTML = "Hozircha kutilayotgan to'lovlar yo'q. ✨";
+            return;
+        }
         list.innerHTML = "";
         snap.forEach((res) => {
             const data = res.data();
-            // Rasmingizda 'userId' kichik harflarda bo'lishi mumkinligini hisobga olamiz
-            const targetUID = data.userId || data.userid; 
+            // Rasmingizdagi field: userId (I harfi katta)
+            const uID = data.userId || data.userid; 
             
             list.innerHTML += `
                 <div class="request-card">
                     <div>
                         <h3>${data.fio || 'Ismsiz'}</h3>
-                        <p style="font-size:12px; color:#888;">ID: ${targetUID}</p>
+                        <div class="debug-info">UID: ${uID} | Doc: ${res.id}</div>
                         <div class="price">${data.amount?.toLocaleString()} so'm</div>
                     </div>
                     <div>
-                        <button class="btn btn-ok" onclick="approveReq('${res.id}', '${targetUID}', ${data.amount})">TASDIQLASH</button>
+                        <button class="btn btn-ok" onclick="approve('${res.id}', '${uID}', ${data.amount})">TASDIQLASH</button>
                         <button class="btn btn-no" onclick="del('${res.id}')">RAD ETISH</button>
                     </div>
                 </div>`;
         });
+    }, (error) => {
+        console.error("Xatolik:", error);
+        document.getElementById('request-list').innerHTML = "<span style='color:red'>Xato: " + error.message + "</span>";
     });
 
-    // 2. APPROVED ESHITISH
+    // 2. APPROVED (Tarixni o'qish)
     onSnapshot(query(colRef, where("status", "==", "approved")), (snap) => {
         const hList = document.getElementById('history-list');
-        hList.innerHTML = snap.empty ? "<tr><td colspan='3' class='status-msg'>Tarix bo'sh.</td></tr>" : "";
+        hList.innerHTML = snap.empty ? "<tr><td colspan='3' class='status-msg'>Hali tasdiqlanganlar yo'q.</td></tr>" : "";
         snap.forEach((res) => {
             const data = res.data();
             hList.innerHTML += `
                 <tr>
                     <td>${data.fio || '---'}</td>
-                    <td style="color:#ffd700;">${data.amount?.toLocaleString()} so'm</td>
+                    <td style="color:#ffd700; font-weight:bold;">${data.amount?.toLocaleString()} so'm</td>
                     <td><button class="btn btn-no" style="padding:5px 10px;" onclick="del('${res.id}')">🗑</button></td>
                 </tr>`;
         });
     });
 
-    // 3. TASDIQLASH (Asosiy mantiq)
-    window.approveReq = async (docId, uId, amt) => {
-        if(!uId || uId === "undefined") {
-            alert("Xato: Foydalanuvchi ID topilmadi. Bazani tekshiring!");
+    // 3. TASDIQLASH FUNKSIYASI
+    window.approve = async (docId, uID, amount) => {
+        if (!uID || uID === "undefined") {
+            alert("Xato: Foydalanuvchi ID topilmadi! Bazadagi 'userId' maydonini tekshiring.");
             return;
         }
-        if(!confirm(amt + " so'm balansga qo'shilsinmi?")) return;
+        if (!confirm(amount + " so'm balansga qo'shilsinmi?")) return;
 
         try {
-            // Balansni oshirish
-            await updateDoc(doc(db, "users", uId), {
-                balance: increment(Number(amt))
+            // Balansni oshirish ('users' kolleksiyasida ushbu uID hujjat bo'lishi shart)
+            await updateDoc(doc(db, "users", uID), {
+                balance: increment(Number(amount))
             });
 
-            // Statusni o'zgartirish
+            // Statusni yangilash
             await updateDoc(doc(db, "payment_requests", docId), {
                 status: "approved"
             });
 
-            alert("Muvaffaqiyatli bajarildi! ✅");
+            alert("Muvaffaqiyatli tasdiqlandi! ✅");
         } catch (e) {
-            alert("Xatolik: " + e.message);
+            console.error(e);
+            alert("Tasdiqlashda xato: " + e.message);
         }
     };
 
     window.del = async (id) => {
-        if(confirm("O'chirilsinmi?")) await deleteDoc(doc(db, "payment_requests", id));
+        if (confirm("Ushbu ma'lumotni o'chirmoqchimisiz?")) {
+            await deleteDoc(doc(db, "payment_requests", id));
+        }
     };
 
 </script>
