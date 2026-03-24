@@ -15,38 +15,34 @@
             margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;
             border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-        .info h3 { margin: 0; font-size: 18px; color: #fff; }
-        .price { color: #ffd700; font-weight: bold; font-size: 20px; margin-top: 5px; }
+        .price { color: #ffd700; font-weight: bold; font-size: 20px; }
         .btn { border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.3s; }
         .btn-ok { background: var(--success); color: white; }
         .btn-no { background: var(--danger); color: white; margin-left: 8px; }
-        .status-msg { text-align: center; padding: 30px; color: #888; font-style: italic; }
-        
         table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 15px; overflow: hidden; margin-top: 15px; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        th { background: rgba(0,210,255,0.1); color: var(--primary); }
+        .status-msg { text-align: center; padding: 30px; color: #888; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <button onclick="window.location.href='admin-panel.html'" style="background:none; border:1px solid #555; color:white; padding:8px 20px; border-radius:10px; cursor:pointer; margin-bottom:20px;">⬅ Admin Panelga qaytish</button>
+    <button onclick="window.location.href='admin-panel.html'" style="background:none; border:1px solid #555; color:white; padding:8px 20px; border-radius:10px; cursor:pointer; margin-bottom:20px;">⬅ Admin Panel</button>
     
-    <h2>📩 Kutilayotgan to'lovlar (Pending)</h2>
-    <div id="request-list" class="status-msg">Firestore ulanmoqda...</div>
+    <h2>📩 Yangi so'rovlar (Pending)</h2>
+    <div id="request-list" class="status-msg">Yuklanmoqda...</div>
 
-    <h2>📜 Tasdiqlanganlar tarixi</h2>
+    <h2>📜 Tarix (Approved)</h2>
     <table>
         <thead>
             <tr>
-                <th>Ism-sharif</th>
+                <th>Foydalanuvchi</th>
                 <th>Summa</th>
-                <th>Holat</th>
                 <th>Amal</th>
             </tr>
         </thead>
         <tbody id="history-list">
-            <tr><td colspan="4" class="status-msg">Yuklanmoqda...</td></tr>
+            <tr><td colspan="3" class="status-msg">Yuklanmoqda...</td></tr>
         </tbody>
     </table>
 </div>
@@ -66,93 +62,77 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const paymentCol = collection(db, "payment_requests");
+    const colRef = collection(db, "payment_requests");
 
-    // 1. PENDING SO'ROVLAR (Real-time)
-    onSnapshot(query(paymentCol, where("status", "==", "pending")), (snapshot) => {
+    // 1. PENDING ESHITISH
+    onSnapshot(query(colRef, where("status", "==", "pending")), (snap) => {
         const list = document.getElementById('request-list');
-        if (snapshot.empty) {
-            list.innerHTML = "Hozircha kutilayotgan to'lovlar yo'q. ✅";
-            return;
-        }
+        if (snap.empty) { list.innerHTML = "Hozircha yangi so'rovlar yo'q."; return; }
         list.innerHTML = "";
-        snapshot.forEach((res) => {
+        snap.forEach((res) => {
             const data = res.data();
-            // DIQQAT: userId va uID nomlanishiga e'tibor bering
-            const currentUID = data.userId || data.uID; 
+            // Rasmingizda 'userId' kichik harflarda bo'lishi mumkinligini hisobga olamiz
+            const targetUID = data.userId || data.userid; 
             
             list.innerHTML += `
                 <div class="request-card">
-                    <div class="info">
-                        <h3>${data.fio || 'Noma\'lum'}</h3>
-                        <p style="font-size:12px; opacity:0.6;">Foydalanuvchi ID: ${currentUID}</p>
+                    <div>
+                        <h3>${data.fio || 'Ismsiz'}</h3>
+                        <p style="font-size:12px; color:#888;">ID: ${targetUID}</p>
                         <div class="price">${data.amount?.toLocaleString()} so'm</div>
                     </div>
                     <div>
-                        <button class="btn btn-ok" onclick="approvePayment('${res.id}', '${currentUID}', ${data.amount})">TASDIQLASH</button>
-                        <button class="btn btn-no" onclick="deleteRequest('${res.id}')">RAD ETISH</button>
+                        <button class="btn btn-ok" onclick="approveReq('${res.id}', '${targetUID}', ${data.amount})">TASDIQLASH</button>
+                        <button class="btn btn-no" onclick="del('${res.id}')">RAD ETISH</button>
                     </div>
                 </div>`;
         });
-    }, (error) => {
-        console.error("Firebase Error:", error);
-        document.getElementById('request-list').innerHTML = "Xatolik yuz berdi. Konsolni tekshiring.";
     });
 
-    // 2. APPROVED SO'ROVLAR (Tarix)
-    onSnapshot(query(paymentCol, where("status", "==", "approved")), (snapshot) => {
+    // 2. APPROVED ESHITISH
+    onSnapshot(query(colRef, where("status", "==", "approved")), (snap) => {
         const hList = document.getElementById('history-list');
-        if (snapshot.empty) {
-            hList.innerHTML = "<tr><td colspan='4' class='status-msg'>Tasdiqlangan to'lovlar mavjud emas.</td></tr>";
-            return;
-        }
-        hList.innerHTML = "";
-        snapshot.forEach((res) => {
+        hList.innerHTML = snap.empty ? "<tr><td colspan='3' class='status-msg'>Tarix bo'sh.</td></tr>" : "";
+        snap.forEach((res) => {
             const data = res.data();
             hList.innerHTML += `
                 <tr>
                     <td>${data.fio || '---'}</td>
-                    <td style="color:#ffd700; font-weight:bold;">${data.amount?.toLocaleString()} so'm</td>
-                    <td style="color:#4caf50;">Qabul qilindi</td>
-                    <td><button class="btn btn-no" style="padding:5px 10px;" onclick="deleteRequest('${res.id}')">🗑</button></td>
+                    <td style="color:#ffd700;">${data.amount?.toLocaleString()} so'm</td>
+                    <td><button class="btn btn-no" style="padding:5px 10px;" onclick="del('${res.id}')">🗑</button></td>
                 </tr>`;
         });
     });
 
-    // 3. TASDIQLASH FUNKSIYASI
-    window.approvePayment = async (docId, userId, amount) => {
-        if(!userId || userId === "undefined") {
-            alert("Xato: Foydalanuvchi ID topilmadi!");
+    // 3. TASDIQLASH (Asosiy mantiq)
+    window.approveReq = async (docId, uId, amt) => {
+        if(!uId || uId === "undefined") {
+            alert("Xato: Foydalanuvchi ID topilmadi. Bazani tekshiring!");
             return;
         }
-        if(!confirm("Foydalanuvchi balansiga " + amount + " so'm qo'shilsinmi?")) return;
+        if(!confirm(amt + " so'm balansga qo'shilsinmi?")) return;
 
         try {
-            const userRef = doc(db, "users", userId);
-            
-            // Balansni yangilash
-            await updateDoc(userRef, {
-                balance: increment(parseInt(amount))
+            // Balansni oshirish
+            await updateDoc(doc(db, "users", uId), {
+                balance: increment(Number(amt))
             });
 
-            // So'rov holatini o'zgartirish
+            // Statusni o'zgartirish
             await updateDoc(doc(db, "payment_requests", docId), {
                 status: "approved"
             });
 
-            alert("Muvaffaqiyatli tasdiqlandi! Balans yangilandi. ✅");
+            alert("Muvaffaqiyatli bajarildi! ✅");
         } catch (e) {
-            console.error(e);
-            alert("Xatolik: " + e.message + "\n\nEslatma: 'users' kolleksiyasida ushbu ID mavjudligini tekshiring.");
+            alert("Xatolik: " + e.message);
         }
     };
 
-    // 4. O'CHIRISH FUNKSIYASI
-    window.deleteRequest = async (id) => {
-        if(confirm("Ushbu so'rovni o'chirib tashlamoqchimisiz?")) {
-            await deleteDoc(doc(db, "payment_requests", id));
-        }
+    window.del = async (id) => {
+        if(confirm("O'chirilsinmi?")) await deleteDoc(doc(db, "payment_requests", id));
     };
+
 </script>
 </body>
 </html>
