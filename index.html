@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - DTM Quiz</title>
+    <title>Admin Panel - Dr. Rahmonov</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background: #0f2027; color: white; overflow-x: hidden; }
@@ -25,64 +25,75 @@
         .login-card {
             background: #1a2a33; padding: 40px; border-radius: 25px;
             width: 90%; max-width: 400px; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,215,0,0.2);
         }
         .admin-input {
             width: 100%; padding: 15px; margin: 10px 0;
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px; color: white; outline: none; text-align: center;
+            border-radius: 12px; color: white; outline: none; text-align: center; font-size: 16px;
         }
 
         /* --- DASHBOARD --- */
-        #admin-dashboard { display: none; padding: 20px; }
-        .admin-header { padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
-        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        #admin-dashboard { display: none; padding: 20px; max-width: 800px; margin: auto; }
+        .admin-header { padding: 30px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 30px; text-align: center; }
+        .admin-header h2 { color: #ffd700; font-size: 24px; }
+        
+        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .admin-card {
-            background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px;
-            text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid transparent;
+            background: #1a2a33; padding: 30px 20px; border-radius: 25px;
+            text-align: center; cursor: pointer; transition: 0.3s; 
+            border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-        .admin-card:hover { background: rgba(255,215,0,0.1); border-color: #ffd700; }
-        .admin-card i { font-size: 30px; display: block; margin-bottom: 10px; font-style: normal; }
+        .admin-card:hover { transform: translateY(-5px); background: rgba(255,215,0,0.1); border-color: #ffd700; }
+        .admin-card i { font-size: 40px; display: block; margin-bottom: 15px; font-style: normal; }
+        .admin-card span { font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
 
         /* --- MODAL --- */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); align-items: center; justify-content: center; z-index: 2000;
         }
-        .modal-content { background: #1a2a33; padding: 25px; border-radius: 20px; width: 90%; max-width: 450px; }
+        .modal-content { background: #1a2a33; padding: 30px; border-radius: 25px; width: 90%; max-width: 450px; border: 1px solid #ffd700; }
         .btn-gold {
-            width: 100%; padding: 15px; background: #ffd700; color: #000;
-            border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px;
+            width: 100%; padding: 16px; background: #ffd700; color: #000;
+            border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px;
         }
+        .btn-gold:hover { background: #ffc400; }
     </style>
 </head>
 <body>
 
     <div id="splash">
         <div class="loader"></div>
-        <h2 style="margin-top: 20px; color: #ffd700;">Admin Panel</h2>
+        <h2 style="margin-top: 20px; color: #ffd700; letter-spacing: 2px;">DR. RAHMONOV</h2>
     </div>
 
     <div id="admin-login">
         <div class="login-card">
-            <h1 style="color: #ffd700; margin-bottom: 10px;">Admin Kirish</h1>
-            <input type="password" id="admin-password" class="admin-input" placeholder="Parol">
+            <h1 style="color: #ffd700; margin-bottom: 15px;">Admin Login</h1>
+            <p style="opacity: 0.6; margin-bottom: 20px; font-size: 14px;">Boshqaruv tizimiga kirish</p>
+            <input type="password" id="admin-password" class="admin-input" placeholder="Maxfiy parol">
             <button class="btn-gold" onclick="checkAdmin()">KIRISH</button>
         </div>
     </div>
 
     <div id="admin-dashboard">
         <div class="admin-header">
-            <h2>Xush kelibsiz, Admin!</h2>
-            <p style="font-size: 12px; opacity: 0.6;">Boshqaruv markazi</p>
+            <h2>Boshqaruv Paneli</h2>
+            <p style="opacity: 0.5;">Xush kelibsiz, Dr. Rahmonov!</p>
         </div>
+        
         <div class="admin-grid">
             <div class="admin-card" onclick="openMsgModal()">
-                <i>📢</i><span>Hammaga xabar</span>
+                <i>📢</i><span>Xabar yuborish</span>
             </div>
             
-            <div class="admin-card" onclick="goToAddQuiz()">
+            <div class="admin-card" onclick="location.href='add-quiz.html'">
                 <i>📝</i><span>Test qo'shish</span>
+            </div>
+
+            <div class="admin-card" onclick="location.href='admin-billing.html'" style="border-color: #00d2ff;">
+                <i style="color: #00d2ff;">💰</i><span>To'lovlar</span>
             </div>
 
             <div class="admin-card" onclick="location.reload()">
@@ -93,11 +104,11 @@
 
     <div id="msgModal" class="modal">
         <div class="modal-content">
-            <h3 style="color: #ffd700; margin-bottom: 15px; text-align: center;">Yangi xabar</h3>
-            <input type="text" id="msg-title" class="admin-input" placeholder="Xabar sarlavhasi">
+            <h3 style="color: #ffd700; margin-bottom: 20px; text-align: center;">Hammaga bildirishnoma</h3>
+            <input type="text" id="msg-title" class="admin-input" placeholder="Sarlavha">
             <textarea id="msg-text" class="admin-input" style="height: 120px; text-align: left;" placeholder="Xabar matni..."></textarea>
             <button class="btn-gold" id="send-btn" onclick="sendToAll()">YUBORISH</button>
-            <p onclick="closeMsgModal()" style="text-align: center; margin-top: 15px; cursor: pointer; opacity: 0.6;">Bekor qilish</p>
+            <p onclick="closeMsgModal()" style="text-align: center; margin-top: 20px; cursor: pointer; opacity: 0.6; font-size: 14px;">Bekor qilish</p>
         </div>
     </div>
 
@@ -117,29 +128,31 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        setTimeout(() => { document.getElementById('splash').style.display = 'none'; }, 2000);
+        // Splash screen ketiishi
+        setTimeout(() => { document.getElementById('splash').style.display = 'none'; }, 1500);
 
+        // Parol tekshirish
         window.checkAdmin = () => {
-            if(document.getElementById('admin-password').value === "admin777") {
+            const pass = document.getElementById('admin-password').value;
+            if(pass === "admin777") {
                 document.getElementById('admin-login').style.display = 'none';
                 document.getElementById('admin-dashboard').style.display = 'block';
-            } else { alert("Xato!"); }
+            } else { 
+                alert("Parol noto'g'ri!"); 
+            }
         };
 
+        // Modal funksiyalari
         window.openMsgModal = () => document.getElementById('msgModal').style.display = 'flex';
         window.closeMsgModal = () => document.getElementById('msgModal').style.display = 'none';
 
-        // DR. RAHMONOV: Test qo'shish sahifasiga o'tish funksiyasi
-        window.goToAddQuiz = () => {
-            window.location.href = "add-quiz.html";
-        };
-
+        // Xabar yuborish
         window.sendToAll = async () => {
             const title = document.getElementById('msg-title').value;
             const text = document.getElementById('msg-text').value;
             const btn = document.getElementById('send-btn');
 
-            if(!title || !text) return alert("To'ldiring!");
+            if(!title || !text) return alert("Iltimos, barcha maydonlarni to'ldiring!");
 
             btn.disabled = true; btn.innerText = "YUBORILMOQDA...";
 
@@ -151,13 +164,12 @@
                     status: 'unread',
                     createdAt: serverTimestamp()
                 });
-                alert("Xabar hammaga yuborildi!");
+                alert("Xabar muvaffaqiyatli yuborildi! ✅");
                 document.getElementById('msg-title').value = "";
                 document.getElementById('msg-text').value = "";
                 closeMsgModal();
             } catch (e) {
-                console.error(e);
-                alert("Xatolik!");
+                alert("Xatolik yuz berdi!");
             } finally {
                 btn.disabled = false; btn.innerText = "YUBORISH";
             }
