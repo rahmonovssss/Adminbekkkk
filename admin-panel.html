@@ -2,73 +2,167 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - To'lovlarni Tasdiqlash</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Dr. Rahmonov</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { background: #1a2a33; color: white; font-family: sans-serif; padding: 20px; }
-        .request-card { background: #243b47; padding: 20px; border-radius: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 20px; border: 1px solid #333; }
-        .check-img { width: 120px; height: 160px; object-fit: cover; border-radius: 10px; cursor: pointer; border: 2px solid #00d2ff; }
+        :root { --primary: #00d2ff; --success: #4caf50; --danger: #ff4b2b; --bg: #0f2027; --card-bg: #1e2a33; }
+        body { background: var(--bg); color: white; font-family: 'Poppins', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; }
+        
+        h2 { color: var(--primary); display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        
+        /* Kartochka dizayni */
+        .request-card { 
+            background: var(--card-bg); padding: 15px; border-radius: 18px; 
+            margin-bottom: 15px; display: flex; align-items: center; gap: 20px; 
+            border: 1px solid rgba(255,255,255,0.05); transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .request-card:hover { transform: translateY(-3px); border-color: var(--primary); }
+
+        .check-img { 
+            width: 80px; height: 110px; object-fit: cover; border-radius: 12px; 
+            cursor: pointer; border: 2px solid var(--primary); transition: 0.3s;
+        }
+        .check-img:hover { transform: scale(1.05); }
+
         .info { flex-grow: 1; }
-        .btn-ok { background: #4caf50; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-no { background: #ff4b2b; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+        .info h3 { margin: 0; font-size: 18px; color: #fff; }
+        .info p { margin: 5px 0; font-size: 14px; color: #aaa; }
+        .price { color: #ffd700; font-weight: bold; font-size: 20px; margin-top: 5px; }
+
+        .actions { display: flex; gap: 10px; }
+        .btn { border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .btn-ok { background: var(--success); color: white; }
+        .btn-no { background: var(--danger); color: white; }
+        .btn-del { background: rgba(255,255,255,0.1); color: #ccc; }
+        .btn:hover { opacity: 0.8; transform: scale(1.05); }
+
+        /* Tarix jadvali */
+        .history-section { margin-top: 50px; }
+        table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 15px; overflow: hidden; margin-top: 15px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        th { background: rgba(0,210,255,0.1); color: var(--primary); font-size: 14px; }
+        tr:hover { background: rgba(255,255,255,0.02); }
+
+        .empty-state { text-align: center; padding: 40px; color: #666; font-style: italic; }
     </style>
 </head>
 <body>
 
-    <h2>Kelgan to'lov so'rovlari 💰</h2>
-    <hr style="opacity: 0.1; margin: 20px 0;">
-    <div id="request-list">Yuklanmoqda...</div>
+<div class="container">
+    <h2>📩 Yangi to'lov so'rovlari</h2>
+    <div id="request-list" class="empty-state">Yuklanmoqda...</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    <div class="history-section">
+        <h2>📜 To'lovlar tarixi (Approved)</h2>
+        <table id="history-table">
+            <thead>
+                <tr>
+                    <th>Foydalanuvchi</th>
+                    <th>Summa</th>
+                    <th>Vaqt</th>
+                    <th>Amal</th>
+                </tr>
+            </thead>
+            <tbody id="history-list">
+                <tr><td colspan="4" class="empty-state">Tarix yuklanmoqda...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-        const firebaseConfig = { /* SIZNING CONFIG */ };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc, deleteDoc, addDoc, serverTimestamp, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        onSnapshot(collection(db, "payment_requests"), (snapshot) => {
-            const list = document.getElementById('request-list');
-            list.innerHTML = snapshot.empty ? "Hozircha yangi so'rovlar yo'q." : "";
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
+        authDomain: "quiz-app-3692d.firebaseapp.com",
+        projectId: "quiz-app-3692d",
+        storageBucket: "quiz-app-3692d.firebasestorage.app",
+        messagingSenderId: "526836020845",
+        appId: "1:526836020845:android:3ea991380c104c75e8b164"
+    };
 
-            snapshot.forEach((res) => {
-                const data = res.data();
-                const id = res.id;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-                list.innerHTML += `
-                    <div class="request-card">
-                        <img src="${data.screenshot}" class="check-img" onclick="window.open('${data.screenshot}')">
-                        <div class="info">
-                            <h3>${data.fio}</h3>
-                            <p>${data.email}</p>
-                            <p style="color:#ffd700; font-size:18px;">${data.amount.toLocaleString()} so'm</p>
-                        </div>
-                        <button class="btn-ok" onclick="approve('${id}', '${data.userId}', ${data.amount})">TASDIQLASH ✅</button>
-                        <button class="btn-no" onclick="reject('${id}')">X</button>
-                    </div>`;
-            });
+    // 1. Yangi so'rovlarni (pending) real-time eshitish
+    const qPending = query(collection(db, "payment_requests"), where("status", "==", "pending"));
+    onSnapshot(qPending, (snapshot) => {
+        const list = document.getElementById('request-list');
+        list.innerHTML = snapshot.empty ? '<div class="empty-state">Hozircha yangi so'rovlar yo'q. ✨</div>' : "";
+
+        snapshot.forEach((res) => {
+            const data = res.data();
+            list.innerHTML += `
+                <div class="request-card">
+                    <img src="${data.screenshot || 'https://via.placeholder.com/80x110?text=Chek'}" class="check-img" onclick="window.open('${data.screenshot}')">
+                    <div class="info">
+                        <h3>${data.fio}</h3>
+                        <p>🆔 ID: ${data.studentID || 'Yo'q'}</p>
+                        <div class="price">${data.amount.toLocaleString()} so'm</div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-ok" onclick="approve('${res.id}', '${data.userId}', ${data.amount})">TASDIQLASH</button>
+                        <button class="btn btn-no" onclick="reject('${res.id}')">RAD ETISH</button>
+                    </div>
+                </div>`;
         });
+    });
 
-        window.approve = async (reqId, uId, amt) => {
+    // 2. To'lovlar tarixini (approved) real-time eshitish
+    const qHistory = query(collection(db, "payment_requests"), where("status", "==", "approved"), orderBy("timestamp", "desc"));
+    onSnapshot(qHistory, (snapshot) => {
+        const hList = document.getElementById('history-list');
+        hList.innerHTML = snapshot.empty ? "<tr><td colspan='4' class='empty-state'>Tarix bo'sh.</td></tr>" : "";
+
+        snapshot.forEach((res) => {
+            const data = res.data();
+            const date = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleDateString() : "---";
+            hList.innerHTML += `
+                <tr>
+                    <td>${data.fio}</td>
+                    <td style="color:#ffd700;">${data.amount.toLocaleString()} so'm</td>
+                    <td>${date}</td>
+                    <td><button class="btn btn-del" onclick="deleteHistory('${res.id}')">🗑 O'chirish</button></td>
+                </tr>`;
+        });
+    });
+
+    // TASDIQLASH FUNKSIYASI
+    window.approve = async (reqId, uId, amt) => {
+        if(!confirm("Ushbu to'lovni tasdiqlaysizmi?")) return;
+        try {
             const uRef = doc(db, "users", uId);
             const snap = await getDoc(uRef);
+            
             if(snap.exists()){
                 const newBal = (snap.data().balance || 0) + amt;
                 await updateDoc(uRef, { balance: newBal });
                 
-                // To'lovlar tarixiga yozish
-                await addDoc(collection(db, "payments"), {
-                    userId: uId,
-                    amount: amt,
-                    type: "plus",
-                    timestamp: serverTimestamp()
+                // Statusni 'approved' ga o'zgartirish (O'chirmaymiz, Tarixda qoladi)
+                await updateDoc(doc(db, "payment_requests", reqId), { 
+                    status: "approved",
+                    timestamp: serverTimestamp() // Tarixda tartiblash uchun yangilaymiz
                 });
 
-                await deleteDoc(doc(db, "payment_requests", reqId));
-                alert("Pul foydalanuvchiga muvaffaqiyatli tushirildi!");
+                alert("Balans to'ldirildi va tarixga saqlandi! ✅");
             }
-        };
+        } catch (e) { alert("Xato: " + e.message); }
+    };
 
-        window.reject = async (id) => { if(confirm("Rad etilsinmi?")) await deleteDoc(doc(db, "payment_requests", id)); };
-    </script>
+    // RAD ETISH (O'chirish)
+    window.reject = async (id) => { 
+        if(confirm("So'rovni o'chirib tashlaysizmi?")) await deleteDoc(doc(db, "payment_requests", id)); 
+    };
+
+    // TARIYNI BITTA-BITTA O'CHIRISH
+    window.deleteHistory = async (id) => {
+        if(confirm("Ushbu tarixiy ma'lumotni bazadan butunlay o'chirasizmi?")) await deleteDoc(doc(db, "payment_requests", id));
+    };
+</script>
 </body>
 </html>
