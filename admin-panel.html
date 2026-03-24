@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - To'lovlarni Tasdiqlash</title>
+    <style>
+        body { background: #1a2a33; color: white; font-family: sans-serif; padding: 20px; }
+        .request-card { background: #243b47; padding: 20px; border-radius: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 20px; border: 1px solid #333; }
+        .check-img { width: 120px; height: 160px; object-fit: cover; border-radius: 10px; cursor: pointer; border: 2px solid #00d2ff; }
+        .info { flex-grow: 1; }
+        .btn-ok { background: #4caf50; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-no { background: #ff4b2b; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2>Kelgan to'lov so'rovlari 💰</h2>
+    <hr style="opacity: 0.1; margin: 20px 0;">
+    <div id="request-list">Yuklanmoqda...</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { /* SIZNING CONFIG */ };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        onSnapshot(collection(db, "payment_requests"), (snapshot) => {
+            const list = document.getElementById('request-list');
+            list.innerHTML = snapshot.empty ? "Hozircha yangi so'rovlar yo'q." : "";
+
+            snapshot.forEach((res) => {
+                const data = res.data();
+                const id = res.id;
+
+                list.innerHTML += `
+                    <div class="request-card">
+                        <img src="${data.screenshot}" class="check-img" onclick="window.open('${data.screenshot}')">
+                        <div class="info">
+                            <h3>${data.fio}</h3>
+                            <p>${data.email}</p>
+                            <p style="color:#ffd700; font-size:18px;">${data.amount.toLocaleString()} so'm</p>
+                        </div>
+                        <button class="btn-ok" onclick="approve('${id}', '${data.userId}', ${data.amount})">TASDIQLASH ✅</button>
+                        <button class="btn-no" onclick="reject('${id}')">X</button>
+                    </div>`;
+            });
+        });
+
+        window.approve = async (reqId, uId, amt) => {
+            const uRef = doc(db, "users", uId);
+            const snap = await getDoc(uRef);
+            if(snap.exists()){
+                const newBal = (snap.data().balance || 0) + amt;
+                await updateDoc(uRef, { balance: newBal });
+                
+                // To'lovlar tarixiga yozish
+                await addDoc(collection(db, "payments"), {
+                    userId: uId,
+                    amount: amt,
+                    type: "plus",
+                    timestamp: serverTimestamp()
+                });
+
+                await deleteDoc(doc(db, "payment_requests", reqId));
+                alert("Pul foydalanuvchiga muvaffaqiyatli tushirildi!");
+            }
+        };
+
+        window.reject = async (id) => { if(confirm("Rad etilsinmi?")) await deleteDoc(doc(db, "payment_requests", id)); };
+    </script>
+</body>
+</html>
