@@ -8,49 +8,64 @@
     <style>
         :root { --primary: #00d2ff; --success: #4caf50; --danger: #ff4b2b; --bg: #0f2027; --card-bg: #1e2a33; }
         body { background: var(--bg); color: white; font-family: 'Poppins', sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; }
-        h2 { color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-top: 30px; }
+        .container { max-width: 900px; margin: auto; }
+        h2 { color: var(--primary); border-bottom: 2px solid rgba(0, 210, 255, 0.2); padding-bottom: 10px; margin-top: 30px; }
+        
         .request-card { 
             background: var(--card-bg); padding: 20px; border-radius: 18px; 
             margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;
-            border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;
         }
-        .price { color: #ffd700; font-weight: bold; font-size: 20px; }
-        .btn { border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .request-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+        
+        .info h3 { margin: 0; font-size: 18px; color: #fff; }
+        .info p { margin: 5px 0; font-size: 13px; color: #aaa; }
+        .price { color: #ffd700; font-weight: bold; font-size: 22px; margin-top: 5px; }
+        
+        .actions { display: flex; gap: 10px; }
+        .btn { border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.2s; }
         .btn-ok { background: var(--success); color: white; }
-        .btn-no { background: var(--danger); color: white; margin-left: 8px; }
-        table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 15px; margin-top: 15px; }
+        .btn-no { background: var(--danger); color: white; }
+        .btn:active { scale: 0.95; }
+
+        table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 15px; overflow: hidden; margin-top: 15px; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .status-msg { text-align: center; padding: 30px; color: #888; font-style: italic; }
-        .debug-info { font-size: 10px; color: #555; margin-top: 5px; }
+        th { background: rgba(0,210,255,0.1); color: var(--primary); }
+        
+        .status-msg { text-align: center; padding: 40px; color: #666; font-style: italic; }
+        .loader { color: var(--primary); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <button onclick="window.location.href='admin-panel.html'" style="background:none; border:1px solid #555; color:white; padding:8px 20px; border-radius:10px; cursor:pointer; margin-bottom:20px;">⬅ Admin Panel</button>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <button onclick="window.location.href='admin-panel.html'" style="background:none; border:1px solid #555; color:white; padding:8px 20px; border-radius:10px; cursor:pointer;">⬅ Orqaga</button>
+        <span id="connection-status" style="font-size: 12px; color: #4caf50;">● Firestore Online</span>
+    </div>
     
     <h2>📩 Yangi so'rovlar (Pending)</h2>
-    <div id="request-list" class="status-msg">Firestore ulanmoqda...</div>
+    <div id="request-list" class="status-msg">Ma'lumotlar yuklanmoqda...</div>
 
     <h2>📜 Tasdiqlanganlar tarixi</h2>
-    <table>
+    <table id="history-table">
         <thead>
             <tr>
                 <th>Foydalanuvchi</th>
                 <th>Summa</th>
+                <th>Vaqti</th>
                 <th>Amal</th>
             </tr>
         </thead>
         <tbody id="history-list">
-            <tr><td colspan="3" class="status-msg">Yuklanmoqda...</td></tr>
+            <tr><td colspan="4" class="status-msg">Tarix yuklanmoqda...</td></tr>
         </tbody>
     </table>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, increment, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, increment, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -63,84 +78,90 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const colRef = collection(db, "payment_requests");
+    const payCol = collection(db, "payment_requests");
 
-    // 1. PENDING (Yangi so'rovlarni o'qish)
-    // orderBy ishlatmadim, chunki bu Indeks xatosini berishi mumkin.
-    onSnapshot(query(colRef, where("status", "==", "pending")), (snap) => {
+    // 1. KUTILAYOTGANLARNI ESHITISH (Real-time)
+    onSnapshot(query(payCol, where("status", "==", "pending")), (snap) => {
         const list = document.getElementById('request-list');
         if (snap.empty) {
-            list.innerHTML = "Hozircha kutilayotgan to'lovlar yo'q. ✨";
+            list.innerHTML = "Hozircha yangi to'lov so'rovlari yo'q. ✅";
             return;
         }
         list.innerHTML = "";
         snap.forEach((res) => {
             const data = res.data();
-            // Rasmingizdagi field: userId (I harfi katta)
-            const uID = data.userId || data.userid; 
+            // User kodingizdagi 'userId' ga moslangan
+            const uID = data.userId; 
             
             list.innerHTML += `
                 <div class="request-card">
-                    <div>
-                        <h3>${data.fio || 'Ismsiz'}</h3>
-                        <div class="debug-info">UID: ${uID} | Doc: ${res.id}</div>
-                        <div class="price">${data.amount?.toLocaleString()} so'm</div>
+                    <div class="info">
+                        <h3>${data.fio || 'Noma\'lum'}</h3>
+                        <p>Student ID: ${data.studentID || '---'}</p>
+                        <p style="font-size:10px; color:#555;">Firebase UID: ${uID}</p>
+                        <div class="price">${Number(data.amount).toLocaleString()} so'm</div>
                     </div>
-                    <div>
-                        <button class="btn btn-ok" onclick="approve('${res.id}', '${uID}', ${data.amount})">TASDIQLASH</button>
-                        <button class="btn btn-no" onclick="del('${res.id}')">RAD ETISH</button>
+                    <div class="actions">
+                        <button class="btn btn-ok" onclick="approvePayment('${res.id}', '${uID}', ${data.amount})">TASDIQLASH</button>
+                        <button class="btn btn-no" onclick="deleteReq('${res.id}', 'Rad etilsinmi?')">❌</button>
                     </div>
                 </div>`;
         });
-    }, (error) => {
-        console.error("Xatolik:", error);
-        document.getElementById('request-list').innerHTML = "<span style='color:red'>Xato: " + error.message + "</span>";
     });
 
-    // 2. APPROVED (Tarixni o'qish)
-    onSnapshot(query(colRef, where("status", "==", "approved")), (snap) => {
+    // 2. TASDIQLANGANLAR TARIXI
+    onSnapshot(query(payCol, where("status", "==", "approved")), (snap) => {
         const hList = document.getElementById('history-list');
-        hList.innerHTML = snap.empty ? "<tr><td colspan='3' class='status-msg'>Hali tasdiqlanganlar yo'q.</td></tr>" : "";
+        if (snap.empty) {
+            hList.innerHTML = "<tr><td colspan='4' class='status-msg'>Tarix bo'sh.</td></tr>";
+            return;
+        }
+        hList.innerHTML = "";
         snap.forEach((res) => {
             const data = res.data();
+            const date = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleDateString() : "---";
             hList.innerHTML += `
                 <tr>
-                    <td>${data.fio || '---'}</td>
-                    <td style="color:#ffd700; font-weight:bold;">${data.amount?.toLocaleString()} so'm</td>
-                    <td><button class="btn btn-no" style="padding:5px 10px;" onclick="del('${res.id}')">🗑</button></td>
+                    <td>${data.fio}</td>
+                    <td style="color:#ffd700; font-weight:bold;">${Number(data.amount).toLocaleString()}</td>
+                    <td>${date}</td>
+                    <td><button class="btn btn-no" style="padding:5px 10px;" onclick="deleteReq('${res.id}', 'Tarixdan o\\'chirilsinmi?')">🗑</button></td>
                 </tr>`;
         });
     });
 
-    // 3. TASDIQLASH FUNKSIYASI
-    window.approve = async (docId, uID, amount) => {
-        if (!uID || uID === "undefined") {
-            alert("Xato: Foydalanuvchi ID topilmadi! Bazadagi 'userId' maydonini tekshiring.");
-            return;
-        }
-        if (!confirm(amount + " so'm balansga qo'shilsinmi?")) return;
+    // 3. TASDIQLASH FUNKSIYASI (ASOSIY)
+    window.approvePayment = async (docId, userId, amount) => {
+        if (!userId) { alert("Xato: Foydalanuvchi ID topilmadi!"); return; }
+        
+        const conf = confirm(`Foydalanuvchi balansiga ${amount.toLocaleString()} so'm qo'shilsinmi?`);
+        if (!conf) return;
 
         try {
-            // Balansni oshirish ('users' kolleksiyasida ushbu uID hujjat bo'lishi shart)
-            await updateDoc(doc(db, "users", uID), {
+            // A) User balansini oshirish
+            const userRef = doc(db, "users", userId);
+            await updateDoc(userRef, {
                 balance: increment(Number(amount))
             });
 
-            // Statusni yangilash
+            // B) So'rov statusini o'zgartirish
             await updateDoc(doc(db, "payment_requests", docId), {
                 status: "approved"
             });
 
-            alert("Muvaffaqiyatli tasdiqlandi! ✅");
+            alert("Muvaffaqiyatli tasdiqlandi! Balans yangilandi. ✅");
         } catch (e) {
             console.error(e);
-            alert("Tasdiqlashda xato: " + e.message);
+            alert("Xatolik: " + e.message + "\nEslatma: 'users' kolleksiyasida ushbu ID borligini tekshiring.");
         }
     };
 
-    window.del = async (id) => {
-        if (confirm("Ushbu ma'lumotni o'chirmoqchimisiz?")) {
-            await deleteDoc(doc(db, "payment_requests", id));
+    // 4. O'CHIRISH FUNKSIYASI
+    window.deleteReq = async (id, msg) => {
+        if (confirm(msg)) {
+            try {
+                await deleteDoc(doc(db, "payment_requests", id));
+            } catch (e) { alert("O'chirishda xato!"); }
         }
     };
 
