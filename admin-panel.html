@@ -2,24 +2,29 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <title>Test Admin - Dr. Rahmonov</title>
+    <title>Admin Tasdiqlash - Dr. Rahmonov</title>
     <style>
         body { background: #0f2027; color: white; font-family: sans-serif; padding: 20px; }
-        .card { background: #1e2a33; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #333; }
-        .btn { padding: 10px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; }
+        .req-card { 
+            background: #1e2a33; padding: 15px; margin-bottom: 10px; 
+            border-left: 5px solid #00d2ff; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .info b { color: #00d2ff; }
+        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .btn-ok { background: #4caf50; color: white; }
-        .btn-del { background: #ff4b2b; color: white; margin-left: 10px; }
-        h2 { color: #00d2ff; }
+        .btn-del { background: #ff4b2b; color: white; margin-left: 5px; }
+        .time { font-size: 12px; color: #888; }
     </style>
 </head>
 <body>
 
-    <h2>📩 Kelgan so'rovlar (Test rejimi)</h2>
-    <div id="test-list">Yuklanmoqda...</div>
+    <h2>📩 To'lov so'rovlari (Pending)</h2>
+    <div id="list">Yuklanmoqda...</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, increment, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -32,54 +37,62 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const colRef = collection(db, "payment_requests");
 
-    // Barcha ma'lumotlarni filtrsiz chiqarish (Test uchun)
-    onSnapshot(colRef, (snap) => {
-        const list = document.getElementById('test-list');
-        list.innerHTML = snap.empty ? "Baza bo'sh" : "";
+    // 1. FAQAT 'pending' BO'LGANLARNI KO'RSATISH
+    const q = query(collection(db, "payment_requests"), where("status", "==", "pending"), orderBy("timestamp", "desc"));
+
+    onSnapshot(q, (snap) => {
+        const listDiv = document.getElementById('list');
+        listDiv.innerHTML = snap.empty ? "Hozircha yangi so'rovlar yo'q." : "";
         
         snap.forEach((res) => {
             const data = res.data();
-            // User yuborayotgan hamma ehtimoliy nomlarni tekshiramiz
-            const ism = data.fio || "Ism yo'q";
-            const summa = data.amount || 0;
-            const uID = data.userId || data.userid || "ID yo'q";
-            const holat = data.status || "no-status";
-
-            list.innerHTML += `
-                <div class="card">
-                    <p><b>👤 Ism:</b> ${ism}</p>
-                    <p><b>🆔 User ID:</b> ${uID}</p>
-                    <p><b>💰 Summa:</b> ${summa} so'm</p>
-                    <p><b>⚙️ Holat:</b> ${holat}</p>
-                    <button class="btn btn-ok" onclick="testApprove('${res.id}', '${uID}', ${summa})">TASDIQLASH</button>
-                    <button class="btn btn-del" onclick="testDelete('${res.id}')">O'CHIRISH</button>
+            const vaqt = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString() : "Hozirgina";
+            
+            listDiv.innerHTML += `
+                <div class="req-card">
+                    <div class="info">
+                        <p>👤 <b>Ism:</b> ${data.fio}</p>
+                        <p>🆔 <b>User ID:</b> ${data.userId}</p>
+                        <p>💰 <b>Summa:</b> ${data.amount} so'm</p>
+                        <p class="time">⏰ ${vaqt}</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-ok" onclick="approve('${res.id}', '${data.userId}', ${data.amount})">✅ TASDIQLASH</button>
+                        <button class="btn btn-del" onclick="reject('${res.id}')">🗑 O'CHIRISH</button>
+                    </div>
                 </div>`;
         });
     });
 
-    // Tasdiqlash funksiyasi
-    window.testApprove = async (docId, uID, amt) => {
-        if(uID === "ID yo'q") return alert("Bu foydalanuvchining ID-si yo'q!");
-        
+    // 2. TASDIQLASH FUNKSIYASI
+    window.approve = async (docId, uID, sum) => {
+        if(!confirm(sum + " so'mni balansga qo'shasizmi?")) return;
+
         try {
-            // 1. Balansni oshirish
-            await updateDoc(doc(db, "users", uID), {
-                balance: increment(Number(amt))
+            // A) Users kolleksiyasida balansni oshirish
+            const userRef = doc(db, "users", uID);
+            await updateDoc(userRef, {
+                balance: increment(Number(sum))
             });
-            // 2. Statusni o'zgartirish
+
+            // B) So'rovni yopish (approved qilish)
             await updateDoc(doc(db, "payment_requests", docId), {
                 status: "approved"
             });
-            alert("Bajarildi! ✅");
+
+            alert("Balans yangilandi! ✅");
         } catch (e) {
-            alert("Xatolik: " + e.message);
+            alert("Xatolik! 'users' kolleksiyasida " + uID + " ID-li foydalanuvchi bormi?");
+            console.error(e);
         }
     };
 
-    window.testDelete = async (id) => {
-        if(confirm("O'chirilsinmi?")) await deleteDoc(doc(db, "payment_requests", id));
+    // 3. O'CHIRISH
+    window.reject = async (id) => {
+        if(confirm("So'rovni o'chirib yuborasizmi?")) {
+            await deleteDoc(doc(db, "payment_requests", id));
+        }
     };
 
 </script>
