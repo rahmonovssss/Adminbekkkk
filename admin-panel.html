@@ -2,28 +2,32 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Dr. Rahmonov</title>
+    <title>Admin Panel - Dr. Rahmonov</title>
     <style>
         body { background: #0f2027; color: white; font-family: sans-serif; padding: 20px; }
         .req-card { 
             background: #1e2a33; padding: 15px; margin-bottom: 10px; 
-            border-left: 5px solid #00d2ff; border-radius: 8px;
+            border-left: 5px solid #00d2ff; border-radius: 12px;
             display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
-        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .info p { margin: 5px 0; font-size: 14px; }
+        .info b { color: #00d2ff; }
+        .amount { color: #ffd700; font-weight: bold; font-size: 18px; }
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .btn-ok { background: #4caf50; color: white; }
-        #error-log { color: #ff4b2b; background: rgba(0,0,0,0.3); padding: 10px; display: none; margin-bottom: 10px; border-radius: 5px; }
+        .btn-ok:hover { background: #45a049; }
+        .time { font-size: 12px; color: #888; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <h2>📩 To'lov so'rovlari</h2>
-    <div id="error-log"></div>
+    <h2>📩 To'lov so'rovlari (Kutilmoqda)</h2>
     <div id="list">Yuklanmoqda...</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, increment, query } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -37,55 +41,54 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 1. Ma'lumotni o'qish (Hech qanday murakkab filtrsiz - indeks so'ramaydi)
-    onSnapshot(collection(db, "payment_requests"), (snap) => {
+    // 1. Faqat 'pending' statusidagilarni real-vaqtda olish
+    const q = query(collection(db, "payment_requests"), where("status", "==", "pending"));
+
+    onSnapshot(q, (snap) => {
         const listDiv = document.getElementById('list');
-        listDiv.innerHTML = ""; 
-
-        if (snap.empty) {
-            listDiv.innerHTML = "Bazada hech qanday ma'lumot yo'q.";
-            return;
-        }
-
-        let hasPending = false;
+        listDiv.innerHTML = snap.empty ? "Hozircha yangi so'rovlar yo'q." : "";
+        
         snap.forEach((res) => {
             const data = res.data();
+            // Vaqtni o'qish formatiga o'tkazish
+            const vaqt = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString() : "Hozirgina";
             
-            // Faqat 'pending' holatdagilarni JavaScript orqali chiqaramiz
-            if (data.status === "pending") {
-                hasPending = true;
-                listDiv.innerHTML += `
-                    <div class="req-card">
-                        <div>
-                            <p>👤 <b>Ism:</b> ${data.fio || 'Noma\'lum'}</p>
-                            <p>🆔 <b>User ID:</b> ${data.userId}</p>
-                            <p>💰 <b>Summa:</b> ${data.amount} so'm</p>
-                        </div>
-                        <button class="btn btn-ok" onclick="approve('${res.id}', '${data.userId}', ${data.amount})">✅ TASDIQLASH</button>
-                    </div>`;
-            }
+            listDiv.innerHTML += `
+                <div class="req-card" id="card-${res.id}">
+                    <div class="info">
+                        <p>👤 <b>Ism:</b> ${data.fio}</p>
+                        <p>🆔 <b>User ID:</b> ${data.userId}</p>
+                        <p class="amount">💰 ${data.amount} so'm</p>
+                        <p class="time">⏰ ${vaqt}</p>
+                    </div>
+                    <button class="btn btn-ok" onclick="approveRequest('${res.id}', '${data.userId}', ${data.amount})">TASDIQLASH</button>
+                </div>`;
         });
-
-        if (!hasPending) listDiv.innerHTML = "Hozircha yangi (pending) so'rovlar yo'q.";
-
-    }, (error) => {
-        // Agar biror xato bo'lsa (masalan Rules ruxsat bermasa) ekranda chiqadi
-        const log = document.getElementById('error-log');
-        log.style.display = "block";
-        log.innerText = "Firebase Xatosi: " + error.message;
     });
 
-    window.approve = async (docId, uID, sum) => {
-        if(!confirm(sum + " so'mni qo'shasizmi?")) return;
+    // 2. Tasdiqlash va Balansni oshirish
+    window.approveRequest = async (docId, uID, sum) => {
+        if(!confirm(sum + " so'mni tasdiqlaysizmi?")) return;
+
         try {
-            await updateDoc(doc(db, "users", uID), { balance: increment(Number(sum)) });
-            await updateDoc(doc(db, "payment_requests", docId), { status: "approved" });
-            alert("Bajarildi! ✅");
+            // A) Foydalanuvchi balansini yangilash
+            const userRef = doc(db, "users", uID);
+            await updateDoc(userRef, {
+                balance: increment(Number(sum))
+            });
+
+            // B) So'rovni yopish (ro'yxatdan yo'qoladi)
+            const reqRef = doc(db, "payment_requests", docId);
+            await updateDoc(reqRef, {
+                status: "approved"
+            });
+
+            alert("Balans muvaffaqiyatli qo'shildi! ✅");
         } catch (e) {
-            alert("Xatolik: " + e.message);
+            console.error(e);
+            alert("Xatolik yuz berdi! Foydalanuvchi ID-si bazada bormi?");
         }
     };
-
 </script>
 </body>
 </html>
