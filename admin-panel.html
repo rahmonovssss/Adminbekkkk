@@ -10,26 +10,22 @@
             background: #1e293b; padding: 20px; border-radius: 12px; 
             margin-bottom: 10px; border: 1px solid #334155;
             display: flex; justify-content: space-between; align-items: center;
-            animation: fadeIn 0.3s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .btn-ok { background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-right: 5px; }
+        .btn-ok { background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .btn-no { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-ok:active, .btn-no:active { transform: scale(0.95); }
         .sum { color: #38bdf8; font-weight: bold; font-size: 18px; }
-        .user-info b { font-size: 16px; color: #f8fafc; }
-        .user-info span { font-size: 12px; color: #94a3b8; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2 style="text-align: center; color: #00d2ff;">📥 To'lov So'rovlari</h2>
-        <hr style="border: 0.5px solid #334155; margin-bottom: 20px;">
+        <div id="status-bar" style="text-align:center; margin-bottom:10px; font-size:12px; color:#94a3b8;">Auth tekshirilmoqda...</div>
         <div id="payment-list">Yuklanmoqda...</div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -42,81 +38,63 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // REAL-TIME KUZATISH
-        const q = query(collection(db, "payments"), where("status", "==", "kutilmoqda"));
+        // MUHIM: Admin panelga kirganda anonim login qilish (Rules dagi request.auth uchun)
+        signInAnonymously(auth).catch(e => console.error("Auth xatosi:", e));
 
-        onSnapshot(q, (snap) => {
-            const list = document.getElementById('payment-list');
-            list.innerHTML = "";
-            
-            if(snap.empty) {
-                list.innerHTML = "<p style='text-align:center; opacity:0.5;'>Hozircha so'rovlar yo'q.</p>";
-                return;
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('status-bar').innerText = "Tizimga kirildi (Admin)";
+                yuklash();
             }
-
-            snap.forEach((item) => {
-                const p = item.data();
-                const div = document.createElement('div');
-                div.className = "card";
-                div.innerHTML = `
-                    <div class="user-info">
-                        <b>${p.fio}</b><br>
-                        <span>ID: ${p.studentID}</span><br>
-                        <span class="sum">${Number(p.summa).toLocaleString()} so'm</span>
-                    </div>
-                    <div>
-                        <button class="btn-ok" onclick="handleAction('${item.id}', 'tasdiqlandi')">OK</button>
-                        <button class="btn-no" onclick="handleAction('${item.id}', 'rad_etildi')">X</button>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
         });
 
-        // ACTION FUNKSIYASI (WINDOWGA BIRIKTIRILGAN)
-        window.handleAction = async (id, stat) => {
-            const confirmMsg = stat === 'tasdiqlandi' ? "To'lovni tasdiqlaysizmi?" : "To'lovni rad etasizmi?";
-            if(!confirm(confirmMsg)) return;
+        function yuklash() {
+            const q = query(collection(db, "payments"), where("status", "==", "kutilmoqda"));
+            onSnapshot(q, (snap) => {
+                const list = document.getElementById('payment-list');
+                list.innerHTML = "";
+                if(snap.empty) { list.innerHTML = "<p style='text-align:center;'>So'rovlar yo'q.</p>"; return; }
+                
+                snap.forEach((item) => {
+                    const p = item.data();
+                    const div = document.createElement('div');
+                    div.className = "card";
+                    div.innerHTML = `
+                        <div><b>${p.fio}</b><br><span class="sum">${Number(p.summa).toLocaleString()} so'm</span></div>
+                        <div>
+                            <button class="btn-ok" onclick="handleAction('${item.id}', 'tasdiqlandi')">OK</button>
+                            <button class="btn-no" onclick="handleAction('${item.id}', 'rad_etildi')">X</button>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            });
+        }
 
+        window.handleAction = async (id, stat) => {
             try {
                 const payRef = doc(db, "payments", id);
                 const paySnap = await getDoc(payRef);
-                
-                if (!paySnap.exists()) {
-                    alert("Xato: To'lov topilmadi!");
-                    return;
-                }
-
                 const pData = paySnap.data();
 
                 if (stat === 'tasdiqlandi') {
-                    // 1. Foydalanuvchi balansini oshirish
                     const userRef = doc(db, "users", pData.uid);
                     const userSnap = await getDoc(userRef);
-                    
                     if (userSnap.exists()) {
                         const currentBal = Number(userSnap.data().balance || 0);
-                        const addSum = Number(pData.summa);
-                        await updateDoc(userRef, { balance: currentBal + addSum });
-                        
-                        // 2. To'lovni statusini o'zgartirish (Arxiv uchun)
+                        await updateDoc(userRef, { balance: currentBal + Number(pData.summa) });
                         await updateDoc(payRef, { status: 'tasdiqlandi' });
-                        alert("Muvaffaqiyatli tasdiqlandi va pul o'tkazildi! ✅");
-                    } else {
-                        alert("Xato: Foydalanuvchi profili topilmadi!");
+                        alert("Tasdiqlandi! ✅");
                     }
                 } else {
-                    // RAD ETILGANDA: To'lovni bazadan butunlay o'chirish yoki statusini o'zgartirish
-                    // Men bu yerda o'chirishni tanladim, bazada axlat ko'paymasligi uchun:
                     await deleteDoc(payRef);
-                    alert("To'lov so'rovi rad etildi va o'chirildi! ❌");
+                    alert("O'chirildi! ❌");
                 }
-
             } catch (e) {
-                console.error("Xato yuz berdi:", e);
-                alert("Xatolik: " + e.message);
+                alert("Xato: " + e.message);
             }
         };
     </script>
