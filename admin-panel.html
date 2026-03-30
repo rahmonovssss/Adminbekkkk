@@ -2,67 +2,137 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - To'lovlarni boshqarish</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - To'lovlarni Boshqarish</title>
     <style>
-        body { background: #121212; color: white; font-family: sans-serif; padding: 20px; }
-        .p-card { background: #222; padding: 20px; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid #00d2ff; display: flex; justify-content: space-between; align-items: center; }
-        .btn-ok { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-no { background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-left: 10px; }
-        .sum { color: #00d2ff; font-size: 18px; font-weight: bold; }
+        :root { --primary: #00d2ff; --success: #28a745; --danger: #dc3545; --bg: #0f2027; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        h2 { text-align: center; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; }
+        
+        .container { max-width: 600px; margin: 0 auto; }
+        .p-card { 
+            background: rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(10px);
+            padding: 20px; 
+            border-radius: 15px; 
+            margin-bottom: 15px; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            transition: 0.3s;
+        }
+        .p-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.08); }
+        
+        .user-info b { font-size: 18px; display: block; margin-bottom: 5px; }
+        .user-info small { color: #aaa; }
+        .sum { color: var(--primary); font-size: 20px; font-weight: bold; display: block; margin-top: 5px; }
+        
+        .actions { display: flex; gap: 10px; }
+        .btn { 
+            border: none; padding: 12px 18px; border-radius: 10px; 
+            cursor: pointer; font-weight: bold; transition: 0.2s; 
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-ok { background: var(--success); color: white; }
+        .btn-no { background: var(--danger); color: white; }
+        .btn:active { transform: scale(0.9); }
+        
+        #loader { text-align: center; margin-top: 50px; color: #888; }
     </style>
 </head>
 <body>
-    <h2>📥 Yangi to'lov so'rovlari</h2>
-    <div id="payment-list">Yuklanmoqda...</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<div class="container">
+    <h2>📥 To'lov So'rovlari</h2>
+    <div id="payment-list"><div id="loader">Yuklanmoqda...</div></div>
+</div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
-            authDomain: "quiz-app-3692d.firebaseapp.com",
-            projectId: "quiz-app-3692d",
-            storageBucket: "quiz-app-3692d.firebasestorage.app",
-            messagingSenderId: "526836020845",
-            appId: "1:526836020845:android:3ea991380c104c75e8b164"
-        };
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
+        authDomain: "quiz-app-3692d.firebaseapp.com",
+        projectId: "quiz-app-3692d",
+        storageBucket: "quiz-app-3692d.firebasestorage.app",
+        messagingSenderId: "526836020845",
+        appId: "1:526836020845:android:3ea991380c104c75e8b164"
+    };
 
-        // Faqat kutilayotganlarni chiqarish
-        const q = query(collection(db, "payments"), where("status", "==", "kutilmoqda"));
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-        onSnapshot(q, (snap) => {
-            const list = document.getElementById('payment-list');
-            list.innerHTML = "";
-            snap.forEach((item) => {
-                const p = item.data();
-                const div = document.createElement('div');
-                div.className = "p-card";
-                div.innerHTML = `
-                    <div>
-                        <b>${p.fio}</b> (${p.studentID})<br>
-                        <span class="sum">${p.summa.toLocaleString()} so'm</span><br>
-                        <small>${p.sana} ${p.vaqt}</small>
-                    </div>
-                    <div>
-                        <button class="btn-ok" onclick="action('${p.paymentId}', 'tasdiqlandi')">TASDIQLASH</button>
-                        <button class="btn-no" onclick="action('${p.paymentId}', 'rad_etildi')">RAD ETISH</button>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
-            if(snap.empty) list.innerHTML = "Hozircha so'rovlar yo'q.";
+    const listContainer = document.getElementById('payment-list');
+    const q = query(collection(db, "payments"), where("status", "==", "kutilmoqda"));
+
+    onSnapshot(q, (snap) => {
+        listContainer.innerHTML = "";
+        if (snap.empty) {
+            listContainer.innerHTML = "<div id='loader'>Yangi so'rovlar mavjud emas. ✅</div>";
+            return;
+        }
+
+        snap.forEach((item) => {
+            const p = item.data();
+            const div = document.createElement('div');
+            div.className = "p-card";
+            div.innerHTML = `
+                <div class="user-info">
+                    <b>👤 ${p.fio || "Noma'lum"}</b>
+                    <small>🆔 ID: ${p.studentID || "---"}</small>
+                    <span class="sum">${(p.summa || 0).toLocaleString()} so'm</span>
+                    <small>📅 ${p.sana || ""} ${p.vaqt || ""}</small>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-ok" onclick="processPayment('${item.id}', 'tasdiqlandi')">✅ OK</button>
+                    <button class="btn btn-no" onclick="processPayment('${item.id}', 'rad_etildi')">❌ NO</button>
+                </div>
+            `;
+            listContainer.appendChild(div);
         });
+    }, (error) => {
+        alert("Xato: Rules (Qoidalar)ni tekshiring! " + error.message);
+    });
 
-        window.action = async (id, stat) => {
-            try {
-                await updateDoc(doc(db, "payments", id), { status: stat });
-                alert("Bajarildi!");
-            } catch (e) { alert("Xato: " + e.message); }
-        };
-    </script>
+    window.processPayment = async (docId, newStatus) => {
+        try {
+            // 1. To'lov ma'lumotlarini bazadan olish
+            const paymentRef = doc(db, "payments", docId);
+            const paymentSnap = await getDoc(paymentRef);
+            
+            if (!paymentSnap.exists()) return alert("To'lov topilmadi!");
+            
+            const pData = paymentSnap.data();
+            const userId = pData.uid;    
+            const qo_shiladigan_summa = Number(pData.summa);
+
+            if (newStatus === 'tasdiqlandi') {
+                // 2. Foydalanuvchining balansini yangilash
+                const userRef = doc(db, "users", userId);
+                const userSnap = await getDoc(userRef);
+                
+                if (userSnap.exists()) {
+                    const eskiBalans = Number(userSnap.data().balance || 0);
+                    await updateDoc(userRef, {
+                        balance: eskiBalans + qo_shiladigan_summa
+                    });
+                } else {
+                    alert("Foydalanuvchi profili topilmadi!");
+                    return;
+                }
+            }
+
+            // 3. To'lov statusini o'zgartirish
+            await updateDoc(paymentRef, { status: newStatus });
+            alert("Amaliyot bajarildi! Balans yangilandi. ✅");
+
+        } catch (e) {
+            console.error(e);
+            alert("Xatolik yuz berdi: " + e.message);
+        }
+    };
+</script>
 </body>
 </html>
