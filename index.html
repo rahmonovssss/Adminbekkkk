@@ -114,7 +114,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, getDocs, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -128,7 +128,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Splash screen ketiishi
+        // Splash screen ketishi
         setTimeout(() => { document.getElementById('splash').style.display = 'none'; }, 1500);
 
         // Parol tekshirish
@@ -146,7 +146,7 @@
         window.openMsgModal = () => document.getElementById('msgModal').style.display = 'flex';
         window.closeMsgModal = () => document.getElementById('msgModal').style.display = 'none';
 
-        // Xabar yuborish
+        // Xabar yuborish va Barcha foydalanuvchilar qo'ng'iroqchasini yangilash
         window.sendToAll = async () => {
             const title = document.getElementById('msg-title').value;
             const text = document.getElementById('msg-text').value;
@@ -157,6 +157,7 @@
             btn.disabled = true; btn.innerText = "YUBORILMOQDA...";
 
             try {
+                // 1. Xabarlar kolleksiyasiga qo'shish
                 await addDoc(collection(db, "messages"), {
                     userId: "all",
                     title: title,
@@ -164,12 +165,27 @@
                     status: 'unread',
                     createdAt: serverTimestamp()
                 });
-                alert("Xabar muvaffaqiyatli yuborildi! ✅");
+
+                // 2. AVTOMATIKA: Barcha foydalanuvchilarning qo'ng'iroqcha raqamini +1 qilish
+                const usersSnap = await getDocs(collection(db, "users"));
+                const batchPromises = [];
+
+                usersSnap.forEach((userDoc) => {
+                    const userRef = doc(db, "users", userDoc.id);
+                    batchPromises.push(updateDoc(userRef, {
+                        unreadNotifications: increment(1)
+                    }));
+                });
+
+                await Promise.all(batchPromises);
+
+                alert("Xabar yuborildi va foydalanuvchilar xabardor qilindi! ✅");
                 document.getElementById('msg-title').value = "";
                 document.getElementById('msg-text').value = "";
                 closeMsgModal();
             } catch (e) {
-                alert("Xatolik yuz berdi!");
+                console.error(e);
+                alert("Xatolik yuz berdi! Internetni yoki Firebase sozlamalarini tekshiring.");
             } finally {
                 btn.disabled = false; btn.innerText = "YUBORISH";
             }
