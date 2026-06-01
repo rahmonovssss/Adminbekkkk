@@ -16,9 +16,23 @@
             padding: 20px; background: #14222d; border-radius: 20px; 
             border: 1px solid #ffd700; margin-bottom: 25px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            flex-wrap: wrap; gap: 15px;
         }
         header h1 { color: #ffd700; font-size: 22px; letter-spacing: 1px; }
-        .counter-badge { background: rgba(255, 215, 0, 0.1); color: #ffd700; padding: 6px 15px; border-radius: 30px; font-weight: bold; font-size: 14px; border: 1px solid rgba(255,215,0,0.3); }
+        
+        .header-actions { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        
+        /* --- FILTR VA BUTTON STYLES --- */
+        .combo-select {
+            background: #0b131a; color: #ffd700; border: 1px solid #ffd700;
+            padding: 10px 15px; border-radius: 12px; font-weight: 600; outline: none; cursor: pointer;
+        }
+        .btn-pdf {
+            background: #ff4b2b; color: white; border: none; padding: 10px 20px;
+            border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            transition: 0.2s; box-shadow: 0 4px 15px rgba(255, 75, 43, 0.3);
+        }
+        .btn-pdf:hover { background: #e03e1f; }
 
         /* --- REYTING JADVALI --- */
         .table-responsive { width: 100%; overflow-x: auto; background: #14222d; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
@@ -39,7 +53,6 @@
         .student-info { font-weight: 600; color: #fff; font-size: 15px; }
         .student-id { font-size: 12px; color: #ffd700; font-family: monospace; display: block; margin-top: 2px; font-weight: bold; }
         
-        /* --- FAN BLOKLARI STYLE --- */
         .subject-block { display: flex; flex-direction: column; gap: 4px; }
         .block-tag { font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 600; width: max-content; }
         .block-1 { background: rgba(0, 210, 255, 0.15); color: #00d2ff; border: 1px solid rgba(0, 210, 255, 0.3); }
@@ -74,17 +87,30 @@
         .btn-confirm { flex: 1; padding: 14px; background: #00ff00; border: none; border-radius: 12px; color: #000; font-weight: bold; cursor: pointer; font-size: 15px; }
         .btn-cancel { flex: 1; padding: 14px; background: #333; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; font-size: 15px; }
     </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf-plugin-autotable.min.js"></script>
 </head>
 <body>
 
     <div class="admin-container">
         <header>
-            <h1>🏆 PREMIUM BLOK REYTINGI (TOP-10)</h1>
-            <div class="counter-badge" id="total-count">TOP 10</div>
+            <h1>🏆 PREMIUM BLOK REYTINGI</h1>
+            <div class="header-actions">
+                <select id="subject-filter" class="combo-select">
+                    <option value="all">Barcha Kombinatsiyalar</option>
+                    <option value="Kimyo va Biologiya">Kimyo va Biologiya</option>
+                    <option value="Matematika va Ona tili">Matematika va Ona tili</option>
+                    <option value="Tarix va Geografiya">Tarix va Geografiya</option>
+                    <option value="Fizika va Matematika">Fizika va Matematika</option>
+                </select>
+                
+                <button id="download-pdf-btn" class="btn-pdf">📄 PDF YUKLAB OLISH</button>
+            </div>
         </header>
 
         <div class="table-responsive">
-            <table class="results-table">
+            <table class="results-table" id="rating-table">
                 <thead>
                     <tr>
                         <th style="width: 70px;">O'rin</th>
@@ -103,7 +129,6 @@
         </div>
     </div>
 
-    <!-- MUKOFOT TIZIMI MODALI -->
     <div id="paymentModal" class="modal">
         <div class="modal-content">
             <h3 style="color: #ffd700;">🎁 Pul Mukofoti Yuborish</h3>
@@ -136,53 +161,90 @@
         const db = getFirestore(app);
 
         let selectedUserDocId = ""; 
+        let globalCachedUsers = {}; // Foydalanuvchi IDlarini saqlash uchun kesh
+        let rawFirebaseData = [];   // Kelgan barcha natijalar massivi
 
+        const filterSelect = document.getElementById('subject-filter');
+        const downloadPdfBtn = document.getElementById('download-pdf-btn');
+
+        // Baza o'zgarishlarini kuzatish
         const q = query(collection(db, "premium_results"), orderBy("totalScore", "desc"));
 
         onSnapshot(q, async (snapshot) => {
-            const tbody = document.getElementById('results-list');
-            
             if (snapshot.empty) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Hozircha premium test topshirganlar mavjud emas.</td></tr>`;
+                document.getElementById('results-list').innerHTML = `<tr><td colspan="5" class="empty-msg">Hozircha premium test topshirganlar mavjud emas.</td></tr>`;
                 return;
             }
 
-            // 1. users kolleksiyasidan studentID (6 xonali unikal ID) kalitini xaritaga olish
-            const usersMap = {};
+            rawFirebaseData = snapshot.docs.map(doc => doc.data());
+
+            // 1. users kolleksiyasidan studentID (6 xonali unikal ID) yuklash
             try {
                 const usersSnap = await getDocs(collection(db, "users"));
                 usersSnap.forEach(uDoc => {
-                    const uData = uDoc.data();
-                    usersMap[uDoc.id] = uData.studentID || "Yo'q"; 
+                    globalCachedUsers[uDoc.id] = uDoc.data().studentID || "Yo'q"; 
                 });
             } catch (err) {
                 console.error("Foydalanuvchilarni yuklashda xatolik:", err);
             }
 
-            // 2. Har bir foydalanuvchining faqat eng yuqori natijasini saqlash (Dublikatlarni tozalash)
-            const uniqueResults = {};
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                const studentUID = data.studentID; 
+            // Ma'lumotlarni render qilish funksiyasini chaqirish
+            renderLeaderboard();
+        });
 
-                if (!uniqueResults[studentUID] || uniqueResults[studentUID].totalScore < data.totalScore) {
-                    uniqueResults[studentUID] = data;
+        // Filtr o'zgarganda jadvalni qayta chizish
+        filterSelect.addEventListener('change', renderLeaderboard);
+
+        function renderLeaderboard() {
+            const tbody = document.getElementById('results-list');
+            const selectedCombo = filterSelect.value;
+
+            // 2. Dublikatlardan tozalash va fan strukturasi tahlili
+            const uniqueResults = {};
+
+            rawFirebaseData.forEach((data) => {
+                const studentUID = data.studentID;
+
+                let b1 = "";
+                let b2 = "";
+                if (data.subjects) {
+                    Object.keys(data.subjects).forEach(name => {
+                        if (name.includes("(1-blok)")) b1 = name.replace("(1-blok)", "").trim();
+                        if (name.includes("(2-blok)")) b2 = name.replace("(2-blok)", "").trim();
+                    });
+                }
+                
+                const currentComboName = (b1 && b2) ? `${b1} va ${b2}` : "Boshqa";
+                data.calculatedCombo = currentComboName;
+                data.b1 = b1;
+                data.b2 = b2;
+
+                // Agar filtr 'all' bo'lsa yoki tanlangan kombinatsiyaga mos kelsa
+                if (selectedCombo === 'all' || selectedCombo === currentComboName) {
+                    if (!uniqueResults[studentUID] || uniqueResults[studentUID].totalScore < data.totalScore) {
+                        uniqueResults[studentUID] = data;
+                    }
                 }
             });
 
-            // 3. Massivga oʻtkazish, saralash va Top-10 tani ajratib olish
-            const top10Results = Object.values(uniqueResults)
+            // 3. TOP-10 holatiga keltirish
+            const filteredTop10 = Object.values(uniqueResults)
                 .sort((a, b) => b.totalScore - a.totalScore)
                 .slice(0, 10);
 
             tbody.innerHTML = "";
-            let rank = 1;
+            
+            if (filteredTop10.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Ushbu blok kombinatsiyasi bo'yicha TOP-10 natija topilmadi.</td></tr>`;
+                return;
+            }
 
-            top10Results.forEach((data) => {
+            let rank = 1;
+            filteredTop10.forEach((data) => {
                 const row = document.createElement('tr');
                 row.className = "clickable-row";
                 
-                const sixDigitID = usersMap[data.studentID] || "Mavjud emas";
+                const sixDigitID = globalCachedUsers[data.studentID] || "Mavjud emas";
                 row.onclick = () => openPaymentModal(data.studentName, sixDigitID, data.studentID);
 
                 let rankClass = "rank-other";
@@ -190,26 +252,12 @@
                 else if (rank === 2) rankClass = "rank-2";
                 else if (rank === 3) rankClass = "rank-3";
 
-                // --- 1-BLOK VA 2-BLOK FANLARINI FILTRLASH VA ALOHIDA KO'RSATISH MANTIQI ---
-                let block1_Subject = "";
-                let block2_Subject = "";
-
-                if (data.subjects) {
-                    Object.keys(data.subjects).forEach(subjectName => {
-                        if (subjectName.includes("(1-blok)")) {
-                            block1_Subject = subjectName.replace("(1-blok)", "").trim();
-                        } else if (subjectName.includes("(2-blok)")) {
-                            block2_Subject = subjectName.replace("(2-blok)", "").trim();
-                        }
-                    });
-                }
-
                 let subjectsHTML = "";
-                if (block1_Subject || block2_Subject) {
+                if (data.b1 || data.b2) {
                     subjectsHTML = `
                         <div class="subject-block">
-                            ${block1_Subject ? `<span class="block-tag block-1">1-Blok: ${block1_Subject}</span>` : ''}
-                            ${block2_Subject ? `<span class="block-tag block-2">2-Blok: ${block2_Subject}</span>` : ''}
+                            ${data.b1 ? `<span class="block-tag block-1">1-Blok: ${data.b1}</span>` : ''}
+                            ${data.b2 ? `<span class="block-tag block-2">2-Blok: ${data.b2}</span>` : ''}
                         </div>
                     `;
                 } else {
@@ -234,10 +282,73 @@
                 `;
 
                 tbody.appendChild(row);
+                // PDF generatsiya qilishda oson bo'lishi uchun joriy o'rinni obyektga yozib qo'yamiz
+                data.currentRank = rank; 
                 rank++;
             });
-        });
 
+            // PDF tugmasiga joriy ma'lumotlarni bog'lash
+            downloadPdfBtn.onclick = () => exportToPDF(filteredTop10, selectedCombo);
+        }
+
+        // --- SIZ SO'RAGAN PROFESSIONAL PDF GENERATSIYA TIZIMI ---
+        function exportToPDF(dataList, comboName) {
+            const { jsPDF } = window.jspdf;
+            const docPdf = new jsPDF();
+
+            const titleName = comboName === 'all' ? "BARCHA BLOK FANLARI REYTINGI" : `${comboName.toUpperCase()} REYTINGI`;
+
+            // Hujjat Sarlavhasi
+            docPdf.setFont("Helvetica", "bold");
+            docPdf.setFontSize(16);
+            docPdf.text("PREMIUM IMTIHON NATIJALARI (TOP-10)", 14, 20);
+            
+            docPdf.setFontSize(12);
+            docPdf.setFont("Helvetica", "normal");
+            docPdf.text(`Kombinatsiya: ${titleName}`, 14, 28);
+            docPdf.text(`Sana: ${new Date().toLocaleDateString()} | Admin: Dr. Rahmonov`, 14, 34);
+
+            // Jadval ustunlari va ma'lumotlari
+            const tableHeaders = [["O'rin", "Talaba Ismi", "6 xonali ID", "To'plagan Bali", "Topshirilgan Sana va Vaqt"]];
+            const tableRows = [];
+
+            dataList.forEach((item) => {
+                const sixID = globalCachedUsers[item.studentID] || "—";
+                let formattedDate = "---";
+                if (item.timestamp) {
+                    const date = item.timestamp.toDate();
+                    formattedDate = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                }
+
+                tableRows.push([
+                    `${item.currentRank}-o'rin`,
+                    item.studentName,
+                    sixID,
+                    `${Number(item.totalScore).toFixed(1)} ball`,
+                    formattedDate
+                ]);
+            });
+
+            // jspdf-autotable yordamida chiroyli dizayn bilan PDF jadval yaratish
+            docPdf.autoTable({
+                startY: 40,
+                head: tableHeaders,
+                body: tableRows,
+                theme: 'striped',
+                headStyles: { fillColor: [20, 34, 45], textColor: [255, 215, 0], fontStyle: 'bold' },
+                styles: { fontSize: 10, cellPadding: 4 },
+                columnStyles: {
+                    0: { fontStyle: 'bold', width: 20 },
+                    3: { fontStyle: 'bold', textColor: [0, 150, 0] }
+                }
+            });
+
+            // PDF faylni saqlash (nomi tozalangan holatda bo'ladi)
+            const fileName = `${comboName.replace(/\s+/g, '_')}_TOP10_Reyting.pdf`;
+            docPdf.save(fileName);
+        }
+
+        // --- MODAL VA TO'LOV TIZIMI ---
         window.openPaymentModal = (name, sixID, userUID) => {
             selectedUserDocId = userUID; 
             document.getElementById('modal-student-name').innerText = "Talaba: " + name;
