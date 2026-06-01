@@ -39,7 +39,13 @@
         .student-info { font-weight: 600; color: #fff; font-size: 15px; }
         .student-id { font-size: 12px; color: #ffd700; font-family: monospace; display: block; margin-top: 2px; font-weight: bold; }
         
-        .subjects-td { color: #00d2ff; font-weight: 500; font-size: 13px; }
+        /* --- FAN BLOKLARI STYLE --- */
+        .subject-block { display: flex; flex-direction: column; gap: 4px; }
+        .block-tag { font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 600; width: max-content; }
+        .block-1 { background: rgba(0, 210, 255, 0.15); color: #00d2ff; border: 1px solid rgba(0, 210, 255, 0.3); }
+        .block-2 { background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3); }
+        .block-none { color: #6b7280; font-style: italic; font-size: 13px; }
+
         .score-badge { font-weight: 700; color: #00ff00; font-size: 16px; }
         .date-time { font-size: 13px; opacity: 0.6; }
         
@@ -83,7 +89,7 @@
                     <tr>
                         <th style="width: 70px;">O'rin</th>
                         <th>Talaba va ID</th>
-                        <th>Tanlangan Asosiy Fanlar</th>
+                        <th>Tanlangan Blok Fanlari</th>
                         <th>To'plagan Bali</th>
                         <th>Topshirilgan Vaqt</th>
                     </tr>
@@ -97,6 +103,7 @@
         </div>
     </div>
 
+    <!-- MUKOFOT TIZIMI MODALI -->
     <div id="paymentModal" class="modal">
         <div class="modal-content">
             <h3 style="color: #ffd700;">🎁 Pul Mukofoti Yuborish</h3>
@@ -128,9 +135,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let selectedUserDocId = ""; // Pul o'tkazish uchun tanlangan foydalanuvchining Firebase IDsi
+        let selectedUserDocId = ""; 
 
-        // Realtime natijalarni o'qish (Ballar bo'yicha saralangan holda)
         const q = query(collection(db, "premium_results"), orderBy("totalScore", "desc"));
 
         onSnapshot(q, async (snapshot) => {
@@ -141,31 +147,30 @@
                 return;
             }
 
-            // 1. users kolleksiyasidagi barcha foydalanuvchilarning 6 xonalik maxsus ID raqamlarini xaritaga olish
+            // 1. users kolleksiyasidan studentID (6 xonali unikal ID) kalitini xaritaga olish
             const usersMap = {};
             try {
                 const usersSnap = await getDocs(collection(db, "users"));
                 usersSnap.forEach(uDoc => {
                     const uData = uDoc.data();
-                    // myId, studentId yoki regId maydonlaridan 6 xonalik sonni tekshirib keshlaydi
-                    usersMap[uDoc.id] = uData.myId || uData.studentId || uData.regId || "Yo'q";
+                    usersMap[uDoc.id] = uData.studentID || "Yo'q"; 
                 });
             } catch (err) {
-                console.error("Foydalanuvchilarni o'qishda xato:", err);
+                console.error("Foydalanuvchilarni yuklashda xatolik:", err);
             }
 
-            // 2. Talabalar bo'yicha dublikatlarni tozalash (Faqat 1 ta eng yuqori natija saqlanadi)
+            // 2. Har bir foydalanuvchining faqat eng yuqori natijasini saqlash (Dublikatlarni tozalash)
             const uniqueResults = {};
             snapshot.forEach((doc) => {
                 const data = doc.data();
-                const studentUID = data.studentID; // talabaning auth.uid qiymati
+                const studentUID = data.studentID; 
 
                 if (!uniqueResults[studentUID] || uniqueResults[studentUID].totalScore < data.totalScore) {
-                    uniqueResults[studentUID] = { ...data, docFirebaseId: doc.id };
+                    uniqueResults[studentUID] = data;
                 }
             });
 
-            // 3. Obyektdan massivga o'girib, qayta tartiblash va faqat Top-10 tani ajratib olish
+            // 3. Massivga oʻtkazish, saralash va Top-10 tani ajratib olish
             const top10Results = Object.values(uniqueResults)
                 .sort((a, b) => b.totalScore - a.totalScore)
                 .slice(0, 10);
@@ -177,28 +182,40 @@
                 const row = document.createElement('tr');
                 row.className = "clickable-row";
                 
-                // Ustiga bosilganda hamyon modalini ochish funksiyasini ulash
-                row.onclick = () => openPaymentModal(data.studentName, usersMap[data.studentID] || "—", data.studentID);
+                const sixDigitID = usersMap[data.studentID] || "Mavjud emas";
+                row.onclick = () => openPaymentModal(data.studentName, sixDigitID, data.studentID);
 
-                // O'rinlar uchun medal dizayni
                 let rankClass = "rank-other";
                 if (rank === 1) rankClass = "rank-1";
                 else if (rank === 2) rankClass = "rank-2";
                 else if (rank === 3) rankClass = "rank-3";
 
-                // Foydalanuvchining 6 xonalik unikal ID raqami
-                const sixDigitID = usersMap[data.studentID] || "Aniqlanmadi";
+                // --- 1-BLOK VA 2-BLOK FANLARINI FILTRLASH VA ALOHIDA KO'RSATISH MANTIQI ---
+                let block1_Subject = "";
+                let block2_Subject = "";
 
-                // 2 ta asosiy blok fanlarini ajratib olish mantiqi
-                let mainSubjects = "Majburiy fanlar";
                 if (data.subjects) {
-                    const filtered = Object.keys(data.subjects).filter(s => s.includes("blok"));
-                    if(filtered.length > 0) {
-                        mainSubjects = filtered.map(s => s.replace(" (1-blok)", "").replace(" (2-blok)", "")).join(" va ");
-                    }
+                    Object.keys(data.subjects).forEach(subjectName => {
+                        if (subjectName.includes("(1-blok)")) {
+                            block1_Subject = subjectName.replace("(1-blok)", "").trim();
+                        } else if (subjectName.includes("(2-blok)")) {
+                            block2_Subject = subjectName.replace("(2-blok)", "").trim();
+                        }
+                    });
                 }
 
-                // Topshirilgan vaqt formatlanishi
+                let subjectsHTML = "";
+                if (block1_Subject || block2_Subject) {
+                    subjectsHTML = `
+                        <div class="subject-block">
+                            ${block1_Subject ? `<span class="block-tag block-1">1-Blok: ${block1_Subject}</span>` : ''}
+                            ${block2_Subject ? `<span class="block-tag block-2">2-Blok: ${block2_Subject}</span>` : ''}
+                        </div>
+                    `;
+                } else {
+                    subjectsHTML = `<span class="block-none">Fanlar aniqlanmadi</span>`;
+                }
+
                 let formattedDate = "---";
                 if (data.timestamp) {
                     const date = data.timestamp.toDate();
@@ -209,9 +226,9 @@
                     <td><span class="rank ${rankClass}">${rank}</span></td>
                     <td>
                         <span class="student-info">${data.studentName}</span> <span class="action-hint">💸 To'lash</span>
-                        <span class="student-id">6 xonali ID: ${sixDigitID}</span>
+                        <span class="student-id">ID: ${sixDigitID}</span>
                     </td>
-                    <td class="subjects-td">📚 ${mainSubjects}</td>
+                    <td>${subjectsHTML}</td>
                     <td><span class="score-badge">${Number(data.totalScore).toFixed(1)} ball</span></td>
                     <td><span class="date-time">${formattedDate}</span></td>
                 `;
@@ -221,21 +238,18 @@
             });
         });
 
-        // Modalni ochish mantiqi
         window.openPaymentModal = (name, sixID, userUID) => {
-            selectedUserDocId = userUID; // Pul o'tadigan foydalanuvchi hujjati IDsi
+            selectedUserDocId = userUID; 
             document.getElementById('modal-student-name').innerText = "Talaba: " + name;
-            document.getElementById('modal-student-id').innerText = "ID: " + sixID;
+            document.getElementById('modal-student-id').innerText = "6 xonali ID: " + sixID;
             document.getElementById('prize-amount').value = "";
             document.getElementById('paymentModal').style.display = 'flex';
         };
 
-        // Modalni yopish
         window.closePaymentModal = () => {
             document.getElementById('paymentModal').style.display = 'none';
         };
 
-        // Boshqaruvchidan pulni qabul qilib, Firebase bazaga (users collection) yozish
         window.processPayment = async () => {
             const amountInput = document.getElementById('prize-amount').value;
             const btn = document.getElementById('pay-confirm-btn');
@@ -250,17 +264,16 @@
             btn.innerText = "YUBORILMOQDA...";
 
             try {
-                // users kolleksiyasidagi talabaning balans hisobiga pulni avtomatik ravishda qo'shish (increment)
                 const userRef = doc(db, "users", selectedUserDocId);
                 await updateDoc(userRef, {
-                    balance: increment(amount) // Agarda balansi 'money' deb nomlangan bo'lsa, uni money qiling
+                    balance: increment(amount) 
                 });
 
                 alert(`Muvaffaqiyatli yakunlandi! ✅\nTalabaning hisobiga ${amount.toLocaleString()} UZS qo'shildi.`);
                 closePaymentModal();
             } catch (err) {
                 console.error("Pul o'tkazishda xatolik:", err);
-                alert("Xatolik yuz berdi: Foydalanuvchi hujjati topilmadi yoki baza xavfsizligi taqiqlagan!");
+                alert("Xatolik yuz berdi: Foydalanuvchi hujjati topilmadi!");
             } finally {
                 btn.disabled = false;
                 btn.innerText = "✓ PUL O'TKAZISH";
