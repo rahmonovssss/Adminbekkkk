@@ -38,7 +38,9 @@
         .admin-header { padding: 30px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 30px; text-align: center; }
         .admin-header h2 { color: #ffd700; font-size: 24px; }
         
+        /* 1fr 1fr holatida saqlandi, tugmalar soni 5 ta bo'lgani uchun chiroyli joylashadi */
         .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
         .admin-card {
             background: #1a2a33; padding: 30px 20px; border-radius: 25px;
             text-align: center; cursor: pointer; transition: 0.3s; 
@@ -92,11 +94,16 @@
                 <i>📝</i><span>Test qo'shish</span>
             </div>
 
+            <!-- 🔥 YANGI QO'SHILGAN PREMIUM NATIJALAR TUGMASI (O'lchami aynan bir xil) -->
+            <div class="admin-card" onclick="location.href='admin-results.html'" style="border-color: #ffd700;">
+                <i style="color: #ffd700;">🏆</i><span>Premium Natijalar</span>
+            </div>
+
             <div class="admin-card" onclick="location.href='admin-panel.html'" style="border-color: #00d2ff;">
                 <i style="color: #00d2ff;">💰</i><span>To'lovlar</span>
             </div>
 
-            <div class="admin-card" onclick="location.reload()">
+            <div class="admin-card" onclick="location.reload()" style="grid-column: span 2; max-width: 50%; margin: 0 auto; width: 100%;">
                 <i>🚪</i><span>Chiqish</span>
             </div>
         </div>
