@@ -22,18 +22,63 @@
         
         .header-actions { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         
-        /* --- FILTR VA BUTTON STYLES --- */
-        .combo-select {
-            background: #0b131a; color: #ffd700; border: 1px solid #ffd700;
-            padding: 10px 15px; border-radius: 12px; font-weight: 600; outline: none; cursor: pointer;
-            min-width: 250px;
-        }
         .btn-pdf {
-            background: #ff4b2b; color: white; border: none; padding: 10px 20px;
+            background: #ff4b2b; color: white; border: none; padding: 12px 20px;
             border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px;
             transition: 0.2s; box-shadow: 0 4px 15px rgba(255, 75, 43, 0.3);
         }
         .btn-pdf:hover { background: #e03e1f; }
+
+        /* --- RASMDAGI PREMIUM BLOK SELECTION INTERFEYSI --- */
+        .premium-selection-box {
+            background: #14222d; padding: 25px; border-radius: 20px;
+            margin-bottom: 25px; border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+        .selection-title { color: #ffd700; font-size: 18px; font-weight: 700; margin-bottom: 5px; }
+        .selection-subtitle { color: rgba(226, 232, 240, 0.6); font-size: 13px; margin-bottom: 20px; }
+        
+        .subjects-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;
+        }
+        @media(min-width: 768px) {
+            .subjects-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        
+        .subject-btn {
+            background: rgba(255, 255, 255, 0.03); color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1); padding: 18px 10px;
+            border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;
+            text-align: center; transition: all 0.2s ease; position: relative;
+        }
+        .subject-btn:hover { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.2); }
+        
+        /* Tanlangan holat drayveri */
+        .subject-btn.selected-active {
+            border: 1px solid #ffd700; color: #ffd700;
+            background: rgba(255, 215, 0, 0.02);
+        }
+        
+        /* Blok teglari (Huddi rasmdagidek yuqori o'ng burchakda) */
+        .badge-block {
+            position: absolute; top: -10px; right: 10px;
+            font-size: 10px; padding: 2px 8px; border-radius: 6px; font-weight: 700;
+            color: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .badge-1 { background: #ffd700; }
+        .badge-2 { background: #ffd700; }
+
+        /* Ma'lumot paneli */
+        .info-panel {
+            border: 1px dashed #ffd700; border-radius: 12px; padding: 15px;
+            background: rgba(255, 215, 0, 0.02); margin-bottom: 15px; font-size: 13px; line-height: 1.8;
+        }
+        .info-panel strong { color: #ffd700; }
+        
+        .clear-selection-btn {
+            background: #334155; color: #fff; border: none; padding: 10px 15px;
+            border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;
+        }
+        .clear-selection-btn:hover { background: #475569; }
 
         /* --- REYTING JADVALI --- */
         .table-responsive { width: 100%; overflow-x: auto; background: #14222d; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
@@ -44,7 +89,6 @@
         .results-table tr.clickable-row { cursor: pointer; transition: 0.2s; }
         .results-table tr.clickable-row:hover { background: rgba(255, 215, 0, 0.04); }
 
-        /* --- O'RINLAR KLASSI (MEDALLAR) --- */
         .rank { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; font-size: 14px; }
         .rank-1 { background: #ffd700; color: #000; box-shadow: 0 0 10px rgba(255,215,0,0.4); }
         .rank-2 { background: #c0c0c0; color: #000; box-shadow: 0 0 10px rgba(192,192,192,0.4); }
@@ -62,7 +106,6 @@
 
         .score-badge { font-weight: 700; color: #00ff00; font-size: 16px; }
         .date-time { font-size: 13px; opacity: 0.6; }
-        
         .action-hint { font-size: 11px; background: rgba(0, 255, 0, 0.1); color: #00ff00; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: normal; }
 
         .loader { text-align: center; padding: 40px; color: #ffd700; font-weight: bold; }
@@ -98,14 +141,40 @@
         <header>
             <h1>🏆 PREMIUM BLOK REYTINGI</h1>
             <div class="header-actions">
-                <select id="subject-filter" class="combo-select">
-                    <option value="all">Barcha Kombinatsiyalar</option>
-                </select>
-                
                 <button id="download-pdf-btn" class="btn-pdf">📄 PDF YUKLAB OLISH</button>
             </div>
         </header>
 
+        <!-- Dynamic Tanlov Paneli (Rasmdagi interfeys asosi) -->
+        <div class="premium-selection-box">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <div class="selection-title">Premium Blok Test</div>
+                    <div class="selection-subtitle">Fanlarni tanlash tartibi ballarni belgilaydi:</div>
+                </div>
+                <button class="clear-selection-btn" onclick="resetSubjectSelection()">🔄 Tanlovni tozalash</button>
+            </div>
+
+            <!-- Fanlar ro'yxati matni (Rasmdagidek) -->
+            <div class="subjects-grid" id="subjects-container">
+                <div class="subject-btn" data-subject="Matematika" onclick="selectSubject(this)">Matematika</div>
+                <div class="subject-btn" data-subject="Ona tili" onclick="selectSubject(this)">Ona tili</div>
+                <div class="subject-btn" data-subject="Tarix" onclick="selectSubject(this)">Tarix</div>
+                <div class="subject-btn" data-subject="Kimyo" onclick="selectSubject(this)">Kimyo</div>
+                <div class="subject-btn" data-subject="Biologiya" onclick="selectSubject(this)">Biologiya</div>
+                <div class="subject-btn" data-subject="Ingliz tili" onclick="selectSubject(this)">Ingliz tili</div>
+                <div class="subject-btn" data-subject="Huquq" onclick="selectSubject(this)">Huquq</div>
+                <div class="subject-btn" data-subject="Geografiya" onclick="selectSubject(this)">Geografiya</div>
+                <div class="subject-btn" data-subject="Fizika" onclick="selectSubject(this)">Fizika</div>
+            </div>
+
+            <div class="info-panel">
+                <div id="status-text">Filtrlash uchun elementlarni bosing. Hozirda: <strong>Barcha kombinatsiyalar ko'rsatilmoqda</strong></div>
+                <div style="opacity: 0.7; font-size: 11px; margin-top: 4px;">1-tanlangan: 3.1 ball (30 ta savol) | 2-tanlangan: 2.1 ball (30 ta savol)</div>
+            </div>
+        </div>
+
+        <!-- Reyting Jadvali -->
         <div class="table-responsive">
             <table class="results-table" id="rating-table">
                 <thead>
@@ -126,6 +195,7 @@
         </div>
     </div>
 
+    <!-- Pul Mukofoti Modali -->
     <div id="paymentModal" class="modal">
         <div class="modal-content">
             <h3 style="color: #ffd700;">🎁 Pul Mukofoti Yuborish</h3>
@@ -161,9 +231,10 @@
         let globalCachedUsers = {}; 
         let rawFirebaseData = [];   
 
-        const filterSelect = document.getElementById('subject-filter');
-        const downloadPdfBtn = document.getElementById('download-pdf-btn');
+        // Tanlangan fanlar mantiqiy massivi (Maksimum 2 ta element sig'adi)
+        let activeSelectedSubjects = []; 
 
+        const downloadPdfBtn = document.getElementById('download-pdf-btn');
         const q = query(collection(db, "premium_results"), orderBy("totalScore", "desc"));
 
         onSnapshot(q, async (snapshot) => {
@@ -183,53 +254,69 @@
                 console.error("Foydalanuvchilarni yuklashda xatolik:", err);
             }
 
-            // --- JADVAL VA FILTRNI YANGILASH ---
-            updateFilterDropdown();
             renderLeaderboard();
         });
 
-        filterSelect.addEventListener('change', renderLeaderboard);
-
-        // Bazadagi ma'lumotlardan kelib chiqib dynamic tarzda kombinatsiyalar ro'yxatini yaratish
-        function updateFilterDropdown() {
-            const currentSelected = filterSelect.value; // Hozirgi tanlangan qiymatni saqlab turish
-            const uniqueCombos = new Set();
-
-            rawFirebaseData.forEach(data => {
-                let b1 = "";
-                let b2 = "";
-                if (data.subjects) {
-                    Object.keys(data.subjects).forEach(name => {
-                        if (name.includes("(1-blok)")) b1 = name.replace("(1-blok)", "").trim();
-                        if (name.includes("(2-blok)")) b2 = name.replace("(2-blok)", "").trim();
-                    });
-                }
-                if (b1 && b2) {
-                    uniqueCombos.add(`${b1} va ${b2}`);
-                }
-            });
-
-            // Select ichini tozalash va default qiymatni qayta yozish
-            filterSelect.innerHTML = `<option value="all">Barcha Kombinatsiyalar</option>`;
+        // Fan bosilganda ishlaydigan algoritm
+        window.selectSubject = (element) => {
+            const subjectName = element.getAttribute('data-subject');
             
-            // Tartiblangan holda selectga yangi topilgan kombinatsiyalarni qo'shish
-            Array.from(uniqueCombos).sort().forEach(combo => {
-                const option = document.createElement('option');
-                option.value = combo;
-                option.innerText = combo;
-                filterSelect.appendChild(option);
+            // Agar uchinchi fan bosilsa yoki bitta fan qayta bosilsa o'chirish logikasi
+            if (activeSelectedSubjects.includes(subjectName)) {
+                activeSelectedSubjects = activeSelectedSubjects.filter(item => item !== subjectName);
+            } else {
+                if (activeSelectedSubjects.length >= 2) {
+                    // Agar allaqachon 2 ta fan tanlangan bo'lsa, ro'yxatni yangilash uchun birinchisini o'chiramiz
+                    activeSelectedSubjects.shift();
+                }
+                activeSelectedSubjects.push(subjectName);
+            }
+
+            updateSubjectUI();
+            renderLeaderboard();
+        };
+
+        // UI interfeysni rasmdagi holatga moslab yangilash
+        function updateSubjectUI() {
+            const buttons = document.querySelectorAll('.subject-btn');
+            
+            buttons.forEach(btn => {
+                btn.classList.remove('selected-active');
+                const badge = btn.querySelector('.badge-block');
+                if (badge) badge.remove();
+                
+                const subjectName = btn.getAttribute('data-subject');
+                const index = activeSelectedSubjects.indexOf(subjectName);
+                
+                if (index !== -1) {
+                    btn.classList.add('selected-active');
+                    const blockLabel = document.createElement('span');
+                    blockLabel.className = `badge-block badge-${index + 1}`;
+                    blockLabel.innerText = `${index + 1}-blok`;
+                    btn.appendChild(blockLabel);
+                }
             });
 
-            // Agar eski tanlangan kombinatsiya yangi ro'yxatda ham bo'lsa, uni saqlab qolamiz
-            if (uniqueCombos.has(currentSelected)) {
-                filterSelect.value = currentSelected;
+            // Status matnini dinamik o'zgartirish
+            const statusDiv = document.getElementById('status-text');
+            if (activeSelectedSubjects.length === 0) {
+                statusDiv.innerHTML = "Filtrlash uchun elementlarni bosing. Hozirda: <strong>Barcha kombinatsiyalar ko'rsatilmoqda</strong>";
+            } else if (activeSelectedSubjects.length === 1) {
+                statusDiv.innerHTML = `Saralash: 1-blok fani qilib <strong>${activeSelectedSubjects[0]}</strong> tanlanganlarni qidirmoqda... (Kombo uchun 2-fanni bosing)`;
+            } else {
+                statusDiv.innerHTML = `Filtr faollashtirildi: 1-Blok: <strong>${activeSelectedSubjects[0]}</strong>, 2-Blok: <strong>${activeSelectedSubjects[1]}</strong>`;
             }
         }
 
+        // Tozalash tugmasi bosilganda
+        window.resetSubjectSelection = () => {
+            activeSelectedSubjects = [];
+            updateSubjectUI();
+            renderLeaderboard();
+        };
+
         function renderLeaderboard() {
             const tbody = document.getElementById('results-list');
-            const selectedCombo = filterSelect.value;
-
             const uniqueResults = {};
 
             rawFirebaseData.forEach((data) => {
@@ -244,12 +331,20 @@
                     });
                 }
                 
-                const currentComboName = (b1 && b2) ? `${b1} va ${b2}` : "Boshqa";
-                data.calculatedCombo = currentComboName;
                 data.b1 = b1;
                 data.b2 = b2;
 
-                if (selectedCombo === 'all' || selectedCombo === currentComboName) {
+                // Moslikni tekshirish filter drayveri
+                let matchesFilter = false;
+                if (activeSelectedSubjects.length === 0) {
+                    matchesFilter = true; // Hech narsa tanlanmasa hamma ma'lumotlar chiqadi
+                } else if (activeSelectedSubjects.length === 1) {
+                    matchesFilter = (b1 === activeSelectedSubjects[0]);
+                } else if (activeSelectedSubjects.length === 2) {
+                    matchesFilter = (b1 === activeSelectedSubjects[0] && b2 === activeSelectedSubjects[1]);
+                }
+
+                if (matchesFilter) {
                     if (!uniqueResults[studentUID] || uniqueResults[studentUID].totalScore < data.totalScore) {
                         uniqueResults[studentUID] = data;
                     }
@@ -314,26 +409,28 @@
                 rank++;
             });
 
-            downloadPdfBtn.onclick = () => exportToPDF(filteredTop10, selectedCombo);
+            downloadPdfBtn.onclick = () => exportToPDF(filteredTop10);
         }
 
         // --- PDF GENERATSIYA TIZIMI ---
-        function exportToPDF(dataList, comboName) {
+        function exportToPDF(dataList) {
             const { jsPDF } = window.jspdf;
             const docPdf = new jsPDF();
 
-            const titleName = comboName === 'all' ? "BARCHA BLOK FANLARI REYTINGI" : `${comboName.toUpperCase()} REYTINGI`;
+            let titleName = "BARCHA COMBINATSIYALAR REYTINGI";
+            if(activeSelectedSubjects.length === 1) titleName = `${activeSelectedSubjects[0].toUpperCase()} (1-BLOK) REYTINGI`;
+            if(activeSelectedSubjects.length === 2) titleName = `${activeSelectedSubjects[0].toUpperCase()} VA ${activeSelectedSubjects[1].toUpperCase()} REYTINGI`;
 
             docPdf.setFont("Helvetica", "bold");
-            docPdf.setFontSize(16);
+            docPdf.setFontSize(14);
             docPdf.text("PREMIUM IMTIHON NATIJALARI (TOP-10)", 14, 20);
             
-            docPdf.setFontSize(12);
+            docPdf.setFontSize(11);
             docPdf.setFont("Helvetica", "normal");
-            docPdf.text(`Kombinatsiya: ${titleName}`, 14, 28);
-            docPdf.text(`Sana: ${new Date().toLocaleDateString()} | Admin: Dr. Rahmonov`, 14, 34);
+            docPdf.text(`Filtrlangan holat: ${titleName}`, 14, 28);
+            docPdf.text(`Sana: ${new Date().toLocaleDateString()} | Admin Panel`, 14, 34);
 
-            const tableHeaders = [["O'rin", "Talaba Ismi", "6 xonali ID", "To'plagan Bali", "Topshirilgan Sana va Vaqt"]];
+            const tableHeaders = [["O'rin", "Talaba Ismi", "6 xonali ID", "To'plagan Bali", "Topshirilgan Sana"]];
             const tableRows = [];
 
             dataList.forEach((item) => {
@@ -341,7 +438,7 @@
                 let formattedDate = "---";
                 if (item.timestamp) {
                     const date = item.timestamp.toDate();
-                    formattedDate = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                    formattedDate = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
                 }
 
                 tableRows.push([
@@ -359,18 +456,13 @@
                 body: tableRows,
                 theme: 'striped',
                 headStyles: { fillColor: [20, 34, 45], textColor: [255, 215, 0], fontStyle: 'bold' },
-                styles: { fontSize: 10, cellPadding: 4 },
-                columnStyles: {
-                    0: { fontStyle: 'bold', width: 20 },
-                    3: { fontStyle: 'bold', textColor: [0, 150, 0] }
-                }
+                styles: { fontSize: 10 }
             });
 
-            const fileName = `${comboName.replace(/\s+/g, '_')}_TOP10_Reyting.pdf`;
-            docPdf.save(fileName);
+            docPdf.save("TOP10_Reyting.pdf");
         }
 
-        // --- TO'LOV MODALI ---
+        // --- TO'LOV ARXITEKTURASI ---
         window.openPaymentModal = (name, sixID, userUID) => {
             selectedUserDocId = userUID; 
             document.getElementById('modal-student-name').innerText = "Talaba: " + name;
@@ -386,8 +478,8 @@
         window.processPayment = async () => {
             const amountInput = document.getElementById('prize-amount').value;
             const btn = document.getElementById('pay-confirm-btn');
-            
             const amount = parseFloat(amountInput);
+            
             if (!amount || amount <= 0) {
                 alert("Iltimos, to'g'ri pul miqdorini kiriting!");
                 return;
@@ -398,15 +490,11 @@
 
             try {
                 const userRef = doc(db, "users", selectedUserDocId);
-                await updateDoc(userRef, {
-                    balance: increment(amount) 
-                });
-
+                await updateDoc(userRef, { balance: increment(amount) });
                 alert(`Muvaffaqiyatli yakunlandi! ✅\nTalabaning hisobiga ${amount.toLocaleString()} UZS qo'shildi.`);
                 closePaymentModal();
             } catch (err) {
-                console.error("Pul o'tkazishda xatolik:", err);
-                alert("Xatolik yuz berdi: Foydalanuvchi hujjati topilmadi!");
+                alert("Xatolik yuz berdi!");
             } finally {
                 btn.disabled = false;
                 btn.innerText = "✓ PUL O'TKAZISH";
