@@ -26,6 +26,7 @@
         .combo-select {
             background: #0b131a; color: #ffd700; border: 1px solid #ffd700;
             padding: 10px 15px; border-radius: 12px; font-weight: 600; outline: none; cursor: pointer;
+            min-width: 250px;
         }
         .btn-pdf {
             background: #ff4b2b; color: white; border: none; padding: 10px 20px;
@@ -99,10 +100,6 @@
             <div class="header-actions">
                 <select id="subject-filter" class="combo-select">
                     <option value="all">Barcha Kombinatsiyalar</option>
-                    <option value="Kimyo va Biologiya">Kimyo va Biologiya</option>
-                    <option value="Matematika va Ona tili">Matematika va Ona tili</option>
-                    <option value="Tarix va Geografiya">Tarix va Geografiya</option>
-                    <option value="Fizika va Matematika">Fizika va Matematika</option>
                 </select>
                 
                 <button id="download-pdf-btn" class="btn-pdf">📄 PDF YUKLAB OLISH</button>
@@ -161,13 +158,12 @@
         const db = getFirestore(app);
 
         let selectedUserDocId = ""; 
-        let globalCachedUsers = {}; // Foydalanuvchi IDlarini saqlash uchun kesh
-        let rawFirebaseData = [];   // Kelgan barcha natijalar massivi
+        let globalCachedUsers = {}; 
+        let rawFirebaseData = [];   
 
         const filterSelect = document.getElementById('subject-filter');
         const downloadPdfBtn = document.getElementById('download-pdf-btn');
 
-        // Baza o'zgarishlarini kuzatish
         const q = query(collection(db, "premium_results"), orderBy("totalScore", "desc"));
 
         onSnapshot(q, async (snapshot) => {
@@ -178,7 +174,6 @@
 
             rawFirebaseData = snapshot.docs.map(doc => doc.data());
 
-            // 1. users kolleksiyasidan studentID (6 xonali unikal ID) yuklash
             try {
                 const usersSnap = await getDocs(collection(db, "users"));
                 usersSnap.forEach(uDoc => {
@@ -188,18 +183,53 @@
                 console.error("Foydalanuvchilarni yuklashda xatolik:", err);
             }
 
-            // Ma'lumotlarni render qilish funksiyasini chaqirish
+            // --- JADVAL VA FILTRNI YANGILASH ---
+            updateFilterDropdown();
             renderLeaderboard();
         });
 
-        // Filtr o'zgarganda jadvalni qayta chizish
         filterSelect.addEventListener('change', renderLeaderboard);
+
+        // Bazadagi ma'lumotlardan kelib chiqib dynamic tarzda kombinatsiyalar ro'yxatini yaratish
+        function updateFilterDropdown() {
+            const currentSelected = filterSelect.value; // Hozirgi tanlangan qiymatni saqlab turish
+            const uniqueCombos = new Set();
+
+            rawFirebaseData.forEach(data => {
+                let b1 = "";
+                let b2 = "";
+                if (data.subjects) {
+                    Object.keys(data.subjects).forEach(name => {
+                        if (name.includes("(1-blok)")) b1 = name.replace("(1-blok)", "").trim();
+                        if (name.includes("(2-blok)")) b2 = name.replace("(2-blok)", "").trim();
+                    });
+                }
+                if (b1 && b2) {
+                    uniqueCombos.add(`${b1} va ${b2}`);
+                }
+            });
+
+            // Select ichini tozalash va default qiymatni qayta yozish
+            filterSelect.innerHTML = `<option value="all">Barcha Kombinatsiyalar</option>`;
+            
+            // Tartiblangan holda selectga yangi topilgan kombinatsiyalarni qo'shish
+            Array.from(uniqueCombos).sort().forEach(combo => {
+                const option = document.createElement('option');
+                option.value = combo;
+                option.innerText = combo;
+                filterSelect.appendChild(option);
+            });
+
+            // Agar eski tanlangan kombinatsiya yangi ro'yxatda ham bo'lsa, uni saqlab qolamiz
+            if (uniqueCombos.has(currentSelected)) {
+                filterSelect.value = currentSelected;
+            }
+        }
 
         function renderLeaderboard() {
             const tbody = document.getElementById('results-list');
             const selectedCombo = filterSelect.value;
 
-            // 2. Dublikatlardan tozalash va fan strukturasi tahlili
             const uniqueResults = {};
 
             rawFirebaseData.forEach((data) => {
@@ -219,7 +249,6 @@
                 data.b1 = b1;
                 data.b2 = b2;
 
-                // Agar filtr 'all' bo'lsa yoki tanlangan kombinatsiyaga mos kelsa
                 if (selectedCombo === 'all' || selectedCombo === currentComboName) {
                     if (!uniqueResults[studentUID] || uniqueResults[studentUID].totalScore < data.totalScore) {
                         uniqueResults[studentUID] = data;
@@ -227,7 +256,6 @@
                 }
             });
 
-            // 3. TOP-10 holatiga keltirish
             const filteredTop10 = Object.values(uniqueResults)
                 .sort((a, b) => b.totalScore - a.totalScore)
                 .slice(0, 10);
@@ -282,23 +310,20 @@
                 `;
 
                 tbody.appendChild(row);
-                // PDF generatsiya qilishda oson bo'lishi uchun joriy o'rinni obyektga yozib qo'yamiz
                 data.currentRank = rank; 
                 rank++;
             });
 
-            // PDF tugmasiga joriy ma'lumotlarni bog'lash
             downloadPdfBtn.onclick = () => exportToPDF(filteredTop10, selectedCombo);
         }
 
-        // --- SIZ SO'RAGAN PROFESSIONAL PDF GENERATSIYA TIZIMI ---
+        // --- PDF GENERATSIYA TIZIMI ---
         function exportToPDF(dataList, comboName) {
             const { jsPDF } = window.jspdf;
             const docPdf = new jsPDF();
 
             const titleName = comboName === 'all' ? "BARCHA BLOK FANLARI REYTINGI" : `${comboName.toUpperCase()} REYTINGI`;
 
-            // Hujjat Sarlavhasi
             docPdf.setFont("Helvetica", "bold");
             docPdf.setFontSize(16);
             docPdf.text("PREMIUM IMTIHON NATIJALARI (TOP-10)", 14, 20);
@@ -308,7 +333,6 @@
             docPdf.text(`Kombinatsiya: ${titleName}`, 14, 28);
             docPdf.text(`Sana: ${new Date().toLocaleDateString()} | Admin: Dr. Rahmonov`, 14, 34);
 
-            // Jadval ustunlari va ma'lumotlari
             const tableHeaders = [["O'rin", "Talaba Ismi", "6 xonali ID", "To'plagan Bali", "Topshirilgan Sana va Vaqt"]];
             const tableRows = [];
 
@@ -329,7 +353,6 @@
                 ]);
             });
 
-            // jspdf-autotable yordamida chiroyli dizayn bilan PDF jadval yaratish
             docPdf.autoTable({
                 startY: 40,
                 head: tableHeaders,
@@ -343,12 +366,11 @@
                 }
             });
 
-            // PDF faylni saqlash (nomi tozalangan holatda bo'ladi)
             const fileName = `${comboName.replace(/\s+/g, '_')}_TOP10_Reyting.pdf`;
             docPdf.save(fileName);
         }
 
-        // --- MODAL VA TO'LOV TIZIMI ---
+        // --- TO'LOV MODALI ---
         window.openPaymentModal = (name, sixID, userUID) => {
             selectedUserDocId = userUID; 
             document.getElementById('modal-student-name').innerText = "Talaba: " + name;
