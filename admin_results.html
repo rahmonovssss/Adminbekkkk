@@ -29,7 +29,7 @@
         }
         .btn-pdf:hover { background: #e03e1f; }
 
-        /* --- RASMDAGI PREMIUM BLOK SELECTION INTERFEYSI --- */
+        /* --- PREMIUM BLOK SELECTION INTERFEYSI --- */
         .premium-selection-box {
             background: #14222d; padding: 25px; border-radius: 20px;
             margin-bottom: 25px; border: 1px solid rgba(255, 215, 0, 0.1);
@@ -52,13 +52,11 @@
         }
         .subject-btn:hover { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.2); }
         
-        /* Tanlangan holat drayveri */
         .subject-btn.selected-active {
             border: 1px solid #ffd700; color: #ffd700;
             background: rgba(255, 215, 0, 0.02);
         }
         
-        /* Blok teglari (Huddi rasmdagidek yuqori o'ng burchakda) */
         .badge-block {
             position: absolute; top: -10px; right: 10px;
             font-size: 10px; padding: 2px 8px; border-radius: 6px; font-weight: 700;
@@ -67,7 +65,6 @@
         .badge-1 { background: #ffd700; }
         .badge-2 { background: #ffd700; }
 
-        /* Ma'lumot paneli */
         .info-panel {
             border: 1px dashed #ffd700; border-radius: 12px; padding: 15px;
             background: rgba(255, 215, 0, 0.02); margin-bottom: 15px; font-size: 13px; line-height: 1.8;
@@ -145,7 +142,6 @@
             </div>
         </header>
 
-        <!-- Dynamic Tanlov Paneli (Rasmdagi interfeys asosi) -->
         <div class="premium-selection-box">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
                 <div>
@@ -155,7 +151,6 @@
                 <button class="clear-selection-btn" onclick="resetSubjectSelection()">🔄 Tanlovni tozalash</button>
             </div>
 
-            <!-- Fanlar ro'yxati matni (Rasmdagidek) -->
             <div class="subjects-grid" id="subjects-container">
                 <div class="subject-btn" data-subject="Matematika" onclick="selectSubject(this)">Matematika</div>
                 <div class="subject-btn" data-subject="Ona tili" onclick="selectSubject(this)">Ona tili</div>
@@ -174,7 +169,6 @@
             </div>
         </div>
 
-        <!-- Reyting Jadvali -->
         <div class="table-responsive">
             <table class="results-table" id="rating-table">
                 <thead>
@@ -195,7 +189,6 @@
         </div>
     </div>
 
-    <!-- Pul Mukofoti Modali -->
     <div id="paymentModal" class="modal">
         <div class="modal-content">
             <h3 style="color: #ffd700;">🎁 Pul Mukofoti Yuborish</h3>
@@ -230,8 +223,6 @@
         let selectedUserDocId = ""; 
         let globalCachedUsers = {}; 
         let rawFirebaseData = [];   
-
-        // Tanlangan fanlar mantiqiy massivi (Maksimum 2 ta element sig'adi)
         let activeSelectedSubjects = []; 
 
         const downloadPdfBtn = document.getElementById('download-pdf-btn');
@@ -257,16 +248,13 @@
             renderLeaderboard();
         });
 
-        // Fan bosilganda ishlaydigan algoritm
         window.selectSubject = (element) => {
             const subjectName = element.getAttribute('data-subject');
             
-            // Agar uchinchi fan bosilsa yoki bitta fan qayta bosilsa o'chirish logikasi
             if (activeSelectedSubjects.includes(subjectName)) {
                 activeSelectedSubjects = activeSelectedSubjects.filter(item => item !== subjectName);
             } else {
                 if (activeSelectedSubjects.length >= 2) {
-                    // Agar allaqachon 2 ta fan tanlangan bo'lsa, ro'yxatni yangilash uchun birinchisini o'chiramiz
                     activeSelectedSubjects.shift();
                 }
                 activeSelectedSubjects.push(subjectName);
@@ -276,7 +264,6 @@
             renderLeaderboard();
         };
 
-        // UI interfeysni rasmdagi holatga moslab yangilash
         function updateSubjectUI() {
             const buttons = document.querySelectorAll('.subject-btn');
             
@@ -297,7 +284,6 @@
                 }
             });
 
-            // Status matnini dinamik o'zgartirish
             const statusDiv = document.getElementById('status-text');
             if (activeSelectedSubjects.length === 0) {
                 statusDiv.innerHTML = "Filtrlash uchun elementlarni bosing. Hozirda: <strong>Barcha kombinatsiyalar ko'rsatilmoqda</strong>";
@@ -308,7 +294,6 @@
             }
         }
 
-        // Tozalash tugmasi bosilganda
         window.resetSubjectSelection = () => {
             activeSelectedSubjects = [];
             updateSubjectUI();
@@ -334,10 +319,9 @@
                 data.b1 = b1;
                 data.b2 = b2;
 
-                // Moslikni tekshirish filter drayveri
                 let matchesFilter = false;
                 if (activeSelectedSubjects.length === 0) {
-                    matchesFilter = true; // Hech narsa tanlanmasa hamma ma'lumotlar chiqadi
+                    matchesFilter = true; 
                 } else if (activeSelectedSubjects.length === 1) {
                     matchesFilter = (b1 === activeSelectedSubjects[0]);
                 } else if (activeSelectedSubjects.length === 2) {
@@ -359,6 +343,7 @@
             
             if (filteredTop10.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Ushbu blok kombinatsiyasi bo'yicha TOP-10 natija topilmadi.</td></tr>`;
+                downloadPdfBtn.onclick = () => alert("Yuklash uchun ma'lumot mavjud emas!");
                 return;
             }
 
@@ -409,57 +394,132 @@
                 rank++;
             });
 
+            // Ekrandagi saralangan massivni PDF funksiyasiga uzatamiz
             downloadPdfBtn.onclick = () => exportToPDF(filteredTop10);
         }
 
-        // --- PDF GENERATSIYA TIZIMI ---
+        // --- YANGILANGAN VA TO'LIQ TUZATILGAN PDF GENERATSIYA FUNKSIYASI ---
         function exportToPDF(dataList) {
-            const { jsPDF } = window.jspdf;
-            const docPdf = new jsPDF();
+            try {
+                const { jsPDF } = window.jspdf;
+                const docPdf = new jsPDF('p', 'mm', 'a4');
 
-            let titleName = "BARCHA COMBINATSIYALAR REYTINGI";
-            if(activeSelectedSubjects.length === 1) titleName = `${activeSelectedSubjects[0].toUpperCase()} (1-BLOK) REYTINGI`;
-            if(activeSelectedSubjects.length === 2) titleName = `${activeSelectedSubjects[0].toUpperCase()} VA ${activeSelectedSubjects[1].toUpperCase()} REYTINGI`;
-
-            docPdf.setFont("Helvetica", "bold");
-            docPdf.setFontSize(14);
-            docPdf.text("PREMIUM IMTIHON NATIJALARI (TOP-10)", 14, 20);
-            
-            docPdf.setFontSize(11);
-            docPdf.setFont("Helvetica", "normal");
-            docPdf.text(`Filtrlangan holat: ${titleName}`, 14, 28);
-            docPdf.text(`Sana: ${new Date().toLocaleDateString()} | Admin Panel`, 14, 34);
-
-            const tableHeaders = [["O'rin", "Talaba Ismi", "6 xonali ID", "To'plagan Bali", "Topshirilgan Sana"]];
-            const tableRows = [];
-
-            dataList.forEach((item) => {
-                const sixID = globalCachedUsers[item.studentID] || "—";
-                let formattedDate = "---";
-                if (item.timestamp) {
-                    const date = item.timestamp.toDate();
-                    formattedDate = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
+                // Filtrlash nomini chiroyli aniqlash
+                let currentBloks = "BARCHA KOMBINATSIYALAR";
+                if (activeSelectedSubjects.length === 1) {
+                    currentBloks = `${activeSelectedSubjects[0]} (1-Blok)`;
+                } else if (activeSelectedSubjects.length === 2) {
+                    currentBloks = `${activeSelectedSubjects[0]} + ${activeSelectedSubjects[1]}`;
                 }
 
-                tableRows.push([
-                    `${item.currentRank}-o'rin`,
-                    item.studentName,
-                    sixID,
-                    `${Number(item.totalScore).toFixed(1)} ball`,
-                    formattedDate
-                ]);
-            });
+                // O'zbekcha maxsus harflarni xavfsiz matnga o'tkazuvchi ichki funksiya
+                const toSafeUzbekText = (str) => {
+                    if (!str) return "---";
+                    return str
+                        .replace(/g‘/g, "g'").replace(/G‘/g, "G'")
+                        .replace(/o‘/g, "o'").replace(/O‘/g, "O'")
+                        .replace(/g‘/g, "g'").replace(/o‘/g, "o'")
+                        .replace(/‘/g, "'").replace(/’/g, "'");
+                };
 
-            docPdf.autoTable({
-                startY: 40,
-                head: tableHeaders,
-                body: tableRows,
-                theme: 'striped',
-                headStyles: { fillColor: [20, 34, 45], textColor: [255, 215, 0], fontStyle: 'bold' },
-                styles: { fontSize: 10 }
-            });
+                // Hujjat Sarlavhasi dizayni (To'q ko'k header fon)
+                docPdf.setFillColor(20, 34, 45); 
+                docPdf.rect(0, 0, 210, 42, 'F');
 
-            docPdf.save("TOP10_Reyting.pdf");
+                // Sarlavha matnlari
+                docPdf.setTextColor(255, 215, 0); // Tilla rang text
+                docPdf.setFont("Helvetica", "bold");
+                docPdf.setFontSize(18);
+                docPdf.text(toSafeUzbekText("PREMIUM IMTIHON NATIJALARI (TOP-10)"), 14, 16);
+                
+                docPdf.setTextColor(226, 232, 240);
+                docPdf.setFont("Helvetica", "normal");
+                docPdf.setFontSize(11);
+                docPdf.text(toSafeUzbekText(`Tanlangan Blok: ${currentBloks}`), 14, 25);
+                
+                // Hozirgi sana va aniq vaqtni olish
+                const joriyVaqt = new Date();
+                const sanaSatr = `${String(joriyVaqt.getDate()).padStart(2, '0')}.${String(joriyVaqt.getMonth() + 1).padStart(2, '0')}.${joriyVaqt.getFullYear()} | ${String(joriyVaqt.getHours()).padStart(2, '0')}:${String(joriyVaqt.getMinutes()).padStart(2, '0')}`;
+                docPdf.text(toSafeUzbekText(`Generatsiya vaqti: ${sanaSatr}`), 14, 33);
+
+                // Jadval ustunlari sarlavhasi
+                const tableHeaders = [[
+                    toSafeUzbekText("O'rin"), 
+                    toSafeUzbekText("Talaba Ismi"), 
+                    toSafeUzbekText("6 xonali ID"), 
+                    toSafeUzbekText("Tanlangan Blok Fanlari"), 
+                    toSafeUzbekText("To'plagan Bali"), 
+                    toSafeUzbekText("Topshirilgan Vaqt")
+                ]];
+                
+                const tableRows = [];
+
+                dataList.forEach((item) => {
+                    const sixID = globalCachedUsers[item.studentID] || "---";
+                    
+                    // Vaqt formatini o'qish
+                    let formattedDate = "---";
+                    if (item.timestamp) {
+                        const date = item.timestamp.toDate();
+                        formattedDate = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                    }
+
+                    // Blok ma'lumotlarini matn ko'rinishiga keltirish
+                    let blokText = "Aniqlanmadi";
+                    if (item.b1 && item.b2) {
+                        blokText = `1: ${item.b1}\n2: ${item.b2}`;
+                    } else if (item.b1) {
+                        blokText = `1: ${item.b1}`;
+                    }
+
+                    tableRows.push([
+                        toSafeUzbekText(`${item.currentRank}-o'rin`),
+                        toSafeUzbekText(item.studentName),
+                        sixID,
+                        toSafeUzbekText(blokText),
+                        `${Number(item.totalScore).toFixed(1)} ball`,
+                        formattedDate
+                    ]);
+                });
+
+                // autoTable orqali PDF generatsiyasini sozlash
+                docPdf.autoTable({
+                    startY: 48,
+                    head: tableHeaders,
+                    body: tableRows,
+                    theme: 'striped',
+                    headStyles: { 
+                        fillColor: [20, 34, 45], 
+                        textColor: [255, 215, 0], 
+                        fontStyle: 'bold',
+                        halign: 'center'
+                    },
+                    bodyStyles: { 
+                        fontSize: 10, 
+                        font: "Helvetica",
+                        textColor: [30, 41, 59],
+                        valign: 'middle'
+                    },
+                    columnStyles: {
+                        0: { halign: 'center', fontStyle: 'bold', width: 20 },
+                        2: { halign: 'center', fontStyle: 'bold' },
+                        3: { cellWidth: 45 },
+                        4: { halign: 'center', fontStyle: 'bold', textColor: [0, 150, 0] },
+                        5: { halign: 'center', fontSize: 9 }
+                    },
+                    styles: { overflow: 'linebreak' },
+                    margin: { left: 14, right: 14 }
+                });
+
+                // Fayl nomini chiroyli va xavfsiz shakllantirib yuklash
+                const fileTitle = currentBloks.replace(/\s+/g, '_').replace(/\+/g, 'va');
+                const cleanFileName = `Premium_Reyting_${toSafeUzbekText(fileTitle)}.pdf`;
+                docPdf.save(cleanFileName);
+
+            } catch (error) {
+                console.error("PDF yaratishda jiddiy xatolik:", error);
+                alert("PDF fayl yuklashda xatolik yuz berdi! Iltimos konsolni tekshiring.");
+            }
         }
 
         // --- TO'LOV ARXITEKTURASI ---
