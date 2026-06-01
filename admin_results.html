@@ -5,35 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Premium Natijalar (Reyting)</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    <!-- PDF yuklash uchun zaruriy kutubxonalar -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
-
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background: #0b131a; color: #e2e8f0; padding: 20px; min-height: 100vh; }
         
-        .admin-container { max-width: 1050px; margin: 0 auto; }
+        .admin-container { max-width: 1100px; margin: 0 auto; }
         
         header { 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 20px; background: #14222d; border-radius: 20px; 
             border: 1px solid #ffd700; margin-bottom: 25px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            flex-wrap: wrap; gap: 15px;
         }
         header h1 { color: #ffd700; font-size: 22px; letter-spacing: 1px; }
-        
-        .header-actions { display: flex; align-items: center; gap: 15px; }
-        .counter-badge { background: rgba(255, 215, 0, 0.1); color: #ffd700; padding: 8px 18px; border-radius: 30px; font-weight: bold; font-size: 14px; border: 1px solid rgba(255,215,0,0.3); }
-        
-        .btn-pdf { 
-            background: #ff4b2b; color: white; border: none; padding: 8px 18px; 
-            border-radius: 30px; font-weight: 600; cursor: pointer; display: flex; 
-            align-items: center; gap: 8px; transition: 0.2s; font-size: 14px;
-        }
-        .btn-pdf:hover { background: #ff330c; transform: translateY(-2px); }
+        .counter-badge { background: rgba(255, 215, 0, 0.1); color: #ffd700; padding: 6px 15px; border-radius: 30px; font-weight: bold; font-size: 14px; border: 1px solid rgba(255,215,0,0.3); }
 
         /* --- REYTING JADVALI --- */
         .table-responsive { width: 100%; overflow-x: auto; background: #14222d; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
@@ -41,10 +26,11 @@
         .results-table th, .results-table td { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
         
         .results-table th { background: rgba(255, 215, 0, 0.03); color: #ffd700; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
-        .results-table tr:hover { background: rgba(255,255,255,0.02); }
+        .results-table tr.clickable-row { cursor: pointer; transition: 0.2s; }
+        .results-table tr.clickable-row:hover { background: rgba(255, 215, 0, 0.04); }
 
-        /* --- O'RINLAR STYLE --- */
-        .rank { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; font-size: 14px; }
+        /* --- O'RINLAR KLASSI (MEDALLAR) --- */
+        .rank { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; font-size: 14px; }
         .rank-1 { background: #ffd700; color: #000; box-shadow: 0 0 10px rgba(255,215,0,0.4); }
         .rank-2 { background: #c0c0c0; color: #000; box-shadow: 0 0 10px rgba(192,192,192,0.4); }
         .rank-3 { background: #cd7f32; color: #000; box-shadow: 0 0 10px rgba(205,127,50,0.4); }
@@ -53,55 +39,82 @@
         .student-info { font-weight: 600; color: #fff; font-size: 15px; }
         .student-id { font-size: 12px; color: #ffd700; font-family: monospace; display: block; margin-top: 2px; font-weight: bold; }
         
-        .subjects-badge { font-size: 12px; opacity: 0.7; background: rgba(255,255,255,0.05); padding: 3px 8px; border-radius: 6px; display: inline-block; margin-top: 4px; border: 1px solid rgba(255,255,255,0.05); }
+        .subjects-td { color: #00d2ff; font-weight: 500; font-size: 13px; }
         .score-badge { font-weight: 700; color: #00ff00; font-size: 16px; }
         .date-time { font-size: 13px; opacity: 0.6; }
-
-        /* --- PUL MUKOFOTI CHIPLARI --- */
-        .prize-badge { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
-        .prize-1 { background: rgba(255, 215, 0, 0.15); color: #ffd700; border: 1px solid #ffd700; }
-        .prize-2 { background: rgba(0, 255, 0, 0.15); color: #00ff00; border: 1px solid #00ff00; }
-        .prize-none { color: #556575; font-size: 12px; }
+        
+        .action-hint { font-size: 11px; background: rgba(0, 255, 0, 0.1); color: #00ff00; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: normal; }
 
         .loader { text-align: center; padding: 40px; color: #ffd700; font-weight: bold; }
         .empty-msg { text-align: center; padding: 40px; opacity: 0.5; }
+
+        /* --- PUL O'TKAZISH MODALI --- */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content { 
+            background: #14222d; padding: 30px; border-radius: 25px; 
+            width: 90%; max-width: 420px; border: 1px solid #ffd700; text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+        .admin-input {
+            width: 100%; padding: 15px; margin: 15px 0;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; color: white; outline: none; text-align: center; font-size: 18px; font-weight: bold;
+        }
+        .modal-btns { display: flex; gap: 12px; margin-top: 10px; }
+        .btn-confirm { flex: 1; padding: 14px; background: #00ff00; border: none; border-radius: 12px; color: #000; font-weight: bold; cursor: pointer; font-size: 15px; }
+        .btn-cancel { flex: 1; padding: 14px; background: #333; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; font-size: 15px; }
     </style>
 </head>
 <body>
 
     <div class="admin-container">
         <header>
-            <h1>🏆 PREMIUM BLOK TEST: TOP-10</h1>
-            <div class="header-actions">
-                <button class="btn-pdf" onclick="exportToPDF()">📄 PDF YUKLASH</button>
-                <div class="counter-badge" id="total-count">Top-10</div>
-            </div>
+            <h1>🏆 PREMIUM BLOK REYTINGI (TOP-10)</h1>
+            <div class="counter-badge" id="total-count">TOP 10</div>
         </header>
 
         <div class="table-responsive">
-            <table class="results-table" id="table-to-print">
+            <table class="results-table">
                 <thead>
                     <tr>
                         <th style="width: 70px;">O'rin</th>
                         <th>Talaba va ID</th>
-                        <th>Tanlangan Blok Fanlari</th>
+                        <th>Tanlangan Asosiy Fanlar</th>
                         <th>To'plagan Bali</th>
-                        <th>Mukofot Jamg'armasi</th>
                         <th>Topshirilgan Vaqt</th>
                     </tr>
                 </thead>
                 <tbody id="results-list">
                     <tr>
-                        <td colspan="6" class="loader">Xavfsiz ma'lumotlar yuklanmoqda...</td>
+                        <td colspan="5" class="loader">Tizim tahlil qilinmoqda, kuting...</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: #ffd700;">🎁 Pul Mukofoti Yuborish</h3>
+            <p id="modal-student-name" style="margin-top: 10px; font-weight: 600; font-size: 16px;"></p>
+            <p id="modal-student-id" style="font-size: 13px; color: #00d2ff; font-family: monospace;"></p>
+            
+            <input type="number" id="prize-amount" class="admin-input" placeholder="Summani kiriting (UZS)">
+            
+            <div class="modal-btns">
+                <button class="btn-confirm" id="pay-confirm-btn" onclick="processPayment()">✓ PUL O'TKAZISH</button>
+                <button class="btn-cancel" onclick="closePaymentModal()">YOPISH</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, getDocs, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -115,90 +128,77 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Mukofot pullarini belgilash (O'zingiz o'zgartirishingiz mumkin)
-        const prizeMoney = {
-            1: "150,000 UZS",
-            2: "100,000 UZS",
-            3: "70,000 UZS",
-            4: "50,000 UZS",
-            5: "30,000 UZS"
-        };
+        let selectedUserDocId = ""; // Pul o'tkazish uchun tanlangan foydalanuvchining Firebase IDsi
 
-        // Global massiv (PDF yuklashda foydalanish uchun)
-        window.finalRankedData = [];
+        // Realtime natijalarni o'qish (Ballar bo'yicha saralangan holda)
+        const q = query(collection(db, "premium_results"), orderBy("totalScore", "desc"));
 
-        // Realtime snapshot olish
-        const resultsQuery = query(collection(db, "premium_results"), orderBy("totalScore", "desc"));
-
-        onSnapshot(resultsQuery, async (snapshot) => {
+        onSnapshot(q, async (snapshot) => {
             const tbody = document.getElementById('results-list');
             
             if (snapshot.empty) {
-                tbody.innerHTML = `<tr><td colspan="6" class="empty-msg">Hozircha premium natijalar mavjud emas.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Hozircha premium test topshirganlar mavjud emas.</td></tr>`;
                 return;
             }
 
-            // 1. Foydalanuvchilarning 6 xonalik maxsus ID raqamlarini keshlab olish
+            // 1. users kolleksiyasidagi barcha foydalanuvchilarning 6 xonalik maxsus ID raqamlarini xaritaga olish
             const usersMap = {};
             try {
                 const usersSnap = await getDocs(collection(db, "users"));
                 usersSnap.forEach(uDoc => {
                     const uData = uDoc.data();
-                    // Foydalanuvchining 6 xonalik IDsi (masalan: data.myId yoki siz qo'ygan maydon nomi)
-                    usersMap[uDoc.id] = uData.myId || uData.studentId || "Mavjud emas";
+                    // myId, studentId yoki regId maydonlaridan 6 xonalik sonni tekshirib keshlaydi
+                    usersMap[uDoc.id] = uData.myId || uData.studentId || uData.regId || "Yo'q";
                 });
             } catch (err) {
                 console.error("Foydalanuvchilarni o'qishda xato:", err);
             }
 
-            // 2. Talaba bo'yicha eng yuqori ballni filtrlash (Faqat 1 ta eng yaxshi natija qoladi)
-            const uniqueStudents = {};
+            // 2. Talabalar bo'yicha dublikatlarni tozalash (Faqat 1 ta eng yuqori natija saqlanadi)
+            const uniqueResults = {};
             snapshot.forEach((doc) => {
                 const data = doc.data();
-                const sID = data.studentID; // user.uid qiymati
+                const studentUID = data.studentID; // talabaning auth.uid qiymati
 
-                if (!uniqueStudents[sID] || uniqueStudents[sID].totalScore < data.totalScore) {
-                    uniqueStudents[sID] = data;
+                if (!uniqueResults[studentUID] || uniqueResults[studentUID].totalScore < data.totalScore) {
+                    uniqueResults[studentUID] = { ...data, docFirebaseId: doc.id };
                 }
             });
 
-            // 3. Obyektdan massiv yasab, qayta tartiblash va faqat Top-10 ni ajratib olish
-            const sortedResults = Object.values(uniqueStudents)
+            // 3. Obyektdan massivga o'girib, qayta tartiblash va faqat Top-10 tani ajratib olish
+            const top10Results = Object.values(uniqueResults)
                 .sort((a, b) => b.totalScore - a.totalScore)
                 .slice(0, 10);
 
             tbody.innerHTML = "";
-            window.finalRankedData = []; // Tozalash
-
             let rank = 1;
-            sortedResults.forEach((data) => {
-                const row = document.createElement('tr');
 
-                // Medallar klassi
+            top10Results.forEach((data) => {
+                const row = document.createElement('tr');
+                row.className = "clickable-row";
+                
+                // Ustiga bosilganda hamyon modalini ochish funksiyasini ulash
+                row.onclick = () => openPaymentModal(data.studentName, usersMap[data.studentID] || "—", data.studentID);
+
+                // O'rinlar uchun medal dizayni
                 let rankClass = "rank-other";
                 if (rank === 1) rankClass = "rank-1";
                 else if (rank === 2) rankClass = "rank-2";
                 else if (rank === 3) rankClass = "rank-3";
 
-                // Mukofotni hisoblash
-                let prizeHTML = `<span class="prize-none">—</span>`;
-                let prizeText = "—";
-                if (rank <= 5) {
-                    prizeHTML = `<span class="prize-badge ${rank === 1 ? 'prize-1' : 'prize-2'}">🎁 ${prizeMoney[rank]}</span>`;
-                    prizeText = prizeMoney[rank];
-                }
-
-                // Dinamik 6 xonalik IDni bog'lash
+                // Foydalanuvchining 6 xonalik unikal ID raqami
                 const sixDigitID = usersMap[data.studentID] || "Aniqlanmadi";
 
-                // Fan bloklarini ajratib ko'rsatish
-                let blockSubjects = "Majburiy fanlar";
+                // 2 ta asosiy blok fanlarini ajratib olish mantiqi
+                let mainSubjects = "Majburiy fanlar";
                 if (data.subjects) {
-                    const subs = Object.keys(data.subjects).filter(s => s.includes("blok"));
-                    if(subs.length > 0) blockSubjects = subs.join(" va ");
+                    const filtered = Object.keys(data.subjects).filter(s => s.includes("blok"));
+                    if(filtered.length > 0) {
+                        mainSubjects = filtered.map(s => s.replace(" (1-blok)", "").replace(" (2-blok)", "")).join(" va ");
+                    }
                 }
 
-                // Vaqtni formatlash
+                // Topshirilgan vaqt formatlanishi
                 let formattedDate = "---";
                 if (data.timestamp) {
                     const date = data.timestamp.toDate();
@@ -208,83 +208,63 @@
                 row.innerHTML = `
                     <td><span class="rank ${rankClass}">${rank}</span></td>
                     <td>
-                        <span class="student-info">${data.studentName}</span>
-                        <span class="student-id">ID: ${sixDigitID}</span>
+                        <span class="student-info">${data.studentName}</span> <span class="action-hint">💸 To'lash</span>
+                        <span class="student-id">6 xonali ID: ${sixDigitID}</span>
                     </td>
-                    <td><span class="subjects-badge">${blockSubjects}</span></td>
-                    <td><span class="score-badge">${Number(data.totalScore).toFixed(1)}</span></td>
-                    <td>${prizeHTML}</td>
+                    <td class="subjects-td">📚 ${mainSubjects}</td>
+                    <td><span class="score-badge">${Number(data.totalScore).toFixed(1)} ball</span></td>
                     <td><span class="date-time">${formattedDate}</span></td>
                 `;
 
                 tbody.appendChild(row);
-
-                // PDF uchun ma'lumotlarni saqlab borish
-                window.finalRankedData.push({
-                    rank: rank,
-                    name: `${data.studentName} (${sixDigitID})`,
-                    subjects: blockSubjects,
-                    score: Number(data.totalScore).toFixed(1),
-                    prize: prizeText,
-                    date: formattedDate
-                });
-
                 rank++;
             });
         });
 
-        // PDF yaratish va yuklab olish mantiqi
-        window.exportToPDF = () => {
-            if (!window.finalRankedData || window.finalRankedData.length === 0) {
-                alert("Yuklash uchun ma'lumotlar yetarli emas!");
+        // Modalni ochish mantiqi
+        window.openPaymentModal = (name, sixID, userUID) => {
+            selectedUserDocId = userUID; // Pul o'tadigan foydalanuvchi hujjati IDsi
+            document.getElementById('modal-student-name').innerText = "Talaba: " + name;
+            document.getElementById('modal-student-id').innerText = "ID: " + sixID;
+            document.getElementById('prize-amount').value = "";
+            document.getElementById('paymentModal').style.display = 'flex';
+        };
+
+        // Modalni yopish
+        window.closePaymentModal = () => {
+            document.getElementById('paymentModal').style.display = 'none';
+        };
+
+        // Boshqaruvchidan pulni qabul qilib, Firebase bazaga (users collection) yozish
+        window.processPayment = async () => {
+            const amountInput = document.getElementById('prize-amount').value;
+            const btn = document.getElementById('pay-confirm-btn');
+            
+            const amount = parseFloat(amountInput);
+            if (!amount || amount <= 0) {
+                alert("Iltimos, to'g'ri pul miqdorini kiriting!");
                 return;
             }
 
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            btn.disabled = true;
+            btn.innerText = "YUBORILMOQDA...";
 
-            // Sarlavha yozish
-            doc.setFont("Helvetica", "bold");
-            doc.setFontSize(18);
-            doc.text("PREMIUM BLOK TEST YAKUNIY REYTINGI (TOP-10)", 14, 20);
-            
-            doc.setFontSize(10);
-            doc.setFont("Helvetica", "normal");
-            doc.text(`Sana: ${new Date().toLocaleDateString()} | Dr. Rahmonov Avtomatlashtirilgan Tizimi`, 14, 27);
+            try {
+                // users kolleksiyasidagi talabaning balans hisobiga pulni avtomatik ravishda qo'shish (increment)
+                const userRef = doc(db, "users", selectedUserDocId);
+                await updateDoc(userRef, {
+                    balance: increment(amount) // Agarda balansi 'money' deb nomlangan bo'lsa, uni money qiling
+                });
 
-            // Jadval ustunlari
-            const tableColumn = ["O'rin", "Talaba (Ismi va ID)", "Tanlangan Fan Bloklari", "To'plagan Bali", "Yutuq Miqdori", "Sana / Vaqt"];
-            const tableRows = [];
-
-            window.finalRankedData.forEach(item => {
-                const rowData = [
-                    item.rank,
-                    item.name,
-                    item.subjects,
-                    item.score,
-                    item.prize,
-                    item.date
-                ];
-                tableRows.push(rowData);
-            });
-
-            // AutoTable orqali chiroyli PDF generatsiya qilish
-            doc.autoTable({
-                startY: 35,
-                head: [tableColumn],
-                body: tableRows,
-                theme: 'striped',
-                headStyles: { fillColor: [20, 34, 45], textColor: [255, 215, 0], fontStyle: 'bold' },
-                styles: { fontSize: 9, font: "Helvetica" },
-                columnStyles: {
-                    0: { cellWidth: 15, halign: 'center' },
-                    3: { fontStyle: 'bold', textColor: [0, 180, 0] },
-                    4: { fontStyle: 'bold' }
-                }
-            });
-
-            // Faylni saqlash
-            doc.save(`Premium_Top10_Reyting_${new Date().toISOString().slice(0,10)}.pdf`);
+                alert(`Muvaffaqiyatli yakunlandi! ✅\nTalabaning hisobiga ${amount.toLocaleString()} UZS qo'shildi.`);
+                closePaymentModal();
+            } catch (err) {
+                console.error("Pul o'tkazishda xatolik:", err);
+                alert("Xatolik yuz berdi: Foydalanuvchi hujjati topilmadi yoki baza xavfsizligi taqiqlagan!");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "✓ PUL O'TKAZISH";
+            }
         };
     </script>
 </body>
