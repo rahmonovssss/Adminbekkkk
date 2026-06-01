@@ -2,30 +2,45 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin Panel - Dr. Rahmonov</title>
     <style>
         body { background: #0f172a; color: white; font-family: sans-serif; padding: 20px; }
         .container { max-width: 500px; margin: 0 auto; }
+        
+        .section-title { text-align: center; color: #00d2ff; margin-top: 30px; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
+        
         .card { 
             background: #1e293b; padding: 20px; border-radius: 12px; 
-            margin-bottom: 10px; border: 1px solid #334155;
+            margin-bottom: 15px; border: 1px solid #334155;
             display: flex; justify-content: space-between; align-items: center;
             animation: fadeIn 0.3s ease;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .btn-ok { background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-right: 5px; }
         .btn-no { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .btn-ok:active, .btn-no:active { transform: scale(0.95); }
+        
         .sum { color: #38bdf8; font-weight: bold; font-size: 18px; }
+        .sum-withdraw { color: #f43f5e; font-weight: bold; font-size: 18px; } /* Chiqim uchun qizil rang */
+        
         .user-info b { font-size: 16px; color: #f8fafc; }
         .user-info span { font-size: 12px; color: #94a3b8; }
+        
+        /* Karta raqamlari bloki */
+        .card-box { background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 8px; font-size: 11px; color: #cbd5e1; margin-top: 5px; border: 1px solid rgba(255,255,255,0.08); }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 style="text-align: center; color: #00d2ff;">📥 To'lov So'rovlari</h2>
-        <hr style="border: 0.5px solid #334155; margin-bottom: 20px;">
+        <h2 class="section-title">📥 To'lov So'rovlari (Kirim)</h2>
+        <hr style="border: 0.5px solid #334155; margin-bottom: 15px;">
         <div id="payment-list">Yuklanmoqda...</div>
+
+        <h2 class="section-title" style="color: #ff4b2b;">📤 Pul Yechish So'rovlari (Chiqim)</h2>
+        <hr style="border: 0.5px solid #334155; margin-bottom: 15px;">
+        <div id="withdraw-list">Yuklanmoqda...</div>
     </div>
 
     <script type="module">
@@ -44,80 +59,131 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // REAL-TIME KUZATISH
-        const q = query(collection(db, "payments"), where("status", "==", "kutilmoqda"));
+        // ==========================================
+        // 1. TO'LOV KIRIMLARINI KUZATISH
+        // ==========================================
+        const qPayments = query(collection(db, "payments"), where("status", "==", "kutilmoqda"));
 
-        onSnapshot(q, (snap) => {
+        onSnapshot(qPayments, (snap) => {
             const list = document.getElementById('payment-list');
             list.innerHTML = "";
-            
             if(snap.empty) {
-                list.innerHTML = "<p style='text-align:center; opacity:0.5;'>Hozircha so'rovlar yo'q.</p>";
+                list.innerHTML = "<p style='text-align:center; opacity:0.5; font-size:13px;'>Kirim so'rovlari yo'q.</p>";
                 return;
             }
-
             snap.forEach((item) => {
                 const p = item.data();
                 const div = document.createElement('div');
                 div.className = "card";
                 div.innerHTML = `
                     <div class="user-info">
-                        <b>${p.fio}</b><br>
-                        <span>ID: ${p.studentID}</span><br>
-                        <span class="sum">${Number(p.summa).toLocaleString()} so'm</span>
+                        <b>${p.fio || 'Noma\'lum'}</b><br>
+                        <span>ID: ${p.studentID || 'Yo\'q'}</span><br>
+                        <span class="sum">+ ${Number(p.summa).toLocaleString()} so'm</span>
                     </div>
                     <div>
-                        <button class="btn-ok" onclick="handleAction('${item.id}', 'tasdiqlandi')">OK</button>
-                        <button class="btn-no" onclick="handleAction('${item.id}', 'rad_etildi')">X</button>
+                        <button class="btn-ok" onclick="handlePaymentAction('${item.id}', 'tasdiqlandi')">OK</button>
+                        <button class="btn-no" onclick="handlePaymentAction('${item.id}', 'rad_etildi')">X</button>
                     </div>
                 `;
                 list.appendChild(div);
             });
         });
 
-        // ACTION FUNKSIYASI (WINDOWGA BIRIKTIRILGAN)
-        window.handleAction = async (id, stat) => {
-            const confirmMsg = stat === 'tasdiqlandi' ? "To'lovni tasdiqlaysizmi?" : "To'lovni rad etasizmi?";
-            if(!confirm(confirmMsg)) return;
+        // ==========================================
+        // 2. PUL YECHISH (WITHDRAW) KUZATISH
+        // ==========================================
+        // Esda tuting: "Kutilmoqda" so'zi withdraw.html da qanday yozilgan bo'lsa shunday bo'lishi shart.
+        const qWithdraws = query(collection(db, "withdraw_requests"), where("status", "==", "Kutilmoqda"));
 
+        onSnapshot(qWithdraws, (snap) => {
+            const list = document.getElementById('withdraw-list');
+            list.innerHTML = "";
+            if(snap.empty) {
+                list.innerHTML = "<p style='text-align:center; opacity:0.5; font-size:13px;'>Chiqim so'rovlari yo'q.</p>";
+                return;
+            }
+            snap.forEach((item) => {
+                const w = item.data();
+                const div = document.createElement('div');
+                div.className = "card";
+                div.innerHTML = `
+                    <div class="user-info">
+                        <b>${w.userFio || 'Noma\'lum'}</b><br>
+                        <span>ID: ${w.studentID || 'Yo\'q'}</span><br>
+                        <span class="sum-withdraw">- ${Number(w.amount).toLocaleString()} so'm</span>
+                        <div class="card-box">
+                            💳 ${w.cardType}: <b>${w.cardNumber}</b><br>
+                            👤 ${w.cardHolder}
+                        </div>
+                    </div>
+                    <div>
+                        <button class="btn-ok" onclick="handleWithdrawAction('${item.id}', 'tasdiqlandi')">OK</button>
+                        <button class="btn-no" onclick="handleWithdrawAction('${item.id}', 'rad_etildi')">X</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        });
+
+        // ==========================================
+        // 3. TO'LOV KIRIM ACTION FUNKSIYASI
+        // ==========================================
+        window.handlePaymentAction = async (id, stat) => {
+            if(!confirm(stat === 'tasdiqlandi' ? "To'lovni tasdiqlaysizmi?" : "To'lovni rad etasizmi?")) return;
             try {
                 const payRef = doc(db, "payments", id);
                 const paySnap = await getDoc(payRef);
+                if (!paySnap.exists()) return alert("Xato: To'lov topilmadi!");
                 
-                if (!paySnap.exists()) {
-                    alert("Xato: To'lov topilmadi!");
-                    return;
-                }
-
                 const pData = paySnap.data();
 
                 if (stat === 'tasdiqlandi') {
-                    // 1. Foydalanuvchi balansini oshirish
                     const userRef = doc(db, "users", pData.uid);
                     const userSnap = await getDoc(userRef);
-                    
                     if (userSnap.exists()) {
                         const currentBal = Number(userSnap.data().balance || 0);
-                        const addSum = Number(pData.summa);
-                        await updateDoc(userRef, { balance: currentBal + addSum });
-                        
-                        // 2. To'lovni statusini o'zgartirish (Arxiv uchun)
+                        await updateDoc(userRef, { balance: currentBal + Number(pData.summa) });
                         await updateDoc(payRef, { status: 'tasdiqlandi' });
-                        alert("Muvaffaqiyatli tasdiqlandi va pul o'tkazildi! ✅");
-                    } else {
-                        alert("Xato: Foydalanuvchi profili topilmadi!");
-                    }
+                        alert("Muvaffaqiyatli balansga qo'shildi! ✅");
+                    } else { alert("Foydalanuvchi topilmadi!"); }
                 } else {
-                    // RAD ETILGANDA: To'lovni bazadan butunlay o'chirish yoki statusini o'zgartirish
-                    // Men bu yerda o'chirishni tanladim, bazada axlat ko'paymasligi uchun:
                     await deleteDoc(payRef);
-                    alert("To'lov so'rovi rad etildi va o'chirildi! ❌");
+                    alert("Kirim so'rovi o'chirildi! ❌");
                 }
+            } catch (e) { alert("Xatolik: " + e.message); }
+        };
 
-            } catch (e) {
-                console.error("Xato yuz berdi:", e);
-                alert("Xatolik: " + e.message);
-            }
+        // ==========================================
+        // 4. PUL YECHISH (WITHDRAW) ACTION FUNKSIYASI
+        // ==========================================
+        window.handleWithdrawAction = async (id, stat) => {
+            const confirmMsg = stat === 'tasdiqlandi' ? "Kartaga pulni o'tkazib berdingizmi? So'rovni yopish." : "Yechish so'rovini rad etasizmi? Pul egasiga qaytariladi.";
+            if(!confirm(confirmMsg)) return;
+
+            try {
+                const withRef = doc(db, "withdraw_requests", id);
+                const withSnap = await getDoc(withRef);
+                if (!withSnap.exists()) return alert("Xato: So'rov topilmadi!");
+
+                const wData = withSnap.data();
+                const userRef = doc(db, "users", wData.uid);
+
+                if (stat === 'tasdiqlandi') {
+                    // Pul yechishda foydalanuvchi balansidan pul ayrilib bo'lingan, shunchaki statusni yopamiz
+                    await updateDoc(withRef, { status: 'Tasdiqlandi' });
+                    alert("Pul yechish so'rovi muvaffaqiyatli yakunlandi! ✅");
+                } else {
+                    // RAD ETILGANDA: Pulni foydalanuvchi hisobiga qayta tiklash
+                    const userSnap = await getDoc(userRef);
+                    if (userSnap.exists()) {
+                        const currentBal = Number(userSnap.data().balance || 0);
+                        await updateDoc(userRef, { balance: currentBal + Number(wData.amount) });
+                        await deleteDoc(withRef); // Bazada axlat turmasligi uchun o'chiramiz
+                        alert("So'rov rad etildi va pul foydalanuvchiga qaytarildi! ↩️");
+                    } else { alert("Foydalanuvchi profili topilmadi!"); }
+                }
+            } catch (e) { alert("Xatolik: " + e.message); }
         };
     </script>
 </body>
