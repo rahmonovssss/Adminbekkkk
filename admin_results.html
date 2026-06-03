@@ -48,7 +48,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1); padding: 18px 10px;
             border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;
             text-align: center; transition: all 0.2s ease; position: relative;
-            user-select: none;
         }
         .subject-btn:hover { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.2); }
         
@@ -93,6 +92,7 @@
 
         .student-info { font-weight: 600; color: #fff; font-size: 15px; }
         
+        /* ID raqam uchun maxsus dizayn paneli */
         .id-badge-box {
             display: inline-block;
             background: rgba(255, 215, 0, 0.05);
@@ -147,9 +147,10 @@
         }
         .pdf-export-mode th { background: #14222d !important; color: #ffd700 !important; border: 1px solid #cbd5e1 !important; text-align: center !important; }
         .pdf-export-mode td { color: #000000 !important; border: 1px solid #cbd5e1 !important; background: #ffffff !important; padding: 12px 15px !important; text-align: center !important; }
-        .pdf-export-mode td:nth-child(2) { text-align: left !important; } 
+        .pdf-export-mode td:nth-child(2) { text-align: left !important; } /* Ism chapda qoladi */
         .pdf-export-mode .student-info { color: #000000 !important; font-weight: bold !important; }
         
+        /* PDF dagi ID Katak stili */
         .pdf-export-mode .id-badge-box { 
             background: #f8fafc !important; 
             color: #0f172a !important; 
@@ -159,6 +160,7 @@
         
         .pdf-export-mode .score-badge { color: #008000 !important; font-weight: bold !important; }
         
+        /* PDF dagi shakldor reyting o'rinlari stili */
         .pdf-export-mode .rank { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
         .pdf-export-mode .rank-1 { background: #ffd700 !important; color: #000000 !important; font-size: 16px !important; }
         .pdf-export-mode .rank-2 { background: #e2e8f0 !important; color: #000000 !important; }
@@ -167,6 +169,7 @@
         
         .pdf-export-mode .action-hint { display: none !important; }
         
+        /* PDF dagi sarlavhalar bloki (Oddiy vaqtda yashirin turadi) */
         #pdf-header-title-block { display: none; margin-bottom: 20px; border-bottom: 2px solid #14222d; padding-bottom: 10px; color: #000; }
         .pdf-export-mode #pdf-header-title-block { display: block !important; }
     </style>
@@ -224,8 +227,7 @@
                         <th style="width: 80px; text-align: center;">O'rin</th>
                         <th>Talaba ismi</th>
                         <th style="text-align: center; width: 120px;">ID Raqam</th>
-                        <th id="th-subject-col">Tanlangan Blok Fanlari</th> 
-                        <th style="text-align: center; width: 130px;">To'plagan Bali</th>
+                        <th id="th-subject-col">Tanlangan Blok Fanlari</th> <th style="text-align: center; width: 130px;">To'plagan Bali</th>
                         <th style="text-align: center; width: 180px;">Topshirilgan Vaqt</th>
                     </tr>
                 </thead>
@@ -415,12 +417,12 @@
                 data.sixDigitID = String(sixDigitID);
                 data.pdfDateTime = String(formattedDate);
 
-                // Modul ichida xavfsiz click tinglovchisini bog'lash
                 row.addEventListener('click', () => openPaymentModal(data.studentName, sixDigitID, data.studentID));
 
                 let rankClass = "rank-other";
-                let rankVisual = rank;
+                let rankVisual = rank; // Standart raqam qiymati
 
+                // O'rinlar uchun chiroyli dizayn berish qismi (1-o'ringa Toj ramzi va medallar)
                 if (rank === 1) {
                     rankClass = "rank-1";
                     rankVisual = "👑 1";
@@ -447,7 +449,7 @@
                 row.innerHTML = `
                     <td style="text-align: center;"><span class="rank ${rankClass}" style="width: auto; padding: 0 10px; border-radius: 12px;">${rankVisual}</span></td>
                     <td>
-                        <span class="student-info">${data.studentName}</span> <span class="action-hint">💸 To'lash</span>
+                        <span class="student-info">${data.studentName}</span> <span class="action-hint">💸 To'lar</span>
                     </td>
                     <td style="text-align: center;">
                         <span class="id-badge-box">${sixDigitID}</span>
@@ -461,7 +463,7 @@
             });
         }
 
-        // --- OPTIMALLASHTIRILGAN PDF EKSPORT XIZMATI ---
+        // --- OPTIMALLASHTIRILGAN VA TOZA DIZAYNDAGI PDF EKSPORT FUNKSIYASI ---
         downloadPdfBtn.addEventListener('click', () => {
             const area = document.getElementById('pdf-container-area');
             const thSubject = document.getElementById('th-subject-col');
@@ -472,6 +474,7 @@
                 return;
             }
 
+            // 1. PDF Sarlavhasiga joriy vaqt va filtr ma'lumotlarini dinamik yozamiz
             let joriyFiltr = "Barcha kombinatsiyalar";
             if (activeSelectedSubjects.length === 1) {
                 joriyFiltr = `1-Blok: ${activeSelectedSubjects[0]}`;
@@ -484,10 +487,11 @@
             const vaqtSatr = `${String(hozir.getDate()).padStart(2, '0')}.${String(hozir.getMonth() + 1).padStart(2, '0')}.${hozir.getFullYear()} | ${String(hozir.getHours()).padStart(2, '0')}:${String(hozir.getMinutes()).padStart(2, '0')}`;
             document.getElementById('pdf-date-info').innerText = `Yaratilgan vaqt: ${vaqtSatr}`;
 
-            // PDF renderda ustun buzilmasligi uchun yashirish
+            // 2. Eksportdan oldin jadval ichidagi FANLAR ustunini vaqtincha yashiramiz (Siqilishni oldini olish)
             if(thSubject) thSubject.style.display = 'none';
             tdSubjects.forEach(td => td.style.display = 'none');
 
+            // 3. Eksport rejimining oq-toza stillarini faollashtiramiz
             area.classList.add('pdf-export-mode');
 
             const options = {
@@ -498,20 +502,21 @@
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
+            // PDF yaratish va yuklash
             html2pdf().set(options).from(area).save().then(() => {
-                // Joylashuvni qayta tiklash
+                // Yuklab bo'lingach, hamma narsani admin paneldagi asl qora holatiga qaytaramiz
                 area.classList.remove('pdf-export-mode');
-                if(thSubject) thSubject.style.display = 'table-cell';
-                tdSubjects.forEach(td => td.style.display = 'table-cell');
+                if(thSubject) thSubject.style.display = '';
+                tdSubjects.forEach(td => td.style.display = '');
             }).catch(err => {
                 alert("Yuklashda xatolik: " + err.message);
                 area.classList.remove('pdf-export-mode');
-                if(thSubject) thSubject.style.display = 'table-cell';
-                tdSubjects.forEach(td => td.style.display = 'table-cell');
+                if(thSubject) thSubject.style.display = '';
+                tdSubjects.forEach(td => td.style.display = '');
             });
         });
 
-        // Modal funksiyalari (Modul scope ichida boshqariladi)
+        // Modal amallari qismi
         function openPaymentModal(name, sixID, userUID) {
             selectedUserDocId = userUID; 
             document.getElementById('modal-student-name').innerText = "Talaba: " + name;
@@ -545,7 +550,7 @@
                 alert(`Muvaffaqiyatli yakunlandi! ✅\nTalabaning hisobiga ${amount.toLocaleString()} UZS qo'shildi.`);
                 closePaymentModal();
             } catch (err) {
-                alert("Xatolik yuz berdi yoki foydalanuvchi hujjati topilmadi!");
+                alert("Xatolik yuz berdi!");
             } finally {
                 btn.disabled = false;
                 btn.innerText = "✓ PUL O'TKAZISH";
