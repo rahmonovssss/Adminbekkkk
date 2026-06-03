@@ -98,9 +98,9 @@
         }
 
         .btn-main { background: var(--success); color: white; width: 100%; font-size: 15px; }
-        .btn-edit { background: var(--brand); color: white; width: 100%; font-size: 15px; display: none; margin-bottom: 15px; }
+        .btn-edit { background: var(--brand); color: white; width: 100%; font-size: 15px; display: none; }
 
-        /* TAHRIRLASH MODAL OYNASI */
+        /* TAHRIRLASH MODAL OYNASI (FULLSCREEN) */
         .editor-modal {
             position: fixed;
             top: 0;
@@ -183,6 +183,7 @@
             box-sizing: border-box;
         }
 
+        /* TRANSFORMATSIYA RAMKASI */
         .image-transform-overlay {
             position: absolute;
             border: 2px solid #5b9bd5;
@@ -211,10 +212,33 @@
         .handle-ml { top: 50%; left: -5px; transform: translateY(-50%); cursor: ew-resize; }
         .handle-mr { top: 50%; right: -5px; transform: translateY(-50%); cursor: ew-resize; }
 
-        .handle-rotator { top: -25px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; border-radius: 50%; background-color: #4472c4; cursor: grab; }
-        .handle-line { position: absolute; top: -25px; left: 50%; width: 1px; height: 25px; background-color: #5b9bd5; }
+        .handle-rotator {
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #4472c4;
+            cursor: grab;
+        }
+        .handle-line {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            width: 1px;
+            height: 25px;
+            background-color: #5b9bd5;
+        }
 
-        .alignment-guide { position: absolute; background: none; border: 1px dashed #ff4d4d; display: none; pointer-events: none; z-index: 9998; }
+        .alignment-guide {
+            position: absolute;
+            background: none;
+            border: 1px dashed #ff4d4d;
+            display: none;
+            pointer-events: none;
+            z-index: 9998;
+        }
         .guide-x { width: 100%; height: 0; left: 0; }
         .guide-y { height: 100%; width: 0; top: 0; }
 
@@ -235,12 +259,30 @@
         }
 
         .resizer-btn {
-            background: #444342; color: white; border: none; width: 35px; height: 35px; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            background: #444342;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .resizer-btn:hover { background: #555453; }
 
         .toast-info {
-            background: #e0f2fe; color: #0369a1; padding: 12px; border-radius: 4px; font-size: 13px; margin-top: 15px; display: none; font-weight: 500;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-top: 15px;
+            display: none;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -248,12 +290,12 @@
 
 <div class="app-header">
     <h1>Dr. Rahmonov — Boshqaruv Paneli</h1>
-    <div style="font-weight: 700; font-size: 14px; color: var(--success);">● ONLINE</div>
+    <div style="font-weight: 700; font-size: 14px; color: var(--success);">● ADMIN ONLINE</div>
 </div>
 
 <div class="main-container">
     <div class="config-card">
-        <h2 style="margin-top:0; margin-bottom:20px; font-size:17px; color: var(--brand);">📂 Test Yuklash va Faollashtirish</h2>
+        <h2 style="margin-top:0; margin-bottom:20px; font-size:17px; color: var(--brand);">📂 Premium Test Tizimini Ishga Tushirish</h2>
         
         <div class="form-group">
             <label>1. Fanni tanlang</label>
@@ -265,19 +307,24 @@
             </select>
         </div>
 
+        <div class="form-group">
+            <label>2. Premium rejim boshlanish vaqti (Sana va Soat)</label>
+            <input type="datetime-local" id="main-time">
+        </div>
+
         <div class="form-row">
             <div class="form-group">
-                <label>2. Premium rejim boshlanish vaqti (Ixtiyoriy)</label>
-                <input type="datetime-local" id="main-time">
+                <label>3. Kirish ochiq vaqti (Minut)</label>
+                <input type="number" id="main-entry-duration" value="5" min="1" placeholder="Masalan: 5">
             </div>
             <div class="form-group">
-                <label>3. Test davomiyligi (Minutda / Ixtiyoriy)</label>
-                <input type="number" id="main-duration" placeholder="Masalan: 30" min="1">
+                <label>4. Test davomiyligi (Minut)</label>
+                <input type="number" id="main-quiz-duration" value="80" min="1" placeholder="Masalan: 80">
             </div>
         </div>
 
         <div class="form-group">
-            <label>4. Word (.docx) test faylini kiriting</label>
+            <label>5. Word (.docx) test faylini kiriting</label>
             <input type="file" id="main-word-file" accept=".docx">
         </div>
 
@@ -287,9 +334,10 @@
 
         <div id="main-toast" class="toast-info"></div>
 
-        <button id="btn-activate-system" class="btn-main" style="margin-top: 25px;">🚀 SOZLAMALARNI SAQLASH VA TIZIMNI ISHGA TUSHIRISH</button>
+        <button id="btn-submit-system" class="btn-main" style="margin-top: 25px;">🚀 SOZLAMALARNI SAQLASH VA TIZIMNI ISHGA TUSHIRISH</button>
     </div>
 </div>
+
 
 <div id="editor-modal-window" class="editor-modal">
     <div class="modal-topbar">
@@ -314,10 +362,12 @@
                 <div class="transform-handle handle-tr" data-handle="tr"></div>
                 <div class="transform-handle handle-bl" data-handle="bl"></div>
                 <div class="transform-handle handle-br" data-handle="br"></div>
+                
                 <div class="transform-handle handle-mt" data-handle="mt"></div>
                 <div class="transform-handle handle-mb" data-handle="mb"></div>
                 <div class="transform-handle handle-ml" data-handle="ml"></div>
                 <div class="transform-handle handle-mr" data-handle="mr"></div>
+                
                 <div class="transform-handle handle-rotator" data-handle="rotate"></div>
             </div>
         </div>
@@ -331,12 +381,73 @@
     <button class="resizer-btn" style="background:#a80000; font-size: 12px;" onclick="deleteSelectedImg()">🗑️</button>
 </div>
 
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Sizning Firebase konfigurasiyangiz
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
+        authDomain: "quiz-app-3692d.firebaseapp.com",
+        projectId: "quiz-app-3692d",
+        storageBucket: "quiz-app-3692d.firebasestorage.app",
+        messagingSenderId: "526836020845",
+        appId: "1:526836020845:android:3ea991380c104c75e8b164"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Form elementlari uchun event tinglovchi
+    document.getElementById('btn-submit-system').addEventListener('click', async () => {
+        const fan = document.getElementById('main-subject').value;
+        const startTimeStr = document.getElementById('main-time').value;
+        const entryMin = parseInt(document.getElementById('main-entry-duration').value);
+        const quizMin = parseInt(document.getElementById('main-quiz-duration').value);
+
+        if (!fan || !startTimeStr || !entryMin || !quizMin) {
+            alert("Iltimos, barcha maydonlarni toʻliq toʻldiring!");
+            return;
+        }
+
+        // Vaqt hisob-kitoblarini millisoniyalarda (Timestamp) bajarish
+        const startTimeMs = new Date(startTimeStr).getTime();
+        const entryTimeEndMs = startTimeMs + (entryMin * 60 * 1000); // Kirish tugash vaqti
+        const quizTimeEndMs = entryTimeEndMs + (quizMin * 60 * 1000);   // Test butkul yakunlanish vaqti
+
+        // Word qoldiqlarini tozalash
+        const editorPage = document.getElementById('word-editor-page');
+        const placeholders = editorPage.querySelectorAll('.img-placeholder-block');
+        placeholders.forEach(p => p.remove());
+        
+        const finalWordContent = editorPage.innerHTML;
+
+        // Firebase Firestore uchun tayyor paket
+        const settingsPayload = {
+            subject: fan,
+            startTime: startTimeMs,         // Boshlanish vaqti (Masalan: 14:00)
+            entryEndTime: entryTimeEndMs,   // Kirish tugash vaqti (Masalan: 14:05)
+            quizEndTime: quizTimeEndMs,     // Test butkul tugash vaqti (Masalan: 15:25)
+            documentDataHtml: finalWordContent,
+            status: "ACTIVE"
+        };
+
+        try {
+            // "system_settings" kolleksiyasining "premium_quiz" hujjatiga yozamiz
+            await setDoc(doc(db, "system_settings", "premium_quiz"), settingsPayload);
+            alert(`🎉 Tizim muvaffaqiyatli ishga tushdi!\n\nFan: ${fan}\nKirish vaqti: ${entryMin} daqiqa\nTest davomiyligi: ${quizMin} daqiqa.`);
+        } catch (error) {
+            console.error("Xatolik yuz berdi: ", error);
+            alert("Ma'lumotlarni saqlashda xatolik yuz berdi!");
+        }
+    });
+</script>
+
 <script>
-    let finalWordContent = "";
+    // Word (.docx) Faylini o'qish mexanizmi va uning ichki funksiyalari
     let lastSavedSelection = null;
     let selectedImageElement = null;
     let currentPlaceholder = null; 
-
     let currentRotation = 0;
     let isTransforming = false;
     let isDragging = false;
@@ -359,6 +470,7 @@
                         const gy = document.getElementById('guide-y');
                         
                         document.getElementById('word-editor-page').innerHTML = result.value;
+                        
                         document.getElementById('word-editor-page').appendChild(frame);
                         document.getElementById('word-editor-page').appendChild(gx);
                         document.getElementById('word-editor-page').appendChild(gy);
@@ -375,7 +487,9 @@
         }
     });
 
-    function openEditorModal() { document.getElementById('editor-modal-window').style.display = 'flex'; }
+    function openEditorModal() {
+        document.getElementById('editor-modal-window').style.display = 'flex';
+    }
 
     const editorPage = document.getElementById('word-editor-page');
     editorPage.addEventListener('blur', saveSelection);
@@ -386,7 +500,11 @@
         if (e.key === 'Backspace' || e.key === 'Delete') {
             setTimeout(() => {
                 const emptyPlaceholders = editorPage.querySelectorAll('.img-placeholder-block');
-                emptyPlaceholders.forEach(p => { if (!selectedImageElement || !editorPage.contains(selectedImageElement)) p.remove(); });
+                emptyPlaceholders.forEach(p => {
+                    if (!selectedImageElement || !editorPage.contains(selectedImageElement)) {
+                        p.remove();
+                    }
+                });
             }, 10);
         }
     });
@@ -395,7 +513,9 @@
         const sel = window.getSelection();
         if (sel.getRangeAt && sel.rangeCount) {
             const range = sel.getRangeAt(0);
-            if (editorPage.contains(range.commonAncestorContainer)) lastSavedSelection = range;
+            if (editorPage.contains(range.commonAncestorContainer)) {
+                lastSavedSelection = range;
+            }
         }
     }
 
@@ -408,13 +528,16 @@
                 img.src = event.target.result;
                 img.style.width = "300px"; 
                 img.style.position = "relative";
+                
                 editorPage.focus();
+
                 if (lastSavedSelection) {
                     lastSavedSelection.deleteContents();
                     lastSavedSelection.insertNode(img);
                 } else {
                     editorPage.appendChild(img);
                 }
+                
                 initImageEvents();
                 img.click(); 
             };
@@ -426,14 +549,18 @@
         if (!selectedImageElement) return;
         const img = selectedImageElement;
         const frame = document.getElementById('image-transform-frame');
+        
         frame.style.width = img.offsetWidth + 'px';
         frame.style.height = img.offsetHeight + 'px';
         frame.style.left = img.offsetLeft + 'px';
         frame.style.top = img.offsetTop + 'px';
+        
         if(img.style.transform) {
             const match = img.style.transform.match(/rotate\(([^)]+)deg\)/);
             currentRotation = match ? parseFloat(match[1]) : 0;
-        } else { currentRotation = 0; }
+        } else {
+            currentRotation = 0;
+        }
         frame.style.transform = `rotate(${currentRotation}deg)`;
         frame.style.display = 'block';
     }
@@ -443,16 +570,26 @@
         for (let i = 0; i < images.length; i++) {
             images[i].removeEventListener('mousedown', onImgMouseDown);
             images[i].removeEventListener('touchstart', onImgMouseDown);
+
             images[i].addEventListener('click', function(e) {
                 e.stopPropagation(); 
-                if (selectedImageElement && selectedImageElement !== this) selectedImageElement.classList.remove('selected-img');
+                if (selectedImageElement && selectedImageElement !== this) {
+                    selectedImageElement.classList.remove('selected-img');
+                }
                 selectedImageElement = this;
                 selectedImageElement.classList.add('selected-img');
+                
                 const prevSibling = this.previousElementSibling;
-                currentPlaceholder = (prevSibling && prevSibling.classList.contains('img-placeholder-block')) ? prevSibling : null;
+                if (prevSibling && prevSibling.classList.contains('img-placeholder-block')) {
+                    currentPlaceholder = prevSibling;
+                } else {
+                    currentPlaceholder = null;
+                }
+
                 document.getElementById('resizer-panel').style.display = 'flex';
                 updateTransformFrame();
             });
+
             images[i].addEventListener('mousedown', onImgMouseDown);
             images[i].addEventListener('touchstart', onImgMouseDown, { passive: false });
         }
@@ -460,86 +597,164 @@
 
     function onImgMouseDown(e) {
         if (e.target !== selectedImageElement || e.target.classList.contains('transform-handle')) return;
-        e.preventDefault(); e.stopPropagation();
-        isDragging = true; const img = selectedImageElement;
+        
+        e.preventDefault();
+        e.stopPropagation();
+
+        isDragging = true;
+        const img = selectedImageElement;
+
         if (img.style.position !== 'absolute') {
-            const rect = img.getBoundingClientRect(); const parentRect = editorPage.getBoundingClientRect();
+            const rect = img.getBoundingClientRect();
+            const parentRect = editorPage.getBoundingClientRect();
+            
             startLeft = rect.left - parentRect.left + editorPage.scrollLeft;
             startTop = rect.top - parentRect.top + editorPage.scrollTop;
-            startWidth = img.offsetWidth; startHeight = img.offsetHeight;
+            startWidth = img.offsetWidth;
+            startHeight = img.offsetHeight;
+
             currentPlaceholder = document.createElement('div');
             currentPlaceholder.className = 'img-placeholder-block';
-            currentPlaceholder.style.width = startWidth + 'px'; currentPlaceholder.style.height = startHeight + 'px';
+            currentPlaceholder.style.width = startWidth + 'px';
+            currentPlaceholder.style.height = startHeight + 'px';
+            
             img.parentNode.insertBefore(currentPlaceholder, img);
-            img.style.position = 'absolute'; img.style.left = startLeft + 'px'; img.style.top = startTop + 'px';
-            img.style.width = startWidth + 'px'; img.style.height = startHeight + 'px'; img.style.margin = '0';
+
+            img.style.position = 'absolute';
+            img.style.left = startLeft + 'px';
+            img.style.top = startTop + 'px';
+            img.style.width = startWidth + 'px';
+            img.style.height = startHeight + 'px';
+            img.style.margin = '0';
+            
             updateTransformFrame();
         } else {
-            startLeft = parseFloat(img.style.left); startTop = parseFloat(img.style.top);
+            startLeft = parseFloat(img.style.left);
+            startTop = parseFloat(img.style.top);
         }
+
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        startX = clientX; startY = clientY;
-        document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onEndMove);
-        document.addEventListener('touchmove', onMove, { passive: false }); document.addEventListener('touchend', onEndMove);
+        startX = clientX;
+        startY = clientY;
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onEndMove);
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('touchend', onEndMove);
     }
 
     editorPage.addEventListener('click', function(e) {
         if(e.target.closest('#image-transform-frame') || e.target.tagName === 'IMG') return;
         hideGuides();
         if (selectedImageElement) {
-            selectedImageElement.classList.remove('selected-img'); selectedImageElement = null; currentPlaceholder = null;
-            document.getElementById('resizer-panel').style.display = 'none'; document.getElementById('image-transform-frame').style.display = 'none';
+            selectedImageElement.classList.remove('selected-img');
+            selectedImageElement = null;
+            currentPlaceholder = null;
+            document.getElementById('resizer-panel').style.display = 'none';
+            document.getElementById('image-transform-frame').style.display = 'none';
         }
     });
 
     const frame = document.getElementById('image-transform-frame');
-    frame.addEventListener('mousedown', onHandleMouseDown); frame.addEventListener('touchstart', onHandleMouseDown, { passive: false });
+    frame.addEventListener('mousedown', onHandleMouseDown);
+    frame.addEventListener('touchstart', onHandleMouseDown, { passive: false });
 
     function onHandleMouseDown(e) {
         if (!selectedImageElement) return;
-        const handle = e.target.closest('.transform-handle'); if (!handle) return;
-        e.preventDefault(); e.stopPropagation();
-        isTransforming = true; currentHandle = handle.getAttribute('data-handle');
+        const handle = e.target.closest('.transform-handle');
+        if (!handle) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        isTransforming = true;
+        currentHandle = handle.getAttribute('data-handle');
+        
         const img = selectedImageElement;
-        startWidth = img.offsetWidth; startHeight = img.offsetHeight;
-        startLeft = parseFloat(img.style.left) || img.offsetLeft; startTop = parseFloat(img.style.top) || img.offsetTop;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        startX = clientX; startY = clientY;
-        const rect = img.getBoundingClientRect(); const centerX = rect.left + rect.width / 2; const centerY = rect.top + rect.height / 2;
+        startWidth = img.offsetWidth;
+        startHeight = img.offsetHeight;
+        startLeft = parseFloat(img.style.left) || img.offsetLeft;
+        startTop = parseFloat(img.style.top) || img.offsetTop;
+
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startX = clientX;
+        startY = clientY;
+
+        const rect = img.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
         startAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
-        document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onEndMove);
-        document.addEventListener('touchmove', onMove, { passive: false }); document.addEventListener('touchend', onEndMove);
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onEndMove);
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('touchend', onEndMove);
     }
 
     function onMove(e) {
         if (!selectedImageElement || (!isDragging && !isTransforming)) return;
         e.preventDefault();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const diffX = clientX - startX; const diffY = clientY - startY;
+
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const diffX = clientX - startX;
+        const diffY = clientY - startY;
 
         if (isDragging) {
-            selectedImageElement.style.left = (startLeft + diffX) + 'px'; selectedImageElement.style.top = (startTop + diffY) + 'px';
+            selectedImageElement.style.left = (startLeft + diffX) + 'px';
+            selectedImageElement.style.top = (startTop + diffY) + 'px';
             updateTransformFrame();
         } else if (isTransforming) {
-            let newWidth = startWidth; let newHeight = startHeight; let newLeft = startLeft; let newTop = startTop;
+            let newWidth = startWidth;
+            let newHeight = startHeight;
+            let newLeft = startLeft;
+            let newTop = startTop;
+
             if (currentHandle === 'rotate') {
-                const rect = selectedImageElement.getBoundingClientRect(); const centerX = rect.left + rect.width / 2; const centerY = rect.top + rect.height / 2;
+                const rect = selectedImageElement.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
                 const currentAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
                 let angle = currentRotation + (currentAngle - startAngle);
-                const snapThreshold = 4; let snapped = false; const targets = [0, 90, 180, 270, 360, -90, -180, -270];
-                targets.forEach(target => { if (Math.abs(angle - target) < snapThreshold || Math.abs((angle % 360) - target) < snapThreshold) { angle = target; snapped = true; } });
-                selectedImageElement.style.transform = `rotate(${angle}deg)`; document.getElementById('image-transform-frame').style.transform = `rotate(${angle}deg)`;
-                if (snapped) showGuides(selectedImageElement); else hideGuides();
+                
+                const snapThreshold = 4; 
+                let snapped = false;
+                const targets = [0, 90, 180, 270, 360, -90, -180, -270];
+                
+                targets.forEach(target => {
+                    if (Math.abs(angle - target) < snapThreshold || Math.abs((angle % 360) - target) < snapThreshold) {
+                        angle = target;
+                        snapped = true;
+                    }
+                });
+
+                selectedImageElement.style.transform = `rotate(${angle}deg)`;
+                document.getElementById('image-transform-frame').style.transform = `rotate(${angle}deg)`;
+
+                if (snapped) {
+                    showGuides(selectedImageElement);
+                } else {
+                    hideGuides();
+                }
+
             } else {
                 if (currentHandle.includes('r')) newWidth = startWidth + diffX;
                 if (currentHandle.includes('l')) { newWidth = startWidth - diffX; newLeft = startLeft + diffX; }
                 if (currentHandle.includes('b')) newHeight = startHeight + diffY;
                 if (currentHandle.includes('t')) { newHeight = startHeight - diffY; newTop = startTop + diffY; }
+
                 if (newWidth > 20 && newHeight > 20) {
-                    selectedImageElement.style.width = newWidth + 'px'; selectedImageElement.style.height = newHeight + 'px';
-                    selectedImageElement.style.left = newLeft + 'px'; selectedImageElement.style.top = newTop + 'px';
-                    if(currentPlaceholder) { currentPlaceholder.style.width = newWidth + 'px'; currentPlaceholder.style.height = newHeight + 'px'; }
+                    selectedImageElement.style.width = newWidth + 'px';
+                    selectedImageElement.style.height = newHeight + 'px';
+                    selectedImageElement.style.left = newLeft + 'px';
+                    selectedImageElement.style.top = newTop + 'px';
+                    
+                    if(currentPlaceholder) {
+                        currentPlaceholder.style.width = newWidth + 'px';
+                        currentPlaceholder.style.height = newHeight + 'px';
+                    }
                     updateTransformFrame();
                 }
             }
@@ -547,29 +762,53 @@
     }
 
     function showGuides(img) {
-        const guideX = document.getElementById('guide-x'); const guideY = document.getElementById('guide-y');
-        const midX = img.offsetTop + (img.offsetHeight / 2); const midY = img.offsetLeft + (img.offsetWidth / 2);
-        guideX.style.top = midX + 'px'; guideX.style.display = 'block';
-        guideY.style.left = midY + 'px'; guideY.style.display = 'block';
+        const guideX = document.getElementById('guide-x');
+        const guideY = document.getElementById('guide-y');
+        const midX = img.offsetTop + (img.offsetHeight / 2);
+        const midY = img.offsetLeft + (img.offsetWidth / 2);
+        
+        guideX.style.top = midX + 'px';
+        guideX.style.display = 'block';
+        
+        guideY.style.left = midY + 'px';
+        guideY.style.display = 'block';
     }
-    function hideGuides() { document.getElementById('guide-x').style.display = 'none'; document.getElementById('guide-y').style.display = 'none'; }
+
+    function hideGuides() {
+        document.getElementById('guide-x').style.display = 'none';
+        document.getElementById('guide-y').style.display = 'none';
+    }
 
     function onEndMove() {
         if(selectedImageElement && selectedImageElement.style.transform) {
             const match = selectedImageElement.style.transform.match(/rotate\(([^)]+)deg\)/);
             if(match) currentRotation = parseFloat(match[1]);
         }
-        isDragging = false; isTransforming = false; currentHandle = null; hideGuides(); 
-        document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onEndMove);
+        isDragging = false;
+        isTransforming = false;
+        currentHandle = null;
+        hideGuides(); 
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onEndMove);
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onEndMove);
     }
 
     function resizeImage(scale) {
         if (selectedImageElement) {
-            let currentWidth = selectedImageElement.clientWidth; let currentHeight = selectedImageElement.clientHeight;
-            if (!currentWidth) currentWidth = 300; let newWidth = currentWidth * scale; let newHeight = currentHeight * scale;
+            let currentWidth = selectedImageElement.clientWidth || 300;
+            let currentHeight = selectedImageElement.clientHeight;
+            
+            let newWidth = currentWidth * scale;
+            let newHeight = currentHeight * scale;
+            
             if (newWidth > 20 && newWidth < 800) {
-                selectedImageElement.style.width = newWidth + "px"; selectedImageElement.style.height = newHeight + "px";
-                if(currentPlaceholder) { currentPlaceholder.style.width = newWidth + "px"; currentPlaceholder.style.height = newHeight + "px"; }
+                selectedImageElement.style.width = newWidth + "px";
+                selectedImageElement.style.height = newHeight + "px";
+                if(currentPlaceholder) {
+                    currentPlaceholder.style.width = newWidth + "px";
+                    currentPlaceholder.style.height = newHeight + "px";
+                }
                 setTimeout(updateTransformFrame, 10);
             }
         }
@@ -579,87 +818,39 @@
         if (selectedImageElement) {
             if(currentPlaceholder) currentPlaceholder.remove();
             const associatedPlaceholder = selectedImageElement.previousElementSibling;
-            if(associatedPlaceholder && associatedPlaceholder.classList.contains('img-placeholder-block')) associatedPlaceholder.remove();
-            selectedImageElement.remove(); selectedImageElement = null; currentPlaceholder = null;
-            document.getElementById('resizer-panel').style.display = 'none'; document.getElementById('image-transform-frame').style.display = 'none';
+            if(associatedPlaceholder && associatedPlaceholder.classList.contains('img-placeholder-block')) {
+                associatedPlaceholder.remove();
+            }
+            selectedImageElement.remove();
+            selectedImageElement = null;
+            currentPlaceholder = null;
+            
+            document.getElementById('resizer-panel').style.display = 'none';
+            document.getElementById('image-transform-frame').style.display = 'none';
             hideGuides();
         }
     }
 
     function saveEditorAndReturn() {
-        if (selectedImageElement) { selectedImageElement.classList.remove('selected-img'); selectedImageElement = null; }
-        hideGuides(); document.getElementById('resizer-panel').style.display = 'none'; document.getElementById('image-transform-frame').style.display = 'none';
+        if (selectedImageElement) {
+            selectedImageElement.classList.remove('selected-img');
+            selectedImageElement = null;
+        }
+        hideGuides();
+        document.getElementById('resizer-panel').style.display = 'none';
+        document.getElementById('image-transform-frame').style.display = 'none';
+
         const placeholders = editorPage.querySelectorAll('.img-placeholder-block');
         placeholders.forEach(p => p.remove());
-        finalWordContent = editorPage.innerHTML;
+
         document.getElementById('editor-modal-window').style.display = 'none';
+        
         const mainToast = document.getElementById('main-toast');
-        mainToast.style.display = 'block'; mainToast.style.background = '#d1fae5'; mainToast.style.color = '#107c41';
+        mainToast.style.display = 'block';
+        mainToast.style.background = '#d1fae5';
+        mainToast.style.color = '#107c41';
         mainToast.innerHTML = "<b>✓ Word muvaffaqiyatli tahrirlandi!</b> Tizimni ishga tushirishingiz mumkin.";
     }
-</script>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
-        authDomain: "quiz-app-3692d.firebaseapp.com",
-        projectId: "quiz-app-3692d",
-        storageBucket: "quiz-app-3692d.firebasestorage.app",
-        messagingSenderId: "526836020845",
-        appId: "1:526836020845:android:3ea991380c104c75e8b164"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    document.getElementById('btn-activate-system').onclick = async () => {
-        const fan = document.getElementById('main-subject').value;
-        const vaqtStr = document.getElementById('main-time').value;
-        const duration = document.getElementById('main-duration').value;
-
-        if (!fan) {
-            alert("Iltimos, fanni tanlang!");
-            return;
-        }
-
-        // Katak qoldiqlarini tozalash
-        const placeholders = editorPage.querySelectorAll('.img-placeholder-block');
-        placeholders.forEach(p => p.remove());
-        finalWordContent = editorPage.innerHTML;
-
-        let lockTimeMs = null;
-        let endTimeMs = null;
-
-        // Agar admin vaqt kiritgan bo'lsa, millisekundga o'giramiz
-        if (vaqtStr) {
-            lockTimeMs = new Date(vaqtStr).getTime();
-            if (duration) {
-                endTimeMs = lockTimeMs + (parseInt(duration) * 60 * 1000); // Boshlanish vaqti + davomiyligi (minut)
-            }
-        }
-
-        const finalPayload = {
-            subject: fan,
-            startTime: lockTimeMs,                 // Boshlanish vaqti (timestamp yoki null)
-            endTime: endTimeMs,                     // Tugash vaqti (timestamp yoki null)
-            duration: duration ? parseInt(duration) : null, // Necha minutligi
-            documentDataHtml: finalWordContent, 
-            status: "SYSTEM_LAUNCHED",
-            updatedAt: new Date().getTime()
-        };
-
-        try {
-            // Firebase Firestore'da "system_config" nomli kolleksiya ichidagi "active_quiz" hujjatiga yozish
-            await setDoc(doc(db, "system_config", "active_quiz"), finalPayload);
-            alert("🎉 Tizim muvaffaqiyatli ishga tushdi!\n\n" + fan + " fani bazaga saqlandi hamda vaqt parametrlari o'rnatildi.");
-        } catch (error) {
-            console.error("Xatolik yuz berdi: ", error);
-            alert("❌ Firebase'ga yozishda xatolik yuz berdi. Konsolni tekshiring.");
-        }
-    };
 </script>
 
 </body>
