@@ -61,7 +61,7 @@
         <div class="section-label">2. Fanni tanlang:</div>
         <div class="grid-select" id="subject-container"></div>
 
-        <div class="section-label">⏰ Vaqt Sozlamalari (Hamma fanlar uchun umumiy bitta vaqt):</div>
+        <div class="section-label">⏰ Vaqt Sozlamalari:</div>
         <div class="time-row">
             <div class="time-col">
                 <label style="font-size: 11px; color: #ffd700; display: block; margin-bottom: 4px;">Boshlanish vaqti</label>
@@ -125,7 +125,23 @@
         const allSubs = ["Matematika", "Ona tili", "Tarix", "Kimyo", "Biologiya", "Ingiliz tili", "Huquq", "Geografiya", "Fizika"];
         const mandatorySubs = ["Matematika", "Ona tili", "Tarix"];
 
+        // Vaqt qiymatlarini o'chib ketmasligi uchun saqlab turuvchi funksiyalar
+        let savedTimeValues = { start: "", entry: "5", quiz: "80" };
+
+        function backupTimes() {
+            savedTimeValues.start = document.getElementById('main-time').value;
+            savedTimeValues.entry = document.getElementById('entry-duration').value;
+            savedTimeValues.quiz = document.getElementById('quiz-duration').value;
+        }
+
+        function restoreTimes() {
+            document.getElementById('main-time').value = savedTimeValues.start;
+            document.getElementById('entry-duration').value = savedTimeValues.entry;
+            document.getElementById('quiz-duration').value = savedTimeValues.quiz;
+        }
+
         window.renderSubs = () => {
+            backupTimes(); // Fan chizilishidan oldin joriy kiritilgan vaqtni eslab qoladi
             const container = document.getElementById('subject-container');
             container.innerHTML = "";
             const list = (currentType.includes('mandatory')) ? mandatorySubs : allSubs;
@@ -134,12 +150,14 @@
                 const btn = document.createElement('div');
                 btn.className = `choice-btn ${s === currentSub ? 'active' : ''}`;
                 btn.innerText = s;
-                btn.onclick = () => { currentSub = s; renderSubs(); };
+                btn.onclick = () => { backupTimes(); currentSub = s; renderSubs(); };
                 container.appendChild(btn);
             });
+            restoreTimes(); // Fan chizib bo'lingach vaqtni inputga qayta joylaydi
         };
 
         window.setType = (t) => {
+            backupTimes(); // Tur o'zgarishidan oldin vaqtni saqlaydi
             currentType = t;
             document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`m-type-${t}`).classList.add('active');
@@ -166,10 +184,9 @@
             const quizEndTimestamp = entryEndTimestamp + (quizMin * 60 * 1000);
 
             try {
-                // Vaqt sozlamalari barcha fanlar ko'rib tura olishi uchun umumiy "settings" hujjatiga saqlanadi
                 await setDoc(doc(db, "premium_admin", "settings"), {
                     type: currentType,
-                    subject: currentSub, // Oxirgi faollashtirilgan fan nomi
+                    subject: currentSub,
                     startTime: startTimestamp,       
                     entryEndTime: entryEndTimestamp, 
                     quizEndTime: quizEndTimestamp,
@@ -186,10 +203,13 @@
                     createdAt: serverTimestamp()
                 });
                 
-                showToast("✅ Umumiy vaqt va savol muvaffaqiyatli saqlandi!");
+                showToast("✅ Ma'lumotlar muvaffaqiyatli saqlandi!");
                 document.getElementById('m-q').value = "";
                 ['m-a','m-b','m-c','m-d'].forEach(id => document.getElementById(id).value = "");
                 document.getElementById('main-time').value = "";
+                // Muvaffaqiyatli saqlangandan keyin vaqt xotirasini ham tozalaymiz
+                savedTimeValues = { start: "", entry: "5", quiz: "80" };
+                restoreTimes();
             } catch (e) {
                 showToast("❌ Bazaga yozishda xatolik yuz berdi!");
                 console.error(e);
