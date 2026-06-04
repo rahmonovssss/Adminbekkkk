@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Premium Test Admin Panel - Ultra Pro v2</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2=family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --brand: #2b579a; /* Microsoft Word Blue */
@@ -17,7 +16,6 @@
             --danger: #a80000;
             --success: #107c41; /* Word Active Green */
         }
-
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg);
@@ -26,7 +24,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-
+        /* Asosiy Oyna Interfeysi */
         .app-header {
             background: var(--surface);
             border-bottom: 1px solid var(--border);
@@ -35,13 +33,11 @@
             justify-content: space-between;
             align-items: center;
         }
-
         .main-container {
             max-width: 800px;
             margin: 30px auto;
             padding: 0 20px;
         }
-
         .config-card {
             background: var(--surface);
             border-radius: 8px;
@@ -49,20 +45,18 @@
             padding: 24px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-
         .form-group {
             margin-bottom: 20px;
         }
-
-        .form-row {
+        .time-row {
             display: flex;
             gap: 15px;
+            flex-wrap: wrap;
         }
-
-        .form-row .form-group {
+        .time-row .form-group {
             flex: 1;
+            min-width: 150px;
         }
-
         label {
             display: block;
             font-size: 13px;
@@ -70,7 +64,6 @@
             margin-bottom: 8px;
             color: #605e5c;
         }
-
         select, input[type="datetime-local"], input[type="number"], input[type="file"] {
             width: 100%;
             padding: 12px;
@@ -81,7 +74,6 @@
             background: #faf9f8;
             box-sizing: border-box;
         }
-
         button {
             font-family: inherit;
             font-size: 14px;
@@ -96,10 +88,8 @@
             gap: 8px;
             transition: all 0.2s;
         }
-
         .btn-main { background: var(--success); color: white; width: 100%; font-size: 15px; }
-        .btn-edit { background: var(--brand); color: white; width: 100%; font-size: 15px; display: none; }
-
+        .btn-edit { background: var(--brand); color: white; width: 100%; font-size: 15px; display: none; margin-top: 10px; }
         /* TAHRIRLASH MODAL OYNASI (FULLSCREEN) */
         .editor-modal {
             position: fixed;
@@ -112,7 +102,6 @@
             display: none; 
             flex-direction: column;
         }
-
         .modal-topbar {
             background: var(--surface);
             padding: 12px 25px;
@@ -122,7 +111,6 @@
             border-bottom: 1px solid var(--border);
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-
         .btn-editor-save { 
             background: var(--success) !important; 
             color: white !important; 
@@ -132,7 +120,6 @@
             box-shadow: 0 4px 12px rgba(16,124,65,0.25); 
         }
         .btn-editor-save:hover { background: #0b592e !important; }
-
         .modal-body-workspace {
             flex: 1;
             overflow-y: auto;
@@ -141,7 +128,7 @@
             justify-content: center;
             align-items: flex-start;
         }
-
+        /* Word A4 Varaq Muhiti */
         .word-page-container {
             width: 810px;
             min-height: 1100px;
@@ -156,7 +143,7 @@
             border: 1px solid var(--border);
             position: relative;
         }
-
+        /* Rasm va diagrammalarning yangi stili */
         .word-page-container img {
             max-width: 100%;
             height: auto;
@@ -168,13 +155,12 @@
             user-select: none;
             z-index: 10;
         }
-
         .word-page-container img.selected-img {
             border: 2px dashed var(--brand);
             box-shadow: 0 0 10px rgba(43,87,154,0.3);
             z-index: 11;
         }
-
+        /* Rasm joyini saqlab turuvchi ko'rinmas blok */
         .img-placeholder-block {
             display: block;
             margin: 15px auto;
@@ -182,8 +168,7 @@
             border: 2px dashed #a19f9d;
             box-sizing: border-box;
         }
-
-        /* TRANSFORMATSIYA RAMKASI */
+        /* ----- TRANSFORMATSIYA RAMKASI ----- */
         .image-transform-overlay {
             position: absolute;
             border: 2px solid #5b9bd5;
@@ -201,7 +186,6 @@
             pointer-events: auto;
             box-sizing: border-box;
         }
-        
         .handle-tl { top: -5px; left: -5px; cursor: nwse-resize; }
         .handle-tr { top: -5px; right: -5px; cursor: nesw-resize; }
         .handle-bl { bottom: -5px; left: -5px; cursor: nesw-resize; }
@@ -211,7 +195,6 @@
         .handle-mb { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
         .handle-ml { top: 50%; left: -5px; transform: translateY(-50%); cursor: ew-resize; }
         .handle-mr { top: 50%; right: -5px; transform: translateY(-50%); cursor: ew-resize; }
-
         .handle-rotator {
             top: -25px;
             left: 50%;
@@ -230,7 +213,7 @@
             height: 25px;
             background-color: #5b9bd5;
         }
-
+        /* To'g'rilash chiziqlari (Smart Alignment Guides) */
         .alignment-guide {
             position: absolute;
             background: none;
@@ -241,7 +224,7 @@
         }
         .guide-x { width: 100%; height: 0; left: 0; }
         .guide-y { height: 100%; width: 0; top: 0; }
-
+        /* Rasmni Kichraytirish/Kattalashtirish Paneli */
         .image-resizer-panel {
             position: fixed;
             bottom: 20px;
@@ -257,7 +240,6 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             z-index: 10000;
         }
-
         .resizer-btn {
             background: #444342;
             color: white;
@@ -273,7 +255,6 @@
             justify-content: center;
         }
         .resizer-btn:hover { background: #555453; }
-
         .toast-info {
             background: #e0f2fe;
             color: #0369a1;
@@ -290,13 +271,13 @@
 
 <div class="app-header">
     <h1>Dr. Rahmonov — Boshqaruv Paneli</h1>
-    <div style="font-weight: 700; font-size: 14px; color: var(--success);">● ADMIN ONLINE</div>
+    <div style="font-weight: 700; font-size: 14px; color: var(--success);">● ONLINE</div>
 </div>
 
 <div class="main-container">
     <div class="config-card">
-        <h2 style="margin-top:0; margin-bottom:20px; font-size:17px; color: var(--brand);">📂 Premium Test Tizimini Ishga Tushirish</h2>
-        
+        <h2 style="margin-top:0; margin-bottom:20px; font-size:17px; color: var(--brand);">📂 Test Yuklash va Faollashtirish</h2>
+                
         <div class="form-group">
             <label>1. Fanni tanlang</label>
             <select id="main-subject">
@@ -307,19 +288,18 @@
             </select>
         </div>
 
-        <div class="form-group">
-            <label>2. Premium rejim boshlanish vaqti (Sana va Soat)</label>
-            <input type="datetime-local" id="main-time">
-        </div>
-
-        <div class="form-row">
+        <div class="time-row">
             <div class="form-group">
-                <label>3. Kirish ochiq vaqti (Minut)</label>
-                <input type="number" id="main-entry-duration" value="5" min="1" placeholder="Masalan: 5">
+                <label>2. Boshlanish vaqti (Sana va Soat)</label>
+                <input type="datetime-local" id="main-time">
             </div>
             <div class="form-group">
-                <label>4. Test davomiyligi (Minut)</label>
-                <input type="number" id="main-quiz-duration" value="80" min="1" placeholder="Masalan: 80">
+                <label>3. Kirish vaqti (Daqiqa)</label>
+                <input type="number" id="entry-duration" value="5" min="1">
+            </div>
+            <div class="form-group">
+                <label>4. Test davomiyligi (Daqiqa)</label>
+                <input type="number" id="quiz-duration" value="80" min="1">
             </div>
         </div>
 
@@ -334,14 +314,14 @@
 
         <div id="main-toast" class="toast-info"></div>
 
-        <button id="btn-submit-system" class="btn-main" style="margin-top: 25px;">🚀 SOZLAMALARNI SAQLASH VA TIZIMNI ISHGA TUSHIRISH</button>
+        <button onclick="activateSystemFinal()" class="btn-main" style="margin-top: 25px;">🚀 SOZLAMALARNI SAQLASH VA TIZIMNI ISHGA TUSHIRISH</button>
     </div>
 </div>
-
 
 <div id="editor-modal-window" class="editor-modal">
     <div class="modal-topbar">
         <div style="font-weight: 700; font-size: 15px; color: var(--brand);">📝 Word Modifikatsiya Oynasi</div>
+                
         <div>
             <button class="btn-editor-save" onclick="saveEditorAndReturn()">💾 OʻZGARISHLARNI SAQLASH VA CHIQISH</button>
         </div>
@@ -350,24 +330,22 @@
             <input type="file" id="modal-image-loader" accept="image/*" style="position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer;">
         </button>
     </div>
-
     <div class="modal-body-workspace">
         <div id="word-editor-page" class="word-page-container" contenteditable="true">
             <div id="guide-x" class="alignment-guide guide-x"></div>
             <div id="guide-y" class="alignment-guide guide-y"></div>
-
             <div id="image-transform-frame" class="image-transform-overlay">
                 <div class="handle-line"></div>
                 <div class="transform-handle handle-tl" data-handle="tl"></div>
                 <div class="transform-handle handle-tr" data-handle="tr"></div>
                 <div class="transform-handle handle-bl" data-handle="bl"></div>
                 <div class="transform-handle handle-br" data-handle="br"></div>
-                
+                                
                 <div class="transform-handle handle-mt" data-handle="mt"></div>
                 <div class="transform-handle handle-mb" data-handle="mb"></div>
                 <div class="transform-handle handle-ml" data-handle="ml"></div>
                 <div class="transform-handle handle-mr" data-handle="mr"></div>
-                
+                                
                 <div class="transform-handle handle-rotator" data-handle="rotate"></div>
             </div>
         </div>
@@ -385,7 +363,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Sizning Firebase konfigurasiyangiz
     const firebaseConfig = {
         apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
         authDomain: "quiz-app-3692d.firebaseapp.com",
@@ -398,69 +375,68 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Form elementlari uchun event tinglovchi
-    document.getElementById('btn-submit-system').addEventListener('click', async () => {
+    // Global funksiya qilib bog'laymiz
+    window.activateSystemFinal = async function() {
         const fan = document.getElementById('main-subject').value;
         const startTimeStr = document.getElementById('main-time').value;
-        const entryMin = parseInt(document.getElementById('main-entry-duration').value);
-        const quizMin = parseInt(document.getElementById('main-quiz-duration').value);
+        const entryMin = parseInt(document.getElementById('entry-duration').value) || 5;
+        const quizMin = parseInt(document.getElementById('quiz-duration').value) || 80;
 
-        if (!fan || !startTimeStr || !entryMin || !quizMin) {
-            alert("Iltimos, barcha maydonlarni toʻliq toʻldiring!");
+        if (!fan || !startTimeStr) {
+            alert("Iltimos, fan nomi va boshlanish vaqtini to'liq kiriting!");
             return;
         }
 
-        // Vaqt hisob-kitoblarini millisoniyalarda (Timestamp) bajarish
-        const startTimeMs = new Date(startTimeStr).getTime();
-        const entryTimeEndMs = startTimeMs + (entryMin * 60 * 1000); // Kirish tugash vaqti
-        const quizTimeEndMs = entryTimeEndMs + (quizMin * 60 * 1000);   // Test butkul yakunlanish vaqti
-
-        // Word qoldiqlarini tozalash
-        const editorPage = document.getElementById('word-editor-page');
+        // Tahrirlash oynasidagi barcha placeholderlarni tozalash
         const placeholders = editorPage.querySelectorAll('.img-placeholder-block');
         placeholders.forEach(p => p.remove());
         
-        const finalWordContent = editorPage.innerHTML;
+        // Hozirgi yakuniy HTML tarkibni yig'ib olish
+        finalWordContent = editorPage.innerHTML;
 
-        // Firebase Firestore uchun tayyor paket
-        const settingsPayload = {
-            subject: fan,
-            startTime: startTimeMs,         // Boshlanish vaqti (Masalan: 14:00)
-            entryEndTime: entryTimeEndMs,   // Kirish tugash vaqti (Masalan: 14:05)
-            quizEndTime: quizTimeEndMs,     // Test butkul tugash vaqti (Masalan: 15:25)
-            documentDataHtml: finalWordContent,
-            status: "ACTIVE"
-        };
+        // Taymer vaqtlarini millisekundga o'tkazish (Zanjir mantiqi)
+        const startTimestamp = new Date(startTimeStr).getTime();
+        const entryEndTimestamp = startTimestamp + (entryMin * 60 * 1000);
+        const quizEndTimestamp = entryEndTimestamp + (quizMin * 60 * 1000);
 
         try {
-            // "system_settings" kolleksiyasining "premium_quiz" hujjatiga yozamiz
-            await setDoc(doc(db, "system_settings", "premium_quiz"), settingsPayload);
-            alert(`🎉 Tizim muvaffaqiyatli ishga tushdi!\n\nFan: ${fan}\nKirish vaqti: ${entryMin} daqiqa\nTest davomiyligi: ${quizMin} daqiqa.`);
+            await setDoc(doc(db, "premium_admin", "settings"), {
+                subject: fan,
+                startTime: startTimestamp,       
+                entryEndTime: entryEndTimestamp, 
+                quizEndTime: quizEndTimestamp,   
+                htmlContent: finalWordContent,
+                status: "ACTIVE"
+            });
+
+            alert("🎉 Tizim muvaffaqiyatli ishga tushdi!\n\n" + fan + " fanidan test va diagrammalar Firebase bazasiga saqlandi.");
         } catch (error) {
-            console.error("Xatolik yuz berdi: ", error);
-            alert("Ma'lumotlarni saqlashda xatolik yuz berdi!");
+            alert("Firebase-ga yozishda xatolik yuz berdi: " + error.code + " - " + error.message);
+            console.error(error);
         }
-    });
+    }
 </script>
 
 <script>
-    // Word (.docx) Faylini o'qish mexanizmi va uning ichki funksiyalari
+    let finalWordContent = "";
     let lastSavedSelection = null;
     let selectedImageElement = null;
     let currentPlaceholder = null; 
+
+    // Transformatsiya o'zgaruvchilari
     let currentRotation = 0;
     let isTransforming = false;
     let isDragging = false;
     let currentHandle = null;
     let startX, startY, startWidth, startHeight, startLeft, startTop, startAngle;
 
+    // Word (.docx) Faylini o'qish
     document.getElementById('main-word-file').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file && file.name.endsWith('.docx')) {
             const mainToast = document.getElementById('main-toast');
             mainToast.style.display = 'block';
             mainToast.innerText = "Word hujjati yuklanmoqda...";
-
             const reader = new FileReader();
             reader.onload = function(event) {
                 mammoth.convertToHtml({arrayBuffer: event.target.result})
@@ -468,18 +444,19 @@
                         const frame = document.getElementById('image-transform-frame');
                         const gx = document.getElementById('guide-x');
                         const gy = document.getElementById('guide-y');
-                        
+                                                
                         document.getElementById('word-editor-page').innerHTML = result.value;
-                        
+                                                
+                        // Elementlarni qayta joylashtirish
                         document.getElementById('word-editor-page').appendChild(frame);
                         document.getElementById('word-editor-page').appendChild(gx);
                         document.getElementById('word-editor-page').appendChild(gy);
-                        
+                                                
                         document.getElementById('btn-open-editor').style.display = 'inline-flex';
                         mainToast.style.background = '#d1fae5';
                         mainToast.style.color = '#107c41';
                         mainToast.innerHTML = "<b>✓ Word muvaffaqiyatli o'qildi!</b> Tahrirlash tugmasini bosing.";
-                        
+                                                
                         initImageEvents();
                     });
             };
@@ -496,6 +473,7 @@
     editorPage.addEventListener('keyup', saveSelection);
     editorPage.addEventListener('click', saveSelection);
 
+    // Matn ichidagi bo'sh kataklar qoldig'ini Backspace/Delete bosilganda tozalash
     editorPage.addEventListener('keydown', function(e) {
         if (e.key === 'Backspace' || e.key === 'Delete') {
             setTimeout(() => {
@@ -528,19 +506,18 @@
                 img.src = event.target.result;
                 img.style.width = "300px"; 
                 img.style.position = "relative";
-                
+                                
                 editorPage.focus();
-
                 if (lastSavedSelection) {
                     lastSavedSelection.deleteContents();
                     lastSavedSelection.insertNode(img);
                 } else {
                     editorPage.appendChild(img);
                 }
-                
+                                
                 initImageEvents();
                 img.click(); 
-            };
+             };
             reader.readAsDataURL(file);
         }
     });
@@ -549,12 +526,12 @@
         if (!selectedImageElement) return;
         const img = selectedImageElement;
         const frame = document.getElementById('image-transform-frame');
-        
+                
         frame.style.width = img.offsetWidth + 'px';
         frame.style.height = img.offsetHeight + 'px';
         frame.style.left = img.offsetLeft + 'px';
         frame.style.top = img.offsetTop + 'px';
-        
+                
         if(img.style.transform) {
             const match = img.style.transform.match(/rotate\(([^)]+)deg\)/);
             currentRotation = match ? parseFloat(match[1]) : 0;
@@ -570,26 +547,25 @@
         for (let i = 0; i < images.length; i++) {
             images[i].removeEventListener('mousedown', onImgMouseDown);
             images[i].removeEventListener('touchstart', onImgMouseDown);
-
             images[i].addEventListener('click', function(e) {
-                e.stopPropagation(); 
+                e.stopPropagation();
+                                 
                 if (selectedImageElement && selectedImageElement !== this) {
                     selectedImageElement.classList.remove('selected-img');
                 }
+                                
                 selectedImageElement = this;
                 selectedImageElement.classList.add('selected-img');
-                
+                                
                 const prevSibling = this.previousElementSibling;
                 if (prevSibling && prevSibling.classList.contains('img-placeholder-block')) {
                     currentPlaceholder = prevSibling;
                 } else {
                     currentPlaceholder = null;
                 }
-
                 document.getElementById('resizer-panel').style.display = 'flex';
                 updateTransformFrame();
             });
-
             images[i].addEventListener('mousedown', onImgMouseDown);
             images[i].addEventListener('touchstart', onImgMouseDown, { passive: false });
         }
@@ -597,47 +573,42 @@
 
     function onImgMouseDown(e) {
         if (e.target !== selectedImageElement || e.target.classList.contains('transform-handle')) return;
-        
+                
         e.preventDefault();
         e.stopPropagation();
-
         isDragging = true;
         const img = selectedImageElement;
-
+        
         if (img.style.position !== 'absolute') {
             const rect = img.getBoundingClientRect();
             const parentRect = editorPage.getBoundingClientRect();
-            
+                        
             startLeft = rect.left - parentRect.left + editorPage.scrollLeft;
             startTop = rect.top - parentRect.top + editorPage.scrollTop;
             startWidth = img.offsetWidth;
             startHeight = img.offsetHeight;
-
             currentPlaceholder = document.createElement('div');
             currentPlaceholder.className = 'img-placeholder-block';
             currentPlaceholder.style.width = startWidth + 'px';
             currentPlaceholder.style.height = startHeight + 'px';
-            
+                        
             img.parentNode.insertBefore(currentPlaceholder, img);
-
             img.style.position = 'absolute';
             img.style.left = startLeft + 'px';
             img.style.top = startTop + 'px';
             img.style.width = startWidth + 'px';
             img.style.height = startHeight + 'px';
             img.style.margin = '0';
-            
+                        
             updateTransformFrame();
         } else {
             startLeft = parseFloat(img.style.left);
             startTop = parseFloat(img.style.top);
         }
-
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         startX = clientX;
         startY = clientY;
-
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onEndMove);
         document.addEventListener('touchmove', onMove, { passive: false });
@@ -664,29 +635,26 @@
         if (!selectedImageElement) return;
         const handle = e.target.closest('.transform-handle');
         if (!handle) return;
-        
+                
         e.preventDefault();
         e.stopPropagation();
-        
+                
         isTransforming = true;
         currentHandle = handle.getAttribute('data-handle');
-        
+                
         const img = selectedImageElement;
         startWidth = img.offsetWidth;
         startHeight = img.offsetHeight;
         startLeft = parseFloat(img.style.left) || img.offsetLeft;
         startTop = parseFloat(img.style.top) || img.offsetTop;
-
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         startX = clientX;
         startY = clientY;
-
         const rect = img.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
         startAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
-
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onEndMove);
         document.addEventListener('touchmove', onMove, { passive: false });
@@ -696,12 +664,10 @@
     function onMove(e) {
         if (!selectedImageElement || (!isDragging && !isTransforming)) return;
         e.preventDefault();
-
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         const diffX = clientX - startX;
         const diffY = clientY - startY;
-
         if (isDragging) {
             selectedImageElement.style.left = (startLeft + diffX) + 'px';
             selectedImageElement.style.top = (startTop + diffY) + 'px';
@@ -711,46 +677,39 @@
             let newHeight = startHeight;
             let newLeft = startLeft;
             let newTop = startTop;
-
             if (currentHandle === 'rotate') {
                 const rect = selectedImageElement.getBoundingClientRect();
                 const centerX = rect.left + rect.width / 2;
                 const centerY = rect.top + rect.height / 2;
                 const currentAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
-                let angle = currentRotation + (currentAngle - startAngle);
-                
+                let angle = currentRotation + (currentAngle - startAngle);                                
                 const snapThreshold = 4; 
                 let snapped = false;
-                const targets = [0, 90, 180, 270, 360, -90, -180, -270];
-                
+                const targets = [0, 90, 180, 270, 360, -90, -180, -270];                                
                 targets.forEach(target => {
                     if (Math.abs(angle - target) < snapThreshold || Math.abs((angle % 360) - target) < snapThreshold) {
                         angle = target;
                         snapped = true;
                     }
                 });
-
                 selectedImageElement.style.transform = `rotate(${angle}deg)`;
                 document.getElementById('image-transform-frame').style.transform = `rotate(${angle}deg)`;
-
                 if (snapped) {
                     showGuides(selectedImageElement);
                 } else {
                     hideGuides();
                 }
-
             } else {
                 if (currentHandle.includes('r')) newWidth = startWidth + diffX;
                 if (currentHandle.includes('l')) { newWidth = startWidth - diffX; newLeft = startLeft + diffX; }
                 if (currentHandle.includes('b')) newHeight = startHeight + diffY;
                 if (currentHandle.includes('t')) { newHeight = startHeight - diffY; newTop = startTop + diffY; }
-
                 if (newWidth > 20 && newHeight > 20) {
                     selectedImageElement.style.width = newWidth + 'px';
                     selectedImageElement.style.height = newHeight + 'px';
                     selectedImageElement.style.left = newLeft + 'px';
                     selectedImageElement.style.top = newTop + 'px';
-                    
+                                        
                     if(currentPlaceholder) {
                         currentPlaceholder.style.width = newWidth + 'px';
                         currentPlaceholder.style.height = newHeight + 'px';
@@ -764,12 +723,13 @@
     function showGuides(img) {
         const guideX = document.getElementById('guide-x');
         const guideY = document.getElementById('guide-y');
+                
         const midX = img.offsetTop + (img.offsetHeight / 2);
         const midY = img.offsetLeft + (img.offsetWidth / 2);
-        
+                
         guideX.style.top = midX + 'px';
         guideX.style.display = 'block';
-        
+                
         guideY.style.left = midY + 'px';
         guideY.style.display = 'block';
     }
@@ -796,12 +756,12 @@
 
     function resizeImage(scale) {
         if (selectedImageElement) {
-            let currentWidth = selectedImageElement.clientWidth || 300;
+            let currentWidth = selectedImageElement.clientWidth;
             let currentHeight = selectedImageElement.clientHeight;
-            
+            if (!currentWidth) currentWidth = 300; 
             let newWidth = currentWidth * scale;
             let newHeight = currentHeight * scale;
-            
+                        
             if (newWidth > 20 && newWidth < 800) {
                 selectedImageElement.style.width = newWidth + "px";
                 selectedImageElement.style.height = newHeight + "px";
@@ -816,7 +776,10 @@
 
     function deleteSelectedImg() {
         if (selectedImageElement) {
-            if(currentPlaceholder) currentPlaceholder.remove();
+            if(currentPlaceholder) {
+                currentPlaceholder.remove();
+            }
+                        
             const associatedPlaceholder = selectedImageElement.previousElementSibling;
             if(associatedPlaceholder && associatedPlaceholder.classList.contains('img-placeholder-block')) {
                 associatedPlaceholder.remove();
@@ -824,7 +787,7 @@
             selectedImageElement.remove();
             selectedImageElement = null;
             currentPlaceholder = null;
-            
+                        
             document.getElementById('resizer-panel').style.display = 'none';
             document.getElementById('image-transform-frame').style.display = 'none';
             hideGuides();
@@ -839,19 +802,18 @@
         hideGuides();
         document.getElementById('resizer-panel').style.display = 'none';
         document.getElementById('image-transform-frame').style.display = 'none';
-
+        
         const placeholders = editorPage.querySelectorAll('.img-placeholder-block');
         placeholders.forEach(p => p.remove());
-
+        finalWordContent = editorPage.innerHTML;
         document.getElementById('editor-modal-window').style.display = 'none';
-        
+                
         const mainToast = document.getElementById('main-toast');
         mainToast.style.display = 'block';
         mainToast.style.background = '#d1fae5';
         mainToast.style.color = '#107c41';
-        mainToast.innerHTML = "<b>✓ Word muvaffaqiyatli tahrirlandi!</b> Tizimni ishga tushirishingiz mumkin.";
+        mainToast.innerHTML = "<b>✓ Word muvaffaqiyatli tahrirlandi!</b> Endi pastdagi katta tugmani bosib tizimni ishga tushiring.";
     }
 </script>
-
 </body>
 </html>
