@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Quiz - Dr. Rahmonov</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: #0f2027; color: white; padding: 20px; }
+
+        .section-title { color: #ffd700; margin: 20px 0 10px; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* --- VIZUAL TUGMALAR --- */
+        .grid-select { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+        .grid-subjects { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px; }
+
+        .btn-select {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s;
+            font-size: 13px; color: #ccc;
+        }
+        .btn-select.active { border-color: #ffd700; background: rgba(255, 215, 0, 0.15); color: #ffd700; font-weight: 600; }
+        .btn-select.mandatory-btn.active { border-color: #00d2ff; background: rgba(0, 210, 255, 0.1); color: #00d2ff; }
+
+        /* --- TEST KARTALARI --- */
+        .quiz-card { 
+            background: #1a2a33; padding: 20px; border-radius: 15px; 
+            margin-bottom: 15px; border-left: 5px solid #ffd700; border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .edit-input { 
+            width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); 
+            color: white; padding: 12px; border-radius: 8px; margin-top: 8px; font-size: 14px; outline: none;
+        }
+        .edit-input:focus { border-color: #ffd700; }
+        .grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+        
+        .action-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-save { flex: 2; background: #ffd700; color: #000; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .btn-del { flex: 1; background: #ff4b2b; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; font-size: 12px; }
+
+        #toast {
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            background: #ffd700; color: #000; padding: 12px 25px; border-radius: 50px;
+            transition: 0.5s; z-index: 3000; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        #toast.show { bottom: 30px; }
+
+        /* VAQT COLLARI SIZNING DIZAYNDAGI STRUKTURADA */
+        .time-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .time-col { flex: 1; min-width: 140px; }
+    </style>
+</head>
+<body>
+
+    <h2 style="text-align:center; color:#ffd700; margin-bottom: 20px;">Tahrirlash Paneli</h2>
+
+    <div class="section-title">1. Test turini tanlang</div>
+    <div class="grid-select">
+        <div class="btn-select active" id="type-free" onclick="changeType('free')">🎁 Bepul Blok</div>
+        <div class="btn-select" id="type-premium" onclick="changeType('premium')">💎 Premium Imtihon</div>
+        <div class="btn-select mandatory-btn" id="type-free_mandatory" onclick="changeType('free_mandatory')">📌 Bepul Majburiy</div>
+        <div class="btn-select mandatory-btn" id="type-premium_mandatory" onclick="changeType('premium_mandatory')">🔥 Premium Majburiy</div>
+    </div>
+
+    <div class="section-title">2. Fanni tanlang</div>
+    <div class="grid-subjects" id="subject-container"></div>
+
+    <h2 class="section-title" id="status-text" style="border-top: 1px solid rgba(255,215,0,0.2); padding-top: 15px;">Yuklanmoqda...</h2>
+    
+    <div id="quiz-list"></div>
+
+    <div id="toast">Xabar!</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
+            authDomain: "quiz-app-3692d.firebaseapp.com",
+            projectId: "quiz-app-3692d",
+            storageBucket: "quiz-app-3692d.firebasestorage.app",
+            messagingSenderId: "526836020845",
+            appId: "1:526836020845:android:3ea991380c104c75e8b164"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let selectedType = 'free';
+        let selectedSubject = 'Matematika';
+        let unsubscribe = null;
+
+        const allSubs = ["Matematika", "Ona tili", "Tarix", "Kimyo", "Biologiya", "Ingiliz tili", "Huquq", "Geografiya", "Fizika"];
+        const mandatorySubs = ["Matematika", "Ona tili", "Tarix"];
+
+        window.renderSubjects = () => {
+            const container = document.getElementById('subject-container');
+            container.innerHTML = "";
+            const list = selectedType.includes('mandatory') ? mandatorySubs : allSubs;
+            
+            list.forEach(fan => {
+                const div = document.createElement('div');
+                div.className = `btn-select ${fan === selectedSubject ? 'active' : ''}`;
+                div.innerText = fan;
+                div.onclick = () => changeSubject(fan);
+                container.appendChild(div);
+            });
+        };
+
+        window.changeType = (type) => {
+            selectedType = type;
+            document.querySelectorAll('.grid-select .btn-select').forEach(b => b.classList.remove('active'));
+            document.getElementById(`type-${type}`).classList.add('active');
+            
+            if(type.includes('mandatory') && !mandatorySubs.includes(selectedSubject)) {
+                selectedSubject = 'Matematika';
+            }
+            renderSubjects();
+            loadData();
+        };
+
+        window.changeSubject = (fan) => {
+            selectedSubject = fan;
+            renderSubjects();
+            loadData();
+        };
+
+        // Millisekundni datetime-local formatiga (YYYY-MM-DDTHH:MM) o'tkazish funksiyasi
+        function formatTimestampToDateTimeLocal(ts) {
+            if(!ts) return "";
+            const d = new Date(ts);
+            const pad = (n) => n.toString().padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+
+        window.loadData = () => {
+            if (unsubscribe) unsubscribe();
+            const list = document.getElementById('quiz-list');
+            const status = document.getElementById('status-text');
+
+            // BAZANI TO'G'RIDAN-TO'G'RI premium_admin/settings HUJJATIGA BOG'LADIK
+            const docRef = doc(db, "premium_admin", "settings");
+
+            unsubscribe = onSnapshot(docRef, (docSnap) => {
+                list.innerHTML = "";
+                
+                if(!docSnap.exists()) {
+                    status.innerText = `${selectedSubject} (0 ta test)`;
+                    list.innerHTML = "<p style='text-align:center; padding: 40px; opacity:0.5;'>Ushbu bo'limda hali testlar yo'q.</p>";
+                    return;
+                }
+
+                const d = docSnap.data();
+
+                // Agar bazadagi mavjud test turi va fani joriy filtrga mos kelmasa ko'rsatmaymiz
+                if(d.type !== selectedType || d.subject !== selectedSubject) {
+                    status.innerText = `${selectedSubject} (0 ta test)`;
+                    list.innerHTML = "<p style='text-align:center; padding: 40px; opacity:0.5;'>Ushbu bo'limda hali testlar yo'q.</p>";
+                    return;
+                }
+
+                status.innerText = `${selectedSubject} (1 ta test)`;
+
+                // Vaqt zanjiri mantiqidan eski holatiga qaytarish (Daqiqalarni topish)
+                const savedStart = d.startTime || Date.now();
+                const savedEntryEnd = d.entryEndTime || savedStart;
+                const savedQuizEnd = d.quizEndTime || savedEntryEnd;
+
+                const entryDurationMin = Math.round((savedEntryEnd - savedStart) / (60 * 1000)) || 5;
+                const quizDurationMin = d.durationMinutes || Math.round((savedQuizEnd - savedEntryEnd) / (60 * 1000)) || 80;
+                const inputDateTimeValue = formatTimestampToDateTimeLocal(savedStart);
+
+                const div = document.createElement('div');
+                div.className = "quiz-card";
+                div.innerHTML = `
+                    <div style="font-size:12px; color:#ffd700; font-weight:600; margin-bottom:5px;">⏰ VAQT SOZLAMALARI:</div>
+                    <div class="time-row">
+                        <div class="time-col">
+                            <label style="font-size: 11px; color: #ccc; display:block;">Boshlanish vaqti</label>
+                            <input type="datetime-local" id="edit-time" class="edit-input" value="${inputDateTimeValue}">
+                        </div>
+                        <div class="time-col">
+                            <label style="font-size: 11px; color: #ccc; display:block;">Kirish (Daqiqa)</label>
+                            <input type="number" id="edit-entry-dur" class="edit-input" value="${entryDurationMin}" min="1">
+                        </div>
+                        <div class="time-col">
+                            <label style="font-size: 11px; color: #ccc; display:block;">Davomiyligi (Daqiqa)</label>
+                            <input type="number" id="edit-quiz-dur" class="edit-input" value="${quizDurationMin}" min="1">
+                        </div>
+                    </div>
+
+                    <div style="font-size:12px; color:#ffd700; font-weight:600; margin-top:15px; margin-bottom:5px;">📝 SAVOL MATNI VA VARIANTLAR:</div>
+                    <textarea class="edit-input" id="q-main" rows="2">${d.question || ""}</textarea>
+                    <div class="grid-options">
+                        <input class="edit-input" id="a-main" value="${d.options?.A || ""}" placeholder="A variant">
+                        <input class="edit-input" id="b-main" value="${d.options?.B || ""}" placeholder="B variant">
+                        <input class="edit-input" id="c-main" value="${d.options?.C || ""}" placeholder="C variant">
+                        <input class="edit-input" id="d-main" value="${d.options?.D || ""}" placeholder="D variant">
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px; margin-top: 10px;">
+                        <span style="font-size: 13px; color: #ffd700;">To'g'ri javob:</span>
+                        <select id="cor-main" class="edit-input" style="width: auto; margin-top: 0; padding: 5px 15px;">
+                            <option value="A" ${d.correctAnswer==='A'?'selected':''}>A</option>
+                            <option value="B" ${d.correctAnswer==='B'?'selected':''}>B</option>
+                            <option value="C" ${d.correctAnswer==='C'?'selected':''}>C</option>
+                            <option value="D" ${d.correctAnswer==='D'?'selected':''}>D</option>
+                        </select>
+                    </div>
+                    <div class="action-btns">
+                        <button class="btn-save" onclick="updateQuiz()">YANGILASH VA SAQLASH</button>
+                        <button class="btn-del" onclick="deleteQuiz()">TIZIMDAN O'CHIRISH</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        };
+
+        window.updateQuiz = async () => {
+            try {
+                const ref = doc(db, "premium_admin", "settings");
+                
+                const startTimeStr = document.getElementById('edit-time').value;
+                const entryMin = parseInt(document.getElementById('edit-entry-dur').value) || 5;
+                const quizMin = parseInt(document.getElementById('edit-quiz-dur').value) || 80;
+
+                if(!startTimeStr) return showToast("Boshlanish vaqtini to'liq kiriting!");
+
+                // Qayta hisoblash mantiqi
+                const startTimestamp = new Date(startTimeStr).getTime();
+                const entryEndTimestamp = startTimestamp + (entryMin * 60 * 1000);
+                const quizEndTimestamp = entryEndTimestamp + (quizMin * 60 * 1000);
+
+                await updateDoc(ref, {
+                    startTime: startTimestamp,       
+                    entryEndTime: entryEndTimestamp, 
+                    quizEndTime: quizEndTimestamp,
+                    durationMinutes: quizMin,
+                    question: document.getElementById('q-main').value.trim(),
+                    "options.A": document.getElementById('a-main').value.trim(),
+                    "options.B": document.getElementById('b-main').value.trim(),
+                    "options.C": document.getElementById('c-main').value.trim(),
+                    "options.D": document.getElementById('d-main').value.trim(),
+                    correctAnswer: document.getElementById('cor-main').value
+                });
+                showToast("✅ Tizim sozlamalari yangilandi!");
+            } catch (e) { 
+                showToast("❌ Xatolik yuz berdi!"); 
+                console.error(e);
+            }
+        };
+
+        window.deleteQuiz = async () => {
+            if(confirm("Ushbu aktiv test tizimini o'chirishni va to'xtatishni xohlaysizmi?")) {
+                await deleteDoc(doc(db, "premium_admin", "settings"));
+                showToast("🗑 Tizim tozalandi va o'chirildi!");
+            }
+        };
+
+        function showToast(m) {
+            const t = document.getElementById('toast');
+            t.innerText = m; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        renderSubjects();
+        loadData();
+    </script>
+</body>
+</html>
