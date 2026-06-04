@@ -61,7 +61,7 @@
         <div class="section-label">2. Fanni tanlang:</div>
         <div class="grid-select" id="subject-container"></div>
 
-        <div class="section-label">⏰ Vaqt Sozlamalari:</div>
+        <div class="section-label">⏰ Vaqt Sozlamalari (Hamma fanlar uchun umumiy bitta vaqt):</div>
         <div class="time-row">
             <div class="time-col">
                 <label style="font-size: 11px; color: #ffd700; display: block; margin-bottom: 4px;">Boshlanish vaqti</label>
@@ -166,9 +166,10 @@
             const quizEndTimestamp = entryEndTimestamp + (quizMin * 60 * 1000);
 
             try {
+                // Vaqt sozlamalari barcha fanlar ko'rib tura olishi uchun umumiy "settings" hujjatiga saqlanadi
                 await setDoc(doc(db, "premium_admin", "settings"), {
                     type: currentType,
-                    subject: currentSub,
+                    subject: currentSub, // Oxirgi faollashtirilgan fan nomi
                     startTime: startTimestamp,       
                     entryEndTime: entryEndTimestamp, 
                     quizEndTime: quizEndTimestamp,
@@ -185,7 +186,7 @@
                     createdAt: serverTimestamp()
                 });
                 
-                showToast("✅ Ma'lumotlar muvaffaqiyatli saqlandi!");
+                showToast("✅ Umumiy vaqt va savol muvaffaqiyatli saqlandi!");
                 document.getElementById('m-q').value = "";
                 ['m-a','m-b','m-c','m-d'].forEach(id => document.getElementById(id).value = "");
                 document.getElementById('main-time').value = "";
