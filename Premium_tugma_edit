@@ -11,7 +11,6 @@
 
         .section-title { color: #ffd700; margin: 20px 0 10px; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* --- VIZUAL TUGMALAR --- */
         .grid-select { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
         .grid-subjects { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px; }
 
@@ -23,7 +22,6 @@
         .btn-select.active { border-color: #ffd700; background: rgba(255, 215, 0, 0.15); color: #ffd700; font-weight: 600; }
         .btn-select.mandatory-btn.active { border-color: #00d2ff; background: rgba(0, 210, 255, 0.1); color: #00d2ff; }
 
-        /* --- TEST KARTALARI --- */
         .quiz-card { 
             background: #1a2a33; padding: 20px; border-radius: 15px; 
             margin-bottom: 15px; border-left: 5px solid #ffd700; border-top: 1px solid rgba(255,255,255,0.05);
@@ -39,27 +37,28 @@
         .btn-save { flex: 2; background: #ffd700; color: #000; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         .btn-del { flex: 1; background: #ff4b2b; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; font-size: 12px; }
 
-        #toast {
-            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
-            background: #ffd700; color: #000; padding: 12px 25px; border-radius: 50px;
-            transition: 0.5s; z-index: 3000; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        #toast { 
+            position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); 
+            background: #ffd700; color: #000; padding: 12px 25px; border-radius: 50px; 
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s; 
+            z-index: 5000; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            opacity: 0; pointer-events: none; white-space: nowrap;
         }
-        #toast.show { bottom: 30px; }
+        #toast.show { bottom: 40px; opacity: 1; }
 
-        /* VAQT COLLARI SIZNING DIZAYNDAGI STRUKTURADA */
         .time-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
         .time-col { flex: 1; min-width: 140px; }
+        .btn-back { display: inline-block; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #ccc; border-radius: 8px; text-decoration: none; font-size: 13px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
 
+    <a href="index.html" class="btn-back">⬅️ Orqaga qaytish</a>
     <h2 style="text-align:center; color:#ffd700; margin-bottom: 20px;">Tahrirlash Paneli</h2>
 
     <div class="section-title">1. Test turini tanlang</div>
     <div class="grid-select">
-        <div class="btn-select active" id="type-free" onclick="changeType('free')">🎁 Bepul Blok</div>
-        <div class="btn-select" id="type-premium" onclick="changeType('premium')">💎 Premium Imtihon</div>
-        <div class="btn-select mandatory-btn" id="type-free_mandatory" onclick="changeType('free_mandatory')">📌 Bepul Majburiy</div>
+        <div class="btn-select active" id="type-premium" onclick="changeType('premium')">💎 Premium Imtihon</div>
         <div class="btn-select mandatory-btn" id="type-premium_mandatory" onclick="changeType('premium_mandatory')">🔥 Premium Majburiy</div>
     </div>
 
@@ -88,7 +87,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let selectedType = 'free';
+        let selectedType = 'premium';
         let selectedSubject = 'Matematika';
         let unsubscribe = null;
 
@@ -127,7 +126,6 @@
             loadData();
         };
 
-        // Millisekundni datetime-local formatiga (YYYY-MM-DDTHH:MM) o'tkazish funksiyasi
         function formatTimestampToDateTimeLocal(ts) {
             if(!ts) return "";
             const d = new Date(ts);
@@ -139,8 +137,6 @@
             if (unsubscribe) unsubscribe();
             const list = document.getElementById('quiz-list');
             const status = document.getElementById('status-text');
-
-            // BAZANI TO'G'RIDAN-TO'G'RI premium_admin/settings HUJJATIGA BOG'LADIK
             const docRef = doc(db, "premium_admin", "settings");
 
             unsubscribe = onSnapshot(docRef, (docSnap) => {
@@ -154,16 +150,14 @@
 
                 const d = docSnap.data();
 
-                // Agar bazadagi mavjud test turi va fani joriy filtrga mos kelmasa ko'rsatmaymiz
                 if(d.type !== selectedType || d.subject !== selectedSubject) {
                     status.innerText = `${selectedSubject} (0 ta test)`;
                     list.innerHTML = "<p style='text-align:center; padding: 40px; opacity:0.5;'>Ushbu bo'limda hali testlar yo'q.</p>";
                     return;
                 }
 
-                status.innerText = `${selectedSubject} (1 ta test)`;
+                status.innerText = `${selectedSubject} (1 ta test saqlangan)`;
 
-                // Vaqt zanjiri mantiqidan eski holatiga qaytarish (Daqiqalarni topish)
                 const savedStart = d.startTime || Date.now();
                 const savedEntryEnd = d.entryEndTime || savedStart;
                 const savedQuizEnd = d.quizEndTime || savedEntryEnd;
@@ -220,14 +214,12 @@
         window.updateQuiz = async () => {
             try {
                 const ref = doc(db, "premium_admin", "settings");
-                
                 const startTimeStr = document.getElementById('edit-time').value;
                 const entryMin = parseInt(document.getElementById('edit-entry-dur').value) || 5;
                 const quizMin = parseInt(document.getElementById('edit-quiz-dur').value) || 80;
 
-                if(!startTimeStr) return showToast("Boshlanish vaqtini to'liq kiriting!");
+                if(!startTimeStr) return showToast("⚠️ Boshlanish vaqtini kiriting!");
 
-                // Qayta hisoblash mantiqi
                 const startTimestamp = new Date(startTimeStr).getTime();
                 const entryEndTimestamp = startTimestamp + (entryMin * 60 * 1000);
                 const quizEndTimestamp = entryEndTimestamp + (quizMin * 60 * 1000);
@@ -244,7 +236,7 @@
                     "options.D": document.getElementById('d-main').value.trim(),
                     correctAnswer: document.getElementById('cor-main').value
                 });
-                showToast("✅ Tizim sozlamalari yangilandi!");
+                showToast("✅ Tizim sozlamalari muvaffaqiyatli yangilandi!");
             } catch (e) { 
                 showToast("❌ Xatolik yuz berdi!"); 
                 console.error(e);
@@ -258,10 +250,13 @@
             }
         };
 
+        let toastTimer = null;
         function showToast(m) {
             const t = document.getElementById('toast');
-            t.innerText = m; t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+            t.innerText = m; 
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
         }
 
         renderSubjects();
