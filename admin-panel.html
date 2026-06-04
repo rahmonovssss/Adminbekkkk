@@ -2,818 +2,189 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Test Admin Panel - Ultra Pro v2</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Panel - Dr. Rahmonov</title>
     <style>
-        :root {
-            --brand: #2b579a; /* Microsoft Word Blue */
-            --bg: #f3f2f1;
-            --surface: #ffffff;
-            --text: #323130;
-            --border: #edebe9;
-            --danger: #a80000;
-            --success: #107c41; /* Word Active Green */
-        }
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        /* Asosiy Oyna Interfeysi */
-        .app-header {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            padding: 15px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .main-container {
-            max-width: 800px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        .config-card {
-            background: var(--surface);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            padding: 24px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .time-row {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .time-row .form-group {
-            flex: 1;
-            min-width: 150px;
-        }
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #605e5c;
-        }
-        select, input[type="datetime-local"], input[type="number"], input[type="file"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 14px;
-            background: #faf9f8;
-            box-sizing: border-box;
-        }
-        button {
-            font-family: inherit;
-            font-size: 14px;
-            font-weight: 600;
-            padding: 12px 20px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-        .btn-main { background: var(--success); color: white; width: 100%; font-size: 15px; }
-        .btn-edit { background: var(--brand); color: white; width: 100%; font-size: 15px; display: none; margin-top: 10px; }
-        /* TAHRIRLASH MODAL OYNASI (FULLSCREEN) */
-        .editor-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: #f3f2f1;
-            z-index: 9999;
-            display: none; 
-            flex-direction: column;
-        }
-        .modal-topbar {
-            background: var(--surface);
-            padding: 12px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .btn-editor-save { 
-            background: var(--success) !important; 
-            color: white !important; 
-            font-size: 15px; 
-            font-weight: 700;
-            padding: 12px 24px;
-            box-shadow: 0 4px 12px rgba(16,124,65,0.25); 
-        }
-        .btn-editor-save:hover { background: #0b592e !important; }
-        .modal-body-workspace {
-            flex: 1;
-            overflow-y: auto;
-            padding: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-        }
-        /* Word A4 Varaq Muhiti */
-        .word-page-container {
-            width: 810px;
-            min-height: 1100px;
-            background: white;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            padding: 60px 80px;
-            box-sizing: border-box;
-            outline: none;
-            font-size: 16px;
-            line-height: 1.6;
-            color: #111111;
-            border: 1px solid var(--border);
-            position: relative;
-        }
-        /* Rasm va diagrammalarning yangi stili */
-        .word-page-container img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 15px auto;
-            border: 2px solid transparent;
-            transition: border 0.2s;
-            cursor: move;
-            user-select: none;
-            z-index: 10;
-        }
-        .word-page-container img.selected-img {
-            border: 2px dashed var(--brand);
-            box-shadow: 0 0 10px rgba(43,87,154,0.3);
-            z-index: 11;
-        }
-        /* Rasm joyini saqlab turuvchi ko'rinmas blok */
-        .img-placeholder-block {
-            display: block;
-            margin: 15px auto;
-            background: rgba(243, 242, 241, 0.5);
-            border: 2px dashed #a19f9d;
-            box-sizing: border-box;
-        }
-        /* ----- TRANSFORMATSIYA RAMKASI ----- */
-        .image-transform-overlay {
-            position: absolute;
-            border: 2px solid #5b9bd5;
-            box-sizing: border-box;
-            pointer-events: none;
-            display: none;
-            z-index: 999;
-        }
-        .transform-handle {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #5b9bd5;
-            border: 1px solid white;
-            pointer-events: auto;
-            box-sizing: border-box;
-        }
-        .handle-tl { top: -5px; left: -5px; cursor: nwse-resize; }
-        .handle-tr { top: -5px; right: -5px; cursor: nesw-resize; }
-        .handle-bl { bottom: -5px; left: -5px; cursor: nesw-resize; }
-        .handle-br { bottom: -5px; right: -5px; cursor: nwse-resize; }
+        body { background: #0f172a; color: white; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
         
-        .handle-mt { top: -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
-        .handle-mb { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
-        .handle-ml { top: 50%; left: -5px; transform: translateY(-50%); cursor: ew-resize; }
-        .handle-mr { top: 50%; right: -5px; transform: translateY(-50%); cursor: ew-resize; }
-        .handle-rotator {
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: #4472c4;
-            cursor: grab;
+        .section-title { text-align: center; color: #00d2ff; margin-top: 30px; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .card { 
+            background: #1e293b; padding: 20px; border-radius: 12px; 
+            margin-bottom: 15px; border: 1px solid #334155;
+            display: flex; justify-content: space-between; align-items: center;
+            animation: fadeIn 0.3s ease;
         }
-        .handle-line {
-            position: absolute;
-            top: -25px;
-            left: 50%;
-            width: 1px;
-            height: 25px;
-            background-color: #5b9bd5;
-        }
-        /* To'g'rilash chiziqlari (Smart Alignment Guides) */
-        .alignment-guide {
-            position: absolute;
-            background: none;
-            border: 1px dashed #ff4d4d;
-            display: none;
-            pointer-events: none;
-            z-index: 9998;
-        }
-        .guide-x { width: 100%; height: 0; left: 0; }
-        .guide-y { height: 100%; width: 0; top: 0; }
-        /* Rasmni Kichraytirish/Kattalashtirish Paneli */
-        .image-resizer-panel {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #323130;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 30px;
-            display: none;
-            gap: 15px;
-            align-items: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            z-index: 10000;
-        }
-        .resizer-btn {
-            background: #444342;
-            color: white;
-            border: none;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .resizer-btn:hover { background: #555453; }
-        .toast-info {
-            background: #e0f2fe;
-            color: #0369a1;
-            padding: 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            margin-top: 15px;
-            display: none;
-            font-weight: 500;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .btn-ok { background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-right: 5px; }
+        .btn-no { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-ok:active, .btn-no:active { transform: scale(0.95); }
+        
+        .sum { color: #38bdf8; font-weight: bold; font-size: 18px; }
+        .sum-withdraw { color: #f43f5e; font-weight: bold; font-size: 18px; } /* Chiqim uchun qizil rang */
+        
+        .user-info b { font-size: 16px; color: #f8fafc; }
+        .user-info span { font-size: 12px; color: #94a3b8; }
+        
+        /* Karta raqamlari bloki */
+        .card-box { background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 8px; font-size: 11px; color: #cbd5e1; margin-top: 5px; border: 1px solid rgba(255,255,255,0.08); }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h2 class="section-title">📥 To'lov So'rovlari (Kirim)</h2>
+        <hr style="border: 0.5px solid #334155; margin-bottom: 15px;">
+        <div id="payment-list">Yuklanmoqda...</div>
 
-<div class="app-header">
-    <h1>Dr. Rahmonov — Boshqaruv Paneli</h1>
-    <div style="font-weight: 700; font-size: 14px; color: var(--success);">● ONLINE</div>
-</div>
-
-<div class="main-container">
-    <div class="config-card">
-        <h2 style="margin-top:0; margin-bottom:20px; font-size:17px; color: var(--brand);">📂 Test Yuklash va Faollashtirish</h2>
-                
-        <div class="form-group">
-            <label>1. Fanni tanlang</label>
-            <select id="main-subject">
-                <option value="">-- Fan roʻyxati --</option>
-                <option value="Odam Anatomiyasi">Odam Anatomiyasi</option>
-                <option value="Gistologiya">Gistologiya</option>
-                <option value="Farmakologiya">Farmakologiya</option>
-            </select>
-        </div>
-
-        <div class="time-row">
-            <div class="form-group">
-                <label>2. Boshlanish vaqti (Sana va Soat)</label>
-                <input type="datetime-local" id="main-time">
-            </div>
-            <div class="form-group">
-                <label>3. Kirish vaqti (Daqiqa)</label>
-                <input type="number" id="entry-duration" value="5" min="1">
-            </div>
-            <div class="form-group">
-                <label>4. Test davomiyligi (Daqiqa)</label>
-                <input type="number" id="quiz-duration" value="80" min="1">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>5. Word (.docx) test faylini kiriting</label>
-            <input type="file" id="main-word-file" accept=".docx">
-        </div>
-
-        <div class="form-group">
-            <button id="btn-open-editor" onclick="openEditorModal()" class="btn-edit">🛠️ Word Ichidagi Rasmlarni Tahrirlash (Edit)</button>
-        </div>
-
-        <div id="main-toast" class="toast-info"></div>
-
-        <button onclick="activateSystemFinal()" class="btn-main" style="margin-top: 25px;">🚀 SOZLAMALARNI SAQLASH VA TIZIMNI ISHGA TUSHIRISH</button>
+        <h2 class="section-title" style="color: #ff4b2b;">📤 Pul Yechish So'rovlari (Chiqim)</h2>
+        <hr style="border: 0.5px solid #334155; margin-bottom: 15px;">
+        <div id="withdraw-list">Yuklanmoqda...</div>
     </div>
-</div>
 
-<div id="editor-modal-window" class="editor-modal">
-    <div class="modal-topbar">
-        <div style="font-weight: 700; font-size: 15px; color: var(--brand);">📝 Word Modifikatsiya Oynasi</div>
-                
-        <div>
-            <button class="btn-editor-save" onclick="saveEditorAndReturn()">💾 OʻZGARISHLARNI SAQLASH VA CHIQISH</button>
-        </div>
-        <button class="btn-main" style="position: relative; background: #e8f4fd; color: #106ebe; width: auto; font-size: 14px; padding: 10px 18px;">
-            🖼️ Tanlangan Joyga Rasm Qo'shish
-            <input type="file" id="modal-image-loader" accept="image/*" style="position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer;">
-        </button>
-    </div>
-    <div class="modal-body-workspace">
-        <div id="word-editor-page" class="word-page-container" contenteditable="true">
-            <div id="guide-x" class="alignment-guide guide-x"></div>
-            <div id="guide-y" class="alignment-guide guide-y"></div>
-            <div id="image-transform-frame" class="image-transform-overlay">
-                <div class="handle-line"></div>
-                <div class="transform-handle handle-tl" data-handle="tl"></div>
-                <div class="transform-handle handle-tr" data-handle="tr"></div>
-                <div class="transform-handle handle-bl" data-handle="bl"></div>
-                <div class="transform-handle handle-br" data-handle="br"></div>
-                                
-                <div class="transform-handle handle-mt" data-handle="mt"></div>
-                <div class="transform-handle handle-mb" data-handle="mb"></div>
-                <div class="transform-handle handle-ml" data-handle="ml"></div>
-                <div class="transform-handle handle-mr" data-handle="mr"></div>
-                                
-                <div class="transform-handle handle-rotator" data-handle="rotate"></div>
-            </div>
-        </div>
-    </div>
-</div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-<div id="resizer-panel" class="image-resizer-panel">
-    <span style="font-size: 13px; font-weight: 600;">Rasm o'lchami:</span>
-    <button class="resizer-btn" onclick="resizeImage(0.9)">-</button>
-    <button class="resizer-btn" onclick="resizeImage(1.1)">+</button>
-    <button class="resizer-btn" style="background:#a80000; font-size: 12px;" onclick="deleteSelectedImg()">🗑️</button>
-</div>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
+            authDomain: "quiz-app-3692d.firebaseapp.com",
+            projectId: "quiz-app-3692d",
+            storageBucket: "quiz-app-3692d.firebasestorage.app",
+            messagingSenderId: "526836020845",
+            appId: "1:526836020845:android:3ea991380c104c75e8b164"
+        };
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
-        authDomain: "quiz-app-3692d.firebaseapp.com",
-        projectId: "quiz-app-3692d",
-        storageBucket: "quiz-app-3692d.firebasestorage.app",
-        messagingSenderId: "526836020845",
-        appId: "1:526836020845:android:3ea991380c104c75e8b164"
-    };
+        // ==========================================
+        // 1. TO'LOV KIRIMLARINI KUZATISH
+        // ==========================================
+        const qPayments = query(collection(db, "payments"), where("status", "==", "kutilmoqda"));
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Global funksiya qilib bog'laymiz
-    window.activateSystemFinal = async function() {
-        const fan = document.getElementById('main-subject').value;
-        const startTimeStr = document.getElementById('main-time').value;
-        const entryMin = parseInt(document.getElementById('entry-duration').value) || 5;
-        const quizMin = parseInt(document.getElementById('quiz-duration').value) || 80;
-
-        if (!fan || !startTimeStr) {
-            alert("Iltimos, fan nomi va boshlanish vaqtini to'liq kiriting!");
-            return;
-        }
-
-        // Tahrirlash oynasidagi barcha placeholderlarni tozalash
-        const placeholders = editorPage.querySelectorAll('.img-placeholder-block');
-        placeholders.forEach(p => p.remove());
-        
-        // Hozirgi yakuniy HTML tarkibni yig'ib olish
-        finalWordContent = editorPage.innerHTML;
-
-        // Taymer vaqtlarini millisekundga o'tkazish (Zanjir mantiqi)
-        const startTimestamp = new Date(startTimeStr).getTime();
-        const entryEndTimestamp = startTimestamp + (entryMin * 60 * 1000);
-        const quizEndTimestamp = entryEndTimestamp + (quizMin * 60 * 1000);
-
-        try {
-            await setDoc(doc(db, "premium_admin", "settings"), {
-                subject: fan,
-                startTime: startTimestamp,       
-                entryEndTime: entryEndTimestamp, 
-                quizEndTime: quizEndTimestamp,   
-                htmlContent: finalWordContent,
-                status: "ACTIVE"
+        onSnapshot(qPayments, (snap) => {
+            const list = document.getElementById('payment-list');
+            list.innerHTML = "";
+            if(snap.empty) {
+                list.innerHTML = "<p style='text-align:center; opacity:0.5; font-size:13px;'>Kirim so'rovlari yo'q.</p>";
+                return;
+            }
+            snap.forEach((item) => {
+                const p = item.data();
+                const div = document.createElement('div');
+                div.className = "card";
+                div.innerHTML = `
+                    <div class="user-info">
+                        <b>${p.fio || 'Noma\'lum'}</b><br>
+                        <span>ID: ${p.studentID || 'Yo\'q'}</span><br>
+                        <span class="sum">+ ${Number(p.summa).toLocaleString()} so'm</span>
+                    </div>
+                    <div>
+                        <button class="btn-ok" onclick="handlePaymentAction('${item.id}', 'tasdiqlandi')">OK</button>
+                        <button class="btn-no" onclick="handlePaymentAction('${item.id}', 'rad_etildi')">X</button>
+                    </div>
+                `;
+                list.appendChild(div);
             });
+        });
 
-            alert("🎉 Tizim muvaffaqiyatli ishga tushdi!\n\n" + fan + " fanidan test va diagrammalar Firebase bazasiga saqlandi.");
-        } catch (error) {
-            alert("Firebase-ga yozishda xatolik yuz berdi: " + error.code + " - " + error.message);
-            console.error(error);
-        }
-    }
-</script>
+        // ==========================================
+        // 2. PUL YECHISH (WITHDRAW) KUZATISH
+        // ==========================================
+        // Esda tuting: "Kutilmoqda" so'zi withdraw.html da qanday yozilgan bo'lsa shunday bo'lishi shart.
+        const qWithdraws = query(collection(db, "withdraw_requests"), where("status", "==", "Kutilmoqda"));
 
-<script>
-    let finalWordContent = "";
-    let lastSavedSelection = null;
-    let selectedImageElement = null;
-    let currentPlaceholder = null; 
-
-    // Transformatsiya o'zgaruvchilari
-    let currentRotation = 0;
-    let isTransforming = false;
-    let isDragging = false;
-    let currentHandle = null;
-    let startX, startY, startWidth, startHeight, startLeft, startTop, startAngle;
-
-    // Word (.docx) Faylini o'qish
-    document.getElementById('main-word-file').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file && file.name.endsWith('.docx')) {
-            const mainToast = document.getElementById('main-toast');
-            mainToast.style.display = 'block';
-            mainToast.innerText = "Word hujjati yuklanmoqda...";
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                mammoth.convertToHtml({arrayBuffer: event.target.result})
-                    .then(function(result) {
-                        const frame = document.getElementById('image-transform-frame');
-                        const gx = document.getElementById('guide-x');
-                        const gy = document.getElementById('guide-y');
-                                                
-                        document.getElementById('word-editor-page').innerHTML = result.value;
-                                                
-                        // Elementlarni qayta joylashtirish
-                        document.getElementById('word-editor-page').appendChild(frame);
-                        document.getElementById('word-editor-page').appendChild(gx);
-                        document.getElementById('word-editor-page').appendChild(gy);
-                                                
-                        document.getElementById('btn-open-editor').style.display = 'inline-flex';
-                        mainToast.style.background = '#d1fae5';
-                        mainToast.style.color = '#107c41';
-                        mainToast.innerHTML = "<b>✓ Word muvaffaqiyatli o'qildi!</b> Tahrirlash tugmasini bosing.";
-                                                
-                        initImageEvents();
-                    });
-            };
-            reader.readAsArrayBuffer(file);
-        }
-    });
-
-    function openEditorModal() {
-        document.getElementById('editor-modal-window').style.display = 'flex';
-    }
-
-    const editorPage = document.getElementById('word-editor-page');
-    editorPage.addEventListener('blur', saveSelection);
-    editorPage.addEventListener('keyup', saveSelection);
-    editorPage.addEventListener('click', saveSelection);
-
-    // Matn ichidagi bo'sh kataklar qoldig'ini Backspace/Delete bosilganda tozalash
-    editorPage.addEventListener('keydown', function(e) {
-        if (e.key === 'Backspace' || e.key === 'Delete') {
-            setTimeout(() => {
-                const emptyPlaceholders = editorPage.querySelectorAll('.img-placeholder-block');
-                emptyPlaceholders.forEach(p => {
-                    if (!selectedImageElement || !editorPage.contains(selectedImageElement)) {
-                        p.remove();
-                    }
-                });
-            }, 10);
-        }
-    });
-
-    function saveSelection() {
-        const sel = window.getSelection();
-        if (sel.getRangeAt && sel.rangeCount) {
-            const range = sel.getRangeAt(0);
-            if (editorPage.contains(range.commonAncestorContainer)) {
-                lastSavedSelection = range;
+        onSnapshot(qWithdraws, (snap) => {
+            const list = document.getElementById('withdraw-list');
+            list.innerHTML = "";
+            if(snap.empty) {
+                list.innerHTML = "<p style='text-align:center; opacity:0.5; font-size:13px;'>Chiqim so'rovlari yo'q.</p>";
+                return;
             }
-        }
-    }
-
-    document.getElementById('modal-image-loader').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = document.createElement('img');
-                img.src = event.target.result;
-                img.style.width = "300px"; 
-                img.style.position = "relative";
-                                
-                editorPage.focus();
-                if (lastSavedSelection) {
-                    lastSavedSelection.deleteContents();
-                    lastSavedSelection.insertNode(img);
-                } else {
-                    editorPage.appendChild(img);
-                }
-                                
-                initImageEvents();
-                img.click(); 
-             };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    function updateTransformFrame() {
-        if (!selectedImageElement) return;
-        const img = selectedImageElement;
-        const frame = document.getElementById('image-transform-frame');
-                
-        frame.style.width = img.offsetWidth + 'px';
-        frame.style.height = img.offsetHeight + 'px';
-        frame.style.left = img.offsetLeft + 'px';
-        frame.style.top = img.offsetTop + 'px';
-                
-        if(img.style.transform) {
-            const match = img.style.transform.match(/rotate\(([^)]+)deg\)/);
-            currentRotation = match ? parseFloat(match[1]) : 0;
-        } else {
-            currentRotation = 0;
-        }
-        frame.style.transform = `rotate(${currentRotation}deg)`;
-        frame.style.display = 'block';
-    }
-
-    function initImageEvents() {
-        const images = editorPage.getElementsByTagName('img');
-        for (let i = 0; i < images.length; i++) {
-            images[i].removeEventListener('mousedown', onImgMouseDown);
-            images[i].removeEventListener('touchstart', onImgMouseDown);
-            images[i].addEventListener('click', function(e) {
-                e.stopPropagation();
-                                 
-                if (selectedImageElement && selectedImageElement !== this) {
-                    selectedImageElement.classList.remove('selected-img');
-                }
-                                
-                selectedImageElement = this;
-                selectedImageElement.classList.add('selected-img');
-                                
-                const prevSibling = this.previousElementSibling;
-                if (prevSibling && prevSibling.classList.contains('img-placeholder-block')) {
-                    currentPlaceholder = prevSibling;
-                } else {
-                    currentPlaceholder = null;
-                }
-                document.getElementById('resizer-panel').style.display = 'flex';
-                updateTransformFrame();
+            snap.forEach((item) => {
+                const w = item.data();
+                const div = document.createElement('div');
+                div.className = "card";
+                div.innerHTML = `
+                    <div class="user-info">
+                        <b>${w.userFio || 'Noma\'lum'}</b><br>
+                        <span>ID: ${w.studentID || 'Yo\'q'}</span><br>
+                        <span class="sum-withdraw">- ${Number(w.amount).toLocaleString()} so'm</span>
+                        <div class="card-box">
+                            💳 ${w.cardType}: <b>${w.cardNumber}</b><br>
+                            👤 ${w.cardHolder}
+                        </div>
+                    </div>
+                    <div>
+                        <button class="btn-ok" onclick="handleWithdrawAction('${item.id}', 'tasdiqlandi')">OK</button>
+                        <button class="btn-no" onclick="handleWithdrawAction('${item.id}', 'rad_etildi')">X</button>
+                    </div>
+                `;
+                list.appendChild(div);
             });
-            images[i].addEventListener('mousedown', onImgMouseDown);
-            images[i].addEventListener('touchstart', onImgMouseDown, { passive: false });
-        }
-    }
+        });
 
-    function onImgMouseDown(e) {
-        if (e.target !== selectedImageElement || e.target.classList.contains('transform-handle')) return;
+        // ==========================================
+        // 3. TO'LOV KIRIM ACTION FUNKSIYASI
+        // ==========================================
+        window.handlePaymentAction = async (id, stat) => {
+            if(!confirm(stat === 'tasdiqlandi' ? "To'lovni tasdiqlaysizmi?" : "To'lovni rad etasizmi?")) return;
+            try {
+                const payRef = doc(db, "payments", id);
+                const paySnap = await getDoc(payRef);
+                if (!paySnap.exists()) return alert("Xato: To'lov topilmadi!");
                 
-        e.preventDefault();
-        e.stopPropagation();
-        isDragging = true;
-        const img = selectedImageElement;
-        
-        if (img.style.position !== 'absolute') {
-            const rect = img.getBoundingClientRect();
-            const parentRect = editorPage.getBoundingClientRect();
-                        
-            startLeft = rect.left - parentRect.left + editorPage.scrollLeft;
-            startTop = rect.top - parentRect.top + editorPage.scrollTop;
-            startWidth = img.offsetWidth;
-            startHeight = img.offsetHeight;
-            currentPlaceholder = document.createElement('div');
-            currentPlaceholder.className = 'img-placeholder-block';
-            currentPlaceholder.style.width = startWidth + 'px';
-            currentPlaceholder.style.height = startHeight + 'px';
-                        
-            img.parentNode.insertBefore(currentPlaceholder, img);
-            img.style.position = 'absolute';
-            img.style.left = startLeft + 'px';
-            img.style.top = startTop + 'px';
-            img.style.width = startWidth + 'px';
-            img.style.height = startHeight + 'px';
-            img.style.margin = '0';
-                        
-            updateTransformFrame();
-        } else {
-            startLeft = parseFloat(img.style.left);
-            startTop = parseFloat(img.style.top);
-        }
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        startX = clientX;
-        startY = clientY;
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onEndMove);
-        document.addEventListener('touchmove', onMove, { passive: false });
-        document.addEventListener('touchend', onEndMove);
-    }
+                const pData = paySnap.data();
 
-    editorPage.addEventListener('click', function(e) {
-        if(e.target.closest('#image-transform-frame') || e.target.tagName === 'IMG') return;
-        hideGuides();
-        if (selectedImageElement) {
-            selectedImageElement.classList.remove('selected-img');
-            selectedImageElement = null;
-            currentPlaceholder = null;
-            document.getElementById('resizer-panel').style.display = 'none';
-            document.getElementById('image-transform-frame').style.display = 'none';
-        }
-    });
-
-    const frame = document.getElementById('image-transform-frame');
-    frame.addEventListener('mousedown', onHandleMouseDown);
-    frame.addEventListener('touchstart', onHandleMouseDown, { passive: false });
-
-    function onHandleMouseDown(e) {
-        if (!selectedImageElement) return;
-        const handle = e.target.closest('.transform-handle');
-        if (!handle) return;
-                
-        e.preventDefault();
-        e.stopPropagation();
-                
-        isTransforming = true;
-        currentHandle = handle.getAttribute('data-handle');
-                
-        const img = selectedImageElement;
-        startWidth = img.offsetWidth;
-        startHeight = img.offsetHeight;
-        startLeft = parseFloat(img.style.left) || img.offsetLeft;
-        startTop = parseFloat(img.style.top) || img.offsetTop;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        startX = clientX;
-        startY = clientY;
-        const rect = img.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        startAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onEndMove);
-        document.addEventListener('touchmove', onMove, { passive: false });
-        document.addEventListener('touchend', onEndMove);
-    }
-
-    function onMove(e) {
-        if (!selectedImageElement || (!isDragging && !isTransforming)) return;
-        e.preventDefault();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const diffX = clientX - startX;
-        const diffY = clientY - startY;
-        if (isDragging) {
-            selectedImageElement.style.left = (startLeft + diffX) + 'px';
-            selectedImageElement.style.top = (startTop + diffY) + 'px';
-            updateTransformFrame();
-        } else if (isTransforming) {
-            let newWidth = startWidth;
-            let newHeight = startHeight;
-            let newLeft = startLeft;
-            let newTop = startTop;
-            if (currentHandle === 'rotate') {
-                const rect = selectedImageElement.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-                const currentAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
-                let angle = currentRotation + (currentAngle - startAngle);                                
-                const snapThreshold = 4; 
-                let snapped = false;
-                const targets = [0, 90, 180, 270, 360, -90, -180, -270];                                
-                targets.forEach(target => {
-                    if (Math.abs(angle - target) < snapThreshold || Math.abs((angle % 360) - target) < snapThreshold) {
-                        angle = target;
-                        snapped = true;
-                    }
-                });
-                selectedImageElement.style.transform = `rotate(${angle}deg)`;
-                document.getElementById('image-transform-frame').style.transform = `rotate(${angle}deg)`;
-                if (snapped) {
-                    showGuides(selectedImageElement);
+                if (stat === 'tasdiqlandi') {
+                    const userRef = doc(db, "users", pData.uid);
+                    const userSnap = await getDoc(userRef);
+                    if (userSnap.exists()) {
+                        const currentBal = Number(userSnap.data().balance || 0);
+                        await updateDoc(userRef, { balance: currentBal + Number(pData.summa) });
+                        await updateDoc(payRef, { status: 'tasdiqlandi' });
+                        alert("Muvaffaqiyatli balansga qo'shildi! ✅");
+                    } else { alert("Foydalanuvchi topilmadi!"); }
                 } else {
-                    hideGuides();
+                    await deleteDoc(payRef);
+                    alert("Kirim so'rovi o'chirildi! ❌");
                 }
-            } else {
-                if (currentHandle.includes('r')) newWidth = startWidth + diffX;
-                if (currentHandle.includes('l')) { newWidth = startWidth - diffX; newLeft = startLeft + diffX; }
-                if (currentHandle.includes('b')) newHeight = startHeight + diffY;
-                if (currentHandle.includes('t')) { newHeight = startHeight - diffY; newTop = startTop + diffY; }
-                if (newWidth > 20 && newHeight > 20) {
-                    selectedImageElement.style.width = newWidth + 'px';
-                    selectedImageElement.style.height = newHeight + 'px';
-                    selectedImageElement.style.left = newLeft + 'px';
-                    selectedImageElement.style.top = newTop + 'px';
-                                        
-                    if(currentPlaceholder) {
-                        currentPlaceholder.style.width = newWidth + 'px';
-                        currentPlaceholder.style.height = newHeight + 'px';
-                    }
-                    updateTransformFrame();
+            } catch (e) { alert("Xatolik: " + e.message); }
+        };
+
+        // ==========================================
+        // 4. PUL YECHISH (WITHDRAW) ACTION FUNKSIYASI
+        // ==========================================
+        window.handleWithdrawAction = async (id, stat) => {
+            const confirmMsg = stat === 'tasdiqlandi' ? "Kartaga pulni o'tkazib berdingizmi? So'rovni yopish." : "Yechish so'rovini rad etasizmi? Pul egasiga qaytariladi.";
+            if(!confirm(confirmMsg)) return;
+
+            try {
+                const withRef = doc(db, "withdraw_requests", id);
+                const withSnap = await getDoc(withRef);
+                if (!withSnap.exists()) return alert("Xato: So'rov topilmadi!");
+
+                const wData = withSnap.data();
+                const userRef = doc(db, "users", wData.uid);
+
+                if (stat === 'tasdiqlandi') {
+                    // Pul yechishda foydalanuvchi balansidan pul ayrilib bo'lingan, shunchaki statusni yopamiz
+                    await updateDoc(withRef, { status: 'Tasdiqlandi' });
+                    alert("Pul yechish so'rovi muvaffaqiyatli yakunlandi! ✅");
+                } else {
+                    // RAD ETILGANDA: Pulni foydalanuvchi hisobiga qayta tiklash
+                    const userSnap = await getDoc(userRef);
+                    if (userSnap.exists()) {
+                        const currentBal = Number(userSnap.data().balance || 0);
+                        await updateDoc(userRef, { balance: currentBal + Number(wData.amount) });
+                        await deleteDoc(withRef); // Bazada axlat turmasligi uchun o'chiramiz
+                        alert("So'rov rad etildi va pul foydalanuvchiga qaytarildi! ↩️");
+                    } else { alert("Foydalanuvchi profili topilmadi!"); }
                 }
-            }
-        }
-    }
-
-    function showGuides(img) {
-        const guideX = document.getElementById('guide-x');
-        const guideY = document.getElementById('guide-y');
-                
-        const midX = img.offsetTop + (img.offsetHeight / 2);
-        const midY = img.offsetLeft + (img.offsetWidth / 2);
-                
-        guideX.style.top = midX + 'px';
-        guideX.style.display = 'block';
-                
-        guideY.style.left = midY + 'px';
-        guideY.style.display = 'block';
-    }
-
-    function hideGuides() {
-        document.getElementById('guide-x').style.display = 'none';
-        document.getElementById('guide-y').style.display = 'none';
-    }
-
-    function onEndMove() {
-        if(selectedImageElement && selectedImageElement.style.transform) {
-            const match = selectedImageElement.style.transform.match(/rotate\(([^)]+)deg\)/);
-            if(match) currentRotation = parseFloat(match[1]);
-        }
-        isDragging = false;
-        isTransforming = false;
-        currentHandle = null;
-        hideGuides(); 
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onEndMove);
-        document.removeEventListener('touchmove', onMove);
-        document.removeEventListener('touchend', onEndMove);
-    }
-
-    function resizeImage(scale) {
-        if (selectedImageElement) {
-            let currentWidth = selectedImageElement.clientWidth;
-            let currentHeight = selectedImageElement.clientHeight;
-            if (!currentWidth) currentWidth = 300; 
-            let newWidth = currentWidth * scale;
-            let newHeight = currentHeight * scale;
-                        
-            if (newWidth > 20 && newWidth < 800) {
-                selectedImageElement.style.width = newWidth + "px";
-                selectedImageElement.style.height = newHeight + "px";
-                if(currentPlaceholder) {
-                    currentPlaceholder.style.width = newWidth + "px";
-                    currentPlaceholder.style.height = newHeight + "px";
-                }
-                setTimeout(updateTransformFrame, 10);
-            }
-        }
-    }
-
-    function deleteSelectedImg() {
-        if (selectedImageElement) {
-            if(currentPlaceholder) {
-                currentPlaceholder.remove();
-            }
-                        
-            const associatedPlaceholder = selectedImageElement.previousElementSibling;
-            if(associatedPlaceholder && associatedPlaceholder.classList.contains('img-placeholder-block')) {
-                associatedPlaceholder.remove();
-            }
-            selectedImageElement.remove();
-            selectedImageElement = null;
-            currentPlaceholder = null;
-                        
-            document.getElementById('resizer-panel').style.display = 'none';
-            document.getElementById('image-transform-frame').style.display = 'none';
-            hideGuides();
-        }
-    }
-
-    function saveEditorAndReturn() {
-        if (selectedImageElement) {
-            selectedImageElement.classList.remove('selected-img');
-            selectedImageElement = null;
-        }
-        hideGuides();
-        document.getElementById('resizer-panel').style.display = 'none';
-        document.getElementById('image-transform-frame').style.display = 'none';
-        
-        const placeholders = editorPage.querySelectorAll('.img-placeholder-block');
-        placeholders.forEach(p => p.remove());
-        finalWordContent = editorPage.innerHTML;
-        document.getElementById('editor-modal-window').style.display = 'none';
-                
-        const mainToast = document.getElementById('main-toast');
-        mainToast.style.display = 'block';
-        mainToast.style.background = '#d1fae5';
-        mainToast.style.color = '#107c41';
-        mainToast.innerHTML = "<b>✓ Word muvaffaqiyatli tahrirlandi!</b> Endi pastdagi katta tugmani bosib tizimni ishga tushiring.";
-    }
-</script>
+            } catch (e) { alert("Xatolik: " + e.message); }
+        };
+    </script>
 </body>
 </html>
