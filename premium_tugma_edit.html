@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Quiz - Dr. Rahmonov</title>
+    <title>Tahrirlash Paneli - Dr. Rahmonov</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -12,7 +12,7 @@
         .section-title { color: #ffd700; margin: 20px 0 10px; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
         .grid-select { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
-        .grid-subjects { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .grid-subjects { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 15px; }
 
         .btn-select {
             background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
@@ -26,6 +26,10 @@
             background: #1a2a33; padding: 20px; border-radius: 15px; 
             margin-bottom: 15px; border-left: 5px solid #ffd700; border-top: 1px solid rgba(255,255,255,0.05);
         }
+        .time-card {
+            background: #16252d; padding: 15px; border-radius: 12px;
+            margin-bottom: 20px; border: 1px solid rgba(255, 215, 0, 0.1);
+        }
         .edit-input { 
             width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); 
             color: white; padding: 12px; border-radius: 8px; margin-top: 8px; font-size: 14px; outline: none;
@@ -36,6 +40,14 @@
         .action-btns { display: flex; gap: 10px; margin-top: 15px; }
         .btn-save { flex: 2; background: #ffd700; color: #000; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         .btn-del { flex: 1; background: #ff4b2b; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; font-size: 12px; }
+
+        .btn-global-save {
+            width: 100%; background: linear-gradient(135deg, #00d2ff, #0066ff); color: white; 
+            padding: 14px; border: none; border-radius: 12px; cursor: pointer; 
+            font-weight: bold; text-transform: uppercase; font-size: 14px; letter-spacing: 1px;
+            margin-bottom: 25px; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,102,255,0.3);
+        }
+        .btn-global-save:hover { opacity: 0.9; transform: translateY(-1px); }
 
         #toast { 
             position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); 
@@ -49,11 +61,17 @@
         .time-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
         .time-col { flex: 1; min-width: 140px; }
         .btn-back { display: inline-block; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #ccc; border-radius: 8px; text-decoration: none; font-size: 13px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 4000; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="btn-back">⬅️ Orqaga qaytish</a>
+    <div class="loading-overlay" id="loader">
+        <div style="color:#ffd700; font-weight: bold; letter-spacing: 1px;">SAQLANMOQDA...</div>
+    </div>
+
+    <a href="premium.html" class="btn-back">⬅️ Orqaga qaytish</a>
     <h2 style="text-align:center; color:#ffd700; margin-bottom: 20px;">Tahrirlash Paneli</h2>
 
     <div class="section-title">1. Test turini tanlang</div>
@@ -62,8 +80,28 @@
         <div class="btn-select mandatory-btn" id="type-premium_mandatory" onclick="changeType('premium_mandatory')">🔥 Premium Majburiy</div>
     </div>
 
-    <div class="section-title">2. Fanni tanlang</div>
+    <div class="section-title">2. Vaqt sozlamalari</div>
+    <div class="time-card">
+        <div class="time-row">
+            <div class="time-col">
+                <label style="font-size: 11px; color: #ccc; display:block;">Boshlanish vaqti</label>
+                <input type="datetime-local" id="edit-time" class="edit-input">
+            </div>
+            <div class="time-col">
+                <label style="font-size: 11px; color: #ccc; display:block;">Kirish (Daqiqa)</label>
+                <input type="number" id="edit-entry-dur" class="edit-input" min="1" placeholder="5">
+            </div>
+            <div class="time-col">
+                <label style="font-size: 11px; color: #ccc; display:block;">Davomiyligi (Daqiqa)</label>
+                <input type="number" id="edit-quiz-dur" class="edit-input" min="1" placeholder="80">
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">3. Fanni tanlang</div>
     <div class="grid-subjects" id="subject-container"></div>
+
+    <button class="btn-global-save" onclick="saveGlobalSettings()">💾 SOZLAMALAR VA VAQTNI SAQLASH</button>
 
     <h2 class="section-title" id="status-text" style="border-top: 1px solid rgba(255,215,0,0.2); padding-top: 15px;">Yuklanmoqda...</h2>
     
@@ -73,7 +111,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -166,26 +204,18 @@
                 const quizDurationMin = d.durationMinutes || Math.round((savedQuizEnd - savedEntryEnd) / (60 * 1000)) || 80;
                 const inputDateTimeValue = formatTimestampToDateTimeLocal(savedStart);
 
+                const timeInput = document.getElementById('edit-time');
+                const entryInput = document.getElementById('edit-entry-dur');
+                const quizInput = document.getElementById('edit-quiz-dur');
+                
+                if (timeInput && !timeInput.matches(':focus')) timeInput.value = inputDateTimeValue;
+                if (entryInput && !entryInput.matches(':focus')) entryInput.value = entryDurationMin;
+                if (quizInput && !quizInput.matches(':focus')) quizInput.value = quizDurationMin;
+
                 const div = document.createElement('div');
                 div.className = "quiz-card";
                 div.innerHTML = `
-                    <div style="font-size:12px; color:#ffd700; font-weight:600; margin-bottom:5px;">⏰ VAQT SOZLAMALARI:</div>
-                    <div class="time-row">
-                        <div class="time-col">
-                            <label style="font-size: 11px; color: #ccc; display:block;">Boshlanish vaqti</label>
-                            <input type="datetime-local" id="edit-time" class="edit-input" value="${inputDateTimeValue}">
-                        </div>
-                        <div class="time-col">
-                            <label style="font-size: 11px; color: #ccc; display:block;">Kirish (Daqiqa)</label>
-                            <input type="number" id="edit-entry-dur" class="edit-input" value="${entryDurationMin}" min="1">
-                        </div>
-                        <div class="time-col">
-                            <label style="font-size: 11px; color: #ccc; display:block;">Davomiyligi (Daqiqa)</label>
-                            <input type="number" id="edit-quiz-dur" class="edit-input" value="${quizDurationMin}" min="1">
-                        </div>
-                    </div>
-
-                    <div style="font-size:12px; color:#ffd700; font-weight:600; margin-top:15px; margin-bottom:5px;">📝 SAVOL MATNI VA VARIANTLAR:</div>
+                    <div style="font-size:12px; color:#ffd700; font-weight:600; margin-top:5px; margin-bottom:5px;">📝 SAVOL MATNI VA VARIANTLAR:</div>
                     <textarea class="edit-input" id="q-main" rows="2">${d.question || ""}</textarea>
                     <div class="grid-options">
                         <input class="edit-input" id="a-main" value="${d.options?.A || ""}" placeholder="A variant">
@@ -211,20 +241,67 @@
             });
         };
 
+        window.saveGlobalSettings = async () => {
+            const startTimeStr = document.getElementById('edit-time').value;
+            const entryMin = parseInt(document.getElementById('edit-entry-dur').value) || 5;
+            const quizMin = parseInt(document.getElementById('edit-quiz-dur').value) || 80;
+
+            if(!startTimeStr) return showToast("⚠️ Boshlanish vaqtini kiriting!");
+
+            document.getElementById('loader').style.display = 'flex';
+
+            const startTimestamp = new Date(startTimeStr).getTime();
+            const entryEndTimestamp = startTimestamp + (entryMin * 60 * 1000);
+            const quizEndTimestamp = entryEndTimestamp + (quizMin * 60 * 1000);
+
+            try {
+                const settingsRef = doc(db, "premium_admin", "settings");
+                await setDoc(settingsRef, {
+                    type: selectedType,
+                    subject: selectedSubject,
+                    startTime: startTimestamp,       
+                    entryEndTime: entryEndTimestamp, 
+                    quizEndTime: quizEndTimestamp,
+                    durationMinutes: quizMin
+                }, { merge: true });
+
+                const globalTimeRef = doc(db, "premium_admin", "global_time_settings");
+                await setDoc(globalTimeRef, {
+                    startTime: startTimestamp,       
+                    entryEndTime: entryEndTimestamp, 
+                    quizEndTime: quizEndTimestamp,
+                    durationMinutes: quizMin,
+                    entryMinutes: entryMin,
+                    status: "ACTIVE"
+                });
+
+                showToast("✅ Sozlamalar va Jonli vaqt yoqildi!");
+            } catch (e) {
+                showToast("❌ Xatolik yuz berdi!");
+                console.error(e);
+            } finally {
+                document.getElementById('loader').style.display = 'none';
+            }
+        };
+
         window.updateQuiz = async () => {
+            const startTimeStr = document.getElementById('edit-time').value;
+            const entryMin = parseInt(document.getElementById('edit-entry-dur').value) || 5;
+            const quizMin = parseInt(document.getElementById('edit-quiz-dur').value) || 80;
+
+            if(!startTimeStr) return showToast("⚠️ Boshlanish vaqtini kiriting!");
+
+            document.getElementById('loader').style.display = 'flex';
+
+            const startTimestamp = new Date(startTimeStr).getTime();
+            const entryEndTimestamp = startTimestamp + (entryMin * 60 * 1000);
+            const quizEndTimestamp = entryEndTimestamp + (quizMin * 60 * 1000);
+
             try {
                 const ref = doc(db, "premium_admin", "settings");
-                const startTimeStr = document.getElementById('edit-time').value;
-                const entryMin = parseInt(document.getElementById('edit-entry-dur').value) || 5;
-                const quizMin = parseInt(document.getElementById('edit-quiz-dur').value) || 80;
-
-                if(!startTimeStr) return showToast("⚠️ Boshlanish vaqtini kiriting!");
-
-                const startTimestamp = new Date(startTimeStr).getTime();
-                const entryEndTimestamp = startTimestamp + (entryMin * 60 * 1000);
-                const quizEndTimestamp = entryEndTimestamp + (quizMin * 60 * 1000);
-
                 await updateDoc(ref, {
+                    type: selectedType,
+                    subject: selectedSubject,
                     startTime: startTimestamp,       
                     entryEndTime: entryEndTimestamp, 
                     quizEndTime: quizEndTimestamp,
@@ -236,17 +313,39 @@
                     "options.D": document.getElementById('d-main').value.trim(),
                     correctAnswer: document.getElementById('cor-main').value
                 });
-                showToast("✅ Tizim sozlamalari muvaffaqiyatli yangilandi!");
+
+                const globalTimeRef = doc(db, "premium_admin", "global_time_settings");
+                await setDoc(globalTimeRef, {
+                    startTime: startTimestamp,       
+                    entryEndTime: entryEndTimestamp, 
+                    quizEndTime: quizEndTimestamp,
+                    durationMinutes: quizMin,
+                    entryMinutes: entryMin,
+                    status: "ACTIVE"
+                });
+
+                showToast("✅ Savol va Vaqt to'liq yangilandi!");
             } catch (e) { 
                 showToast("❌ Xatolik yuz berdi!"); 
                 console.error(e);
+            } finally {
+                document.getElementById('loader').style.display = 'none';
             }
         };
 
         window.deleteQuiz = async () => {
             if(confirm("Ushbu aktiv test tizimini o'chirishni va to'xtatishni xohlaysizmi?")) {
-                await deleteDoc(doc(db, "premium_admin", "settings"));
-                showToast("🗑 Tizim tozalandi va o'chirildi!");
+                document.getElementById('loader').style.display = 'flex';
+                try {
+                    await deleteDoc(doc(db, "premium_admin", "settings"));
+                    await deleteDoc(doc(db, "premium_admin", "global_time_settings"));
+                    showToast("🗑 Tizim tozalandi va tugma o'chirildi!");
+                } catch(e) {
+                    showToast("❌ O'chirishda xatolik!");
+                    console.error(e);
+                } finally {
+                    document.getElementById('loader').style.display = 'none';
+                }
             }
         };
 
