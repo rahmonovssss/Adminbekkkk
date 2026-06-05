@@ -44,7 +44,7 @@
     <div class="card">
         <h3>🕒 Premium Imtihonlar Vaqtini Sozlash</h3>
 
-        <div class="section-label">⏰ Vaqt Sozlamalari (Barcha fanlar uchun):</div>
+        <div class="section-label">⏰ Vaqt Sozlamalari (Barcha testlar uchun):</div>
         <div class="time-row">
             <div class="time-col">
                 <label style="font-size: 11px; color: #ffd700; display: block; margin-bottom: 4px;">Boshlanish vaqti</label>
@@ -60,7 +60,7 @@
             </div>
         </div>
 
-        <button class="btn btn-gold" onclick="saveTimeToFirebase()">HAMMA FANLARGA VAQTNI QO'YISH</button>
+        <button class="btn btn-gold" onclick="saveTimeToFirebase()">HAMMA TESTLARGA VAQTNI QO'YISH</button>
     </div>
 
     <div style="max-width: 650px; margin-inline: auto; margin-bottom: 40px;">
@@ -71,7 +71,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, updateDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -85,10 +85,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Sahifa yuklanganda oxirgi saqlangan vaqtni bazadan olib ko'rsatish (o'chib ketmasligi uchun)
+        // Sahifa yuklanganda oxirgi saqlangan vaqtni bazadan olib ko'rsatish
         window.addEventListener('DOMContentLoaded', async () => {
             try {
-                const docRef = doc(db, "premium_admin", "global_time_settings");
+                const docRef = doc(db, "premium_admin", "settings");
                 const docSnap = await getDoc(docRef);
                 
                 if (docSnap.exists()) {
@@ -105,6 +105,10 @@
                     }
                     if (data.entryMinutes) {
                         document.getElementById('entry-duration').value = data.entryMinutes;
+                    } else if (data.entryEndTime && data.startTime) {
+                        // Agar daqiqa alohida saqlanmagan bo'lsa, timestamp farqidan hisoblaydi
+                        const diffMin = Math.round((data.entryEndTime - data.startTime) / (60 * 1000));
+                        document.getElementById('entry-duration').value = diffMin;
                     }
                     if (data.durationMinutes) {
                         document.getElementById('quiz-duration').value = data.durationMinutes;
@@ -129,22 +133,21 @@
             const quizEndTimestamp = entryEndTimestamp + (quizMin * 60 * 1000);
 
             try {
-                // Vaqt parametrlari "global_time_settings" nomli yagona hujjatga yoziladi
-                await setDoc(doc(db, "premium_admin", "global_time_settings"), {
+                // To'g'ridan-to'g'ri asosiy "settings" hujjatini yangilaymiz (savollar o'chib ketmaydi)
+                await updateDoc(doc(db, "premium_admin", "settings"), {
                     startTime: startTimestamp,       
                     entryEndTime: entryEndTimestamp, 
                     quizEndTime: quizEndTimestamp,
                     durationMinutes: quizMin,
                     entryMinutes: entryMin,
                     status: "ACTIVE",
-                    updatedAt: new Date().getTime()
+                    updatedAt: serverTimestamp()
                 });
                 
-                showToast("✅ Umumiy vaqt hamma fanlar uchun muvaffaqiyatli o'rnatildi!");
-                
-                // Vaqt inputlari tozalanmaydi, ekranda kiritilganicha qoladi.
+                showToast("✅ Umumiy vaqt muvaffaqiyatli o'rnatildi!");
+                // O'chirish (tozalash) funksiyalari yo'q, inputlar to'la holda qoladi.
             } catch (e) {
-                showToast("❌ Vaqtni saqlashda xatolik yuz berdi!");
+                showToast("❌ Vaqtni saqlashda xatolik yuz berdi! (Avval kamida bitta savol qo'shilgan bo'lishi kerak)");
                 console.error(e);
             } finally {
                 document.getElementById('loader').style.display = 'none';
