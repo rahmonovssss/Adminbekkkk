@@ -48,7 +48,7 @@
     </div>
 
     <div class="card">
-        <h3>📝 Savol Qo'shish va Faollashtirish</h3>
+        <h3>📝 Savol Qo'shish (Cheksiz Ro'yxat)</h3>
 
         <div class="section-label">1. Test turini tanlang:</div>
         <div class="grid-select">
@@ -76,9 +76,8 @@
             <option value="D">To'g'ri javob: D</option>
         </select>
 
-        <button class="btn btn-gold" onclick="saveToFirebase()">BAZAGA SAQLASH</button>
+        <button class="btn btn-gold" onclick="saveToFirebase()">BAZAGA QO'SHISH</button>
         
-        <!-- Yangi qo'shilgan vaqt qo'yish tugmasi -->
         <a href="premium-vaqt.html" class="btn btn-blue" style="margin-top: 15px;">🕒 PREMIUM VAQT QO'YISH</a>
     </div>
 
@@ -90,7 +89,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // addDoc funksiyasi olib kirildi - u har gal yangi unikal ID beradi
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -137,13 +137,16 @@
 
         window.saveToFirebase = async () => {
             const q = document.getElementById('m-q').value.trim();
-
             if(!q) return showToast("⚠️ Savol matnini kiriting!");
 
             document.getElementById('loader').style.display = 'flex';
 
             try {
-                await setDoc(doc(db, "premium_admin", "settings"), {
+                // To'plam (Kolleksiya) nomini test turiga qarab ajratamiz
+                const targetCollection = currentType === 'premium' ? "premium_questions" : "mandatory_questions";
+
+                // addDoc avtomatik tarzda har bir savol uchun takrorlanmas (unikal) yangi ID ochadi
+                await addDoc(collection(db, targetCollection), {
                     type: currentType,
                     subject: currentSub,
                     question: q,
@@ -158,7 +161,9 @@
                     createdAt: serverTimestamp()
                 });
                 
-                showToast("✅ Ma'lumotlar muvaffaqiyatli saqlandi!");
+                showToast("✅ Savol muvaffaqiyatli qo'shildi!");
+                
+                // Formani tozalash
                 document.getElementById('m-q').value = "";
                 ['m-a','m-b','m-c','m-d'].forEach(id => document.getElementById(id).value = "");
             } catch (e) {
