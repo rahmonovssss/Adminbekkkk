@@ -71,8 +71,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js" 
-        import { getFirestore as initFirestore, doc as fireDoc, setDoc as fireSet } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -84,9 +83,9 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = initFirestore(app);
+        const db = getFirestore(app);
 
-        // Sahifa yuklanganda inputlar toza turadi (Eski ma'lumotlar yuklanib qolib qotmaydi)
+        // Sahifa yuklanganda inputlar har doim top-toza va bo'sh turadi
 
         window.saveTimeToFirebase = async () => {
             const startTimeStr = document.getElementById('main-time').value;
@@ -104,8 +103,8 @@
             const quizEndTimestamp = entryEndTimestamp + (quizMin * 60 * 1000);
 
             try {
-                // Ma'lumot bazaga muvaffaqiyatli ketadi va Premium tugmani boshqaradi
-                await fireSet(fireDoc(db, "premium_admin", "global_time_settings"), {
+                // Ma'lumot bazaga yoziladi va Premium tugmaga buyruq beradi
+                await setDoc(doc(db, "premium_admin", "global_time_settings"), {
                     startTime: startTimestamp,       
                     entryEndTime: entryEndTimestamp, 
                     quizEndTime: quizEndTimestamp,
@@ -116,7 +115,7 @@
                 
                 showToast("✅ Premium vaqt muvaffaqiyatli yoqildi!");
 
-                // Muvaffaqiyatli saqlangach formani butunlay tozalaymiz (yozuvlar o'chib ketadi)
+                // Muvaffaqiyatli saqlangach, formani butunlay tozalaymiz
                 document.getElementById('main-time').value = "";
                 document.getElementById('entry-duration').value = "";
                 document.getElementById('quiz-duration').value = "";
