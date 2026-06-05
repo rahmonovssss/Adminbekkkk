@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Vaqt Sozlamalari - Dr. Rahmonov</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: #0f2027; color: white; padding: 20px; line-height: 1.6; }
+        
+        .card { background: #1a2a33; padding: 25px; border-radius: 20px; margin-bottom: 20px; max-width: 650px; margin-inline: auto; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h3 { color: #ffd700; margin-bottom: 20px; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 10px; font-size: 18px; text-transform: uppercase; }
+
+        .section-label { font-size: 13px; color: #ffd700; margin: 15px 0 8px; font-weight: 600; opacity: 0.9; }
+        .admin-input { width: 100%; padding: 12px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; margin-bottom: 10px; outline: none; transition: 0.3s; }
+        .admin-input:focus { border-color: #ffd700; }
+        
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; text-transform: uppercase; display: block; text-align: center; text-decoration: none; }
+        .btn-gold { background: #ffd700; color: #000; }
+        .btn-blue { background: #00d2ff; color: white; }
+
+        .time-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .time-col { flex: 1; min-width: 140px; }
+
+        #toast { 
+            position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); 
+            background: #ffd700; color: #000; padding: 12px 25px; border-radius: 50px; 
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s; 
+            z-index: 5000; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            opacity: 0; pointer-events: none; white-space: nowrap;
+        }
+        #toast.show { bottom: 40px; opacity: 1; }
+        
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 4000; align-items: center; justify-content: center; flex-direction: column; }
+    </style>
+</head>
+<body>
+
+    <div class="loading-overlay" id="loader">
+        <div style="color:#ffd700; font-weight: bold; letter-spacing: 1px;">VAQT SAQLANMOQDA...</div>
+    </div>
+
+    <div class="card">
+        <h3>🕒 Premium Imtihonlar Vaqtini Sozlash</h3>
+
+        <div class="section-label">⏰ Vaqt Sozlamalari (Barcha fanlar uchun):</div>
+        <div class="time-row">
+            <div class="time-col">
+                <label style="font-size: 11px; color: #ffd700; display: block; margin-bottom: 4px;">Boshlanish vaqti</label>
+                <input type="datetime-local" id="main-time" class="admin-input">
+            </div>
+            <div class="time-col">
+                <label style="font-size: 11px; color: #ffd700; display: block; margin-bottom: 4px;">Kirish vaqti (Daqiqa)</label>
+                <input type="number" id="entry-duration" class="admin-input" value="5" min="1">
+            </div>
+            <div class="time-col">
+                <label style="font-size: 11px; color: #ffd700; display: block; margin-bottom: 4px;">Davomiyligi (Daqiqa)</label>
+                <input type="number" id="quiz-duration" class="admin-input" value="80" min="1">
+            </div>
+        </div>
+
+        <button class="btn btn-gold" onclick="saveTimeToFirebase()">HAMMA FANLARGA VAQTNI QO'YISH</button>
+    </div>
+
+    <div style="max-width: 650px; margin-inline: auto; margin-bottom: 40px;">
+        <a href="index.html" class="btn btn-blue">⬅️ ADMIN PANELGA QAYTISH</a>
+    </div>
+
+    <div id="toast">Xabar!</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
+            authDomain: "quiz-app-3692d.firebaseapp.com",
+            projectId: "quiz-app-3692d",
+            storageBucket: "quiz-app-3692d.firebasestorage.app",
+            messagingSenderId: "526836020845",
+            appId: "1:526836020845:android:3ea991380c104c75e8b164"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Sahifa yuklanganda oxirgi saqlangan vaqtni bazadan olib ko'rsatish (o'chib ketmasligi uchun)
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const docRef = doc(db, "premium_admin", "global_time_settings");
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.startTime) {
+                        const date = new Date(data.startTime);
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const hours = String(date.getHours()).padStart(2, '0');
+                        const minutes = String(date.getMinutes()).padStart(2, '0');
+                        
+                        document.getElementById('main-time').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+                    }
+                    if (data.entryMinutes) {
+                        document.getElementById('entry-duration').value = data.entryMinutes;
+                    }
+                    if (data.durationMinutes) {
+                        document.getElementById('quiz-duration').value = data.durationMinutes;
+                    }
+                }
+            } catch (e) {
+                console.error("Vaqtni yuklashda xatolik:", e);
+            }
+        });
+
+        window.saveTimeToFirebase = async () => {
+            const startTimeStr = document.getElementById('main-time').value;
+            const entryMin = parseInt(document.getElementById('entry-duration').value) || 5;
+            const quizMin = parseInt(document.getElementById('quiz-duration').value) || 80;
+
+            if(!startTimeStr) return showToast("⚠️ Boshlanish vaqtini kiriting!");
+
+            document.getElementById('loader').style.display = 'flex';
+
+            const startTimestamp = new Date(startTimeStr).getTime();
+            const entryEndTimestamp = startTimestamp + (entryMin * 60 * 1000);
+            const quizEndTimestamp = entryEndTimestamp + (quizMin * 60 * 1000);
+
+            try {
+                // Vaqt parametrlari "global_time_settings" nomli yagona hujjatga yoziladi
+                await setDoc(doc(db, "premium_admin", "global_time_settings"), {
+                    startTime: startTimestamp,       
+                    entryEndTime: entryEndTimestamp, 
+                    quizEndTime: quizEndTimestamp,
+                    durationMinutes: quizMin,
+                    entryMinutes: entryMin,
+                    status: "ACTIVE",
+                    updatedAt: new Date().getTime()
+                });
+                
+                showToast("✅ Umumiy vaqt hamma fanlar uchun muvaffaqiyatli o'rnatildi!");
+                
+                // Vaqt inputlari tozalanmaydi, ekranda kiritilganicha qoladi.
+            } catch (e) {
+                showToast("❌ Vaqtni saqlashda xatolik yuz berdi!");
+                console.error(e);
+            } finally {
+                document.getElementById('loader').style.display = 'none';
+            }
+        };
+
+        let toastTimer = null;
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>
