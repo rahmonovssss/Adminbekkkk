@@ -345,7 +345,7 @@
             if (activeSelectedSubjects.length === 0) {
                 statusDiv.innerHTML = "Filtrlash uchun elementlarni bosing. Hozirda: <strong>Barcha kombinatsiyalar ko'rsatilmoqda</strong>";
             } else if (activeSelectedSubjects.length === 1) {
-                statusDiv.innerHTML = `Saralash: 1-blok fani qilib <strong>${activeSelectedSubjects[0]}</strong> tanlanganlarni qidirmoqda...`;
+                statusDiv.innerHTML = `Saralash: 1-blok fani qiblya <strong>${activeSelectedSubjects[0]}</strong> tanlanganlarni qidirmoqda...`;
             } else {
                 statusDiv.innerHTML = `Filtr faollashtirildi: 1-Blok: <strong>${activeSelectedSubjects[0]}</strong>, 2-Blok: <strong>${activeSelectedSubjects[1]}</strong>`;
             }
@@ -379,8 +379,15 @@
                 }
 
                 if (matchesFilter) {
-                    if (!uniqueResults[studentUID] || uniqueResults[studentUID].totalScore < data.totalScore) {
-                        uniqueResults[studentUID] = data;
+                    // AGAR FAN TANLANSA: Har bir urinish alohida (filtrga mos aniq test bali) chiqadi. 
+                    // AGAR FAN TANLANMASA: Foydalanuvchining faqat eng yuqori umumiy balli eslab qolinadi.
+                    if (activeSelectedSubjects.length > 0) {
+                        const uniqueKey = `${studentUID}_${b1}_${b2}_${data.timestamp ? data.timestamp.seconds : Math.random()}`;
+                        uniqueResults[uniqueKey] = data;
+                    } else {
+                        if (!uniqueResults[studentUID] || uniqueResults[studentUID].totalScore < data.totalScore) {
+                            uniqueResults[studentUID] = data;
+                        }
                     }
                 }
             });
@@ -420,9 +427,8 @@
                 row.addEventListener('click', () => openPaymentModal(data.studentName, sixDigitID, data.studentID));
 
                 let rankClass = "rank-other";
-                let rankVisual = rank; // Standart raqam qiymati
+                let rankVisual = rank; 
 
-                // O'rinlar uchun chiroyli dizayn berish qismi (1-o'ringa Toj ramzi va medallar)
                 if (rank === 1) {
                     rankClass = "rank-1";
                     rankVisual = "👑 1";
@@ -474,7 +480,6 @@
                 return;
             }
 
-            // 1. PDF Sarlavhasiga joriy vaqt va filtr ma'lumotlarini dinamik yozamiz
             let joriyFiltr = "Barcha kombinatsiyalar";
             if (activeSelectedSubjects.length === 1) {
                 joriyFiltr = `1-Blok: ${activeSelectedSubjects[0]}`;
@@ -487,11 +492,9 @@
             const vaqtSatr = `${String(hozir.getDate()).padStart(2, '0')}.${String(hozir.getMonth() + 1).padStart(2, '0')}.${hozir.getFullYear()} | ${String(hozir.getHours()).padStart(2, '0')}:${String(hozir.getMinutes()).padStart(2, '0')}`;
             document.getElementById('pdf-date-info').innerText = `Yaratilgan vaqt: ${vaqtSatr}`;
 
-            // 2. Eksportdan oldin jadval ichidagi FANLAR ustunini vaqtincha yashiramiz (Siqilishni oldini olish)
             if(thSubject) thSubject.style.display = 'none';
             tdSubjects.forEach(td => td.style.display = 'none');
 
-            // 3. Eksport rejimining oq-toza stillarini faollashtiramiz
             area.classList.add('pdf-export-mode');
 
             const options = {
@@ -502,9 +505,7 @@
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // PDF yaratish va yuklash
             html2pdf().set(options).from(area).save().then(() => {
-                // Yuklab bo'lingach, hamma narsani admin paneldagi asl qora holatiga qaytaramiz
                 area.classList.remove('pdf-export-mode');
                 if(thSubject) thSubject.style.display = '';
                 tdSubjects.forEach(td => td.style.display = '');
