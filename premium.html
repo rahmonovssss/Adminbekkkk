@@ -89,7 +89,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        // addDoc funksiyasi olib kirildi - u har gal yangi unikal ID beradi
+        // Ruxsat bor papka ichiga unikal cheksiz ID bilan yozish uchun kerakli modullar kiritildi
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -142,11 +142,11 @@
             document.getElementById('loader').style.display = 'flex';
 
             try {
-                // To'plam (Kolleksiya) nomini test turiga qarab ajratamiz
-                const targetCollection = currentType === 'premium' ? "premium_questions" : "mandatory_questions";
-
-                // addDoc avtomatik tarzda har bir savol uchun takrorlanmas (unikal) yangi ID ochadi
-                await addDoc(collection(db, targetCollection), {
+                // Ruxsatingiz ochiq bo'lgan premium_admin papkasi ostidagi sub-kolleksiyaga yo'naltiramiz
+                const targetFolder = currentType === 'premium' ? "premium_questions" : "mandatory_questions";
+                
+                // addDoc orqali "premium_admin/all_tests/premium_questions/[UNIKAL_ID]" ko'rinishida cheksiz saqlaydi
+                await addDoc(collection(db, "premium_admin", "all_tests", targetFolder), {
                     type: currentType,
                     subject: currentSub,
                     question: q,
@@ -168,7 +168,7 @@
                 ['m-a','m-b','m-c','m-d'].forEach(id => document.getElementById(id).value = "");
             } catch (e) {
                 showToast("❌ Bazaga yozishda xatolik yuz berdi!");
-                console.error(e);
+                console.error("Firebase xatosi tafsiloti:", e);
             } finally {
                 document.getElementById('loader').style.display = 'none';
             }
