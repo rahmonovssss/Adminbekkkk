@@ -89,8 +89,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        // Ruxsat bor papka ichiga unikal cheksiz ID bilan yozish uchun kerakli modullar kiritildi
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // Ruxsat muammosini hal qilish uchun setDoc va doc modullari optimallashtirildi
+        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -142,11 +142,14 @@
             document.getElementById('loader').style.display = 'flex';
 
             try {
-                // Ruxsatingiz ochiq bo'lgan premium_admin papkasi ostidagi sub-kolleksiyaga yo'naltiramiz
-                const targetFolder = currentType === 'premium' ? "premium_questions" : "mandatory_questions";
+                // CHEKSIZ SAVOL QO'SHISH KALITI: Har bir qo'shilgan test uchun unikal ID hosil qilamiz
+                const uniqueId = "quiz_" + Date.now(); 
                 
-                // addDoc orqali "premium_admin/all_tests/premium_questions/[UNIKAL_ID]" ko'rinishida cheksiz saqlaydi
-                await addDoc(collection(db, "premium_admin", "all_tests", targetFolder), {
+                // premium_admin ruxsat berilgan asosiy papka ostida har bir savolni alohida hujjat qilib saqlaymiz
+                const docRef = doc(db, "premium_admin", uniqueId);
+                
+                await setDoc(docRef, {
+                    id: uniqueId,
                     type: currentType,
                     subject: currentSub,
                     question: q,
@@ -161,9 +164,9 @@
                     createdAt: serverTimestamp()
                 });
                 
-                showToast("✅ Savol muvaffaqiyatli qo'shildi!");
+                showToast(`✅ ${currentSub} fani uchun yangi savol qo'shildi!`);
                 
-                // Formani tozalash
+                // Formani inputlarini keyingi yangi savol uchun tozalash
                 document.getElementById('m-q').value = "";
                 ['m-a','m-b','m-c','m-d'].forEach(id => document.getElementById(id).value = "");
             } catch (e) {
