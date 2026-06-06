@@ -20,7 +20,7 @@
         }
         header h1 { color: #ffd700; font-size: 22px; letter-spacing: 1px; }
         
-        .header-actions { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .header-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
         
         .btn-pdf {
             background: #ff4b2b; color: white; border: none; padding: 12px 20px;
@@ -28,6 +28,15 @@
             transition: 0.2s; box-shadow: 0 4px 15px rgba(255, 75, 43, 0.3);
         }
         .btn-pdf:hover { background: #e03e1f; }
+
+        /* Yangi qo'shilgan Bazani tozalash tugmasi stili */
+        .btn-clear-db {
+            background: #dc2626; color: white; border: 1px solid #ef4444; padding: 8px 16px;
+            border-radius: 10px; font-weight: 600; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+            transition: 0.2s; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.2);
+        }
+        .btn-clear-db:hover { background: #b91c1c; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4); }
+        .btn-clear-db:disabled { background: #4b5563; border-color: #374151; cursor: not-allowed; box-shadow: none; }
 
         .premium-selection-box {
             background: #14222d; padding: 25px; border-radius: 20px;
@@ -92,7 +101,6 @@
 
         .student-info { font-weight: 600; color: #fff; font-size: 15px; }
         
-        /* ID raqam uchun maxsus dizayn paneli */
         .id-badge-box {
             display: inline-block;
             background: rgba(255, 215, 0, 0.05);
@@ -114,7 +122,7 @@
         .block-none { color: #6b7280; font-style: italic; font-size: 13px; }
 
         .score-badge { font-weight: 700; color: #00ff00; font-size: 16px; }
-        .date-time { font-size: 13px; opacity: 0.6; }
+        .date-time { font-size: 13px; opacity: 0.6; display: block; line-height: 1.4; }
         .action-hint { font-size: 11px; background: rgba(0, 255, 0, 0.1); color: #00ff00; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: normal; }
 
         .loader { text-align: center; padding: 40px; color: #ffd700; font-weight: bold; }
@@ -140,36 +148,25 @@
         .btn-cancel { flex: 1; padding: 14px; background: #333; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; font-size: 15px; }
 
         /* --- PDF EKSPORT REJIMIDAGI CHIROYLI VA TOZA OQ STIL --- */
-        .pdf-export-mode {
-            background: #ffffff !important;
-            color: #000000 !important;
-            padding: 20px !important;
-        }
-        .pdf-export-mode th { background: #14222d !important; color: #ffd700 !important; border: 1px solid #cbd5e1 !important; text-align: center !important; }
-        .pdf-export-mode td { color: #000000 !important; border: 1px solid #cbd5e1 !important; background: #ffffff !important; padding: 12px 15px !important; text-align: center !important; }
-        .pdf-export-mode td:nth-child(2) { text-align: left !important; } /* Ism chapda qoladi */
-        .pdf-export-mode .student-info { color: #000000 !important; font-weight: bold !important; }
-        
-        /* PDF dagi ID Katak stili */
-        .pdf-export-mode .id-badge-box { 
-            background: #f8fafc !important; 
-            color: #0f172a !important; 
-            border: 2px solid #0f172a !important;
-            box-shadow: none !important;
-        }
-        
-        .pdf-export-mode .score-badge { color: #008000 !important; font-weight: bold !important; }
-        
-        /* PDF dagi shakldor reyting o'rinlari stili */
-        .pdf-export-mode .rank { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
-        .pdf-export-mode .rank-1 { background: #ffd700 !important; color: #000000 !important; font-size: 16px !important; }
-        .pdf-export-mode .rank-2 { background: #e2e8f0 !important; color: #000000 !important; }
-        .pdf-export-mode .rank-3 { background: #ffedd5 !important; color: #9a3412 !important; }
-        .pdf-export-mode .rank-other { background: #f1f5f9 !important; color: #475569 !important; }
-        
+        .pdf-export-mode { background: #ffffff !important; color: #000000 !important; padding: 15px !important; }
+        .pdf-export-mode .results-table { white-space: normal !important; table-layout: auto !important; width: 100% !important; }
+        .pdf-export-mode th { background: #14222d !important; color: #ffd700 !important; border: 1px solid #cbd5e1 !important; text-align: center !important; vertical-align: middle !important; white-space: normal !important; padding: 12px 6px !important; font-size: 13px !important; }
+        .pdf-export-mode td { color: #000000 !important; border: 1px solid #cbd5e1 !important; background: #ffffff !important; padding: 12px 6px !important; text-align: center !important; vertical-align: middle !important; }
+        .pdf-export-mode td:nth-child(2) { text-align: left !important; padding-left: 12px !important; min-width: 180px !important; } 
+        .pdf-export-mode .student-info { color: #000000 !important; font-weight: bold !important; display: inline-block !important; white-space: normal !important; word-break: break-word !important; line-height: 1.4 !important; font-size: 14px !important; }
+        .pdf-export-mode .id-badge-box { display: inline-block !important; background: #fffbeb !important; color: #b45309 !important; border: 1.5px solid #f59e0b !important; padding: 6px 12px !important; border-radius: 8px !important; box-shadow: none !important; font-weight: 700 !important; white-space: nowrap !important; font-size: 13px !important; }
+        .pdf-export-mode .score-badge { color: #22c55e !important; font-weight: 700 !important; white-space: nowrap !important; display: inline-block !important; font-size: 15px !important; }
+        .pdf-export-mode .date-time { display: block !important; white-space: nowrap !important; line-height: 1.4 !important; font-size: 13px !important; font-weight: 600 !important; color: #334155 !important; }
+        .pdf-export-mode .rank { display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 38px !important; height: 38px !important; border-radius: 50% !important; font-weight: 700 !important; font-size: 14px !important; white-space: nowrap !important; }
+        .pdf-export-mode .rank-1 { background: #ffd700 !important; color: #000000 !important; border: 1px solid #eab308 !important; }
+        .pdf-export-mode .rank-2 { background: #cbd5e1 !important; color: #000000 !important; border: 1px solid #94a3b8 !important; }
+        .pdf-export-mode .rank-3 { background: #ffedd5 !important; color: #9a3412 !important; border: 1px solid #fdba74 !important; }
+        .pdf-export-mode .rank-other { background: #f1f5f9 !important; color: #334155 !important; border: 1px solid #cbd5e1 !important; }
         .pdf-export-mode .action-hint { display: none !important; }
-        
-        /* PDF dagi sarlavhalar bloki (Oddiy vaqtda yashirin turadi) */
+        .pdf-export-mode .subject-block { align-items: center !important; gap: 4px !important; }
+        .pdf-export-mode .block-tag { display: inline-block !important; padding: 4px 8px !important; margin: 1px 0 !important; border-radius: 6px !important; font-size: 11px !important; font-weight: bold !important; width: max-content !important; white-space: nowrap !important; }
+        .pdf-export-mode .block-1 { background: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #bae6fd !important; }
+        .pdf-export-mode .block-2 { background: #f3e8ff !important; color: #6b21a8 !important; border: 1px solid #e9d5ff !important; }
         #pdf-header-title-block { display: none; margin-bottom: 20px; border-bottom: 2px solid #14222d; padding-bottom: 10px; color: #000; }
         .pdf-export-mode #pdf-header-title-block { display: block !important; }
     </style>
@@ -183,6 +180,7 @@
             <h1>🏆 PREMIUM BLOK REYTINGI</h1>
             <div class="header-actions">
                 <button id="download-pdf-btn" class="btn-pdf">📄 PDF YUKLAB OLISH</button>
+                <button id="clear-database-btn" class="btn-clear-db">🗑️ Hamma o'rinlarni o'chirish</button>
             </div>
         </header>
 
@@ -224,11 +222,12 @@
             <table class="results-table" id="rating-table">
                 <thead>
                     <tr>
-                        <th style="width: 80px; text-align: center;">O'rin</th>
+                        <th style="text-align: center; width: 90px;">O'rin</th>
                         <th>Talaba ismi</th>
                         <th style="text-align: center; width: 120px;">ID Raqam</th>
-                        <th id="th-subject-col">Tanlangan Blok Fanlari</th> <th style="text-align: center; width: 130px;">To'plagan Bali</th>
-                        <th style="text-align: center; width: 180px;">Topshirilgan Vaqt</th>
+                        <th id="th-subject-col">Tanlangan Blok Fanlari</th> 
+                        <th style="text-align: center; width: 130px;">To'plagan Bali</th>
+                        <th style="text-align: center; width: 150px;">Topshirilgan Vaqt</th>
                     </tr>
                 </thead>
                 <tbody id="results-list">
@@ -257,7 +256,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, getDocs, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, getDocs, doc, updateDoc, increment, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -278,15 +277,17 @@
         let currentLeaderboardData = []; 
 
         const downloadPdfBtn = document.getElementById('download-pdf-btn');
+        const clearDatabaseBtn = document.getElementById('clear-database-btn');
         const q = query(collection(db, "premium_results"), orderBy("timestamp", "desc"));
 
         onSnapshot(q, async (snapshot) => {
             if (snapshot.empty) {
+                rawFirebaseData = [];
                 document.getElementById('results-list').innerHTML = `<tr><td colspan="6" class="empty-msg">Hozircha premium test topshirganlar mavjud emas.</td></tr>`;
                 return;
             }
 
-            rawFirebaseData = snapshot.docs.map(doc => doc.data());
+            rawFirebaseData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
             try {
                 const usersSnap = await getDocs(collection(db, "users"));
@@ -355,6 +356,11 @@
             const tbody = document.getElementById('results-list');
             const uniqueResults = {};
 
+            if (rawFirebaseData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="empty-msg">Natijalar topilmadi.</td></tr>`;
+                return;
+            }
+
             rawFirebaseData.forEach((data) => {
                 const studentUID = data.studentID;
                 let b1 = "";
@@ -391,7 +397,6 @@
                 }
             });
 
-            // .slice(0, 10) olib tashlandi -> Endi hamma ballar chiqadi (PDFda ham, ekranda ham)
             currentLeaderboardData = Object.values(uniqueResults)
                 .sort((a, b) => b.totalScore - a.totalScore);
 
@@ -409,19 +414,21 @@
                 
                 const sixDigitID = globalCachedUsers[data.studentID] || "Yo'q";
                 
-                let formattedDate = "---";
+                let datePart = "---";
+                let timePart = "";
                 if (data.timestamp) {
                     try {
                         const date = data.timestamp.toDate();
-                        formattedDate = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()} | ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                        datePart = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
+                        timePart = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
                     } catch(e) {
-                        formattedDate = "---";
+                        datePart = "---";
+                        timePart = "";
                     }
                 }
 
                 data.currentRank = rank;
                 data.sixDigitID = String(sixDigitID);
-                data.pdfDateTime = String(formattedDate);
 
                 row.addEventListener('click', () => openPaymentModal(data.studentName, sixDigitID, data.studentID));
 
@@ -444,7 +451,7 @@
                     subjectsHTML = `
                         <div class="subject-block">
                             ${data.b1 ? `<span class="block-tag block-1">1-Blok: ${data.b1}</span>` : ''}
-                            ${data.b2 ? `<span class="block-tag block-2">2-Blok: ${data.b2}</span>` : ''}
+                            ${data.b2 ? `<span class="block-tag block-2">2-Blopk: ${data.b2}</span>` : ''}
                         </div>
                     `;
                 } else {
@@ -452,7 +459,7 @@
                 }
 
                 row.innerHTML = `
-                    <td style="text-align: center;"><span class="rank ${rankClass}" style="width: auto; padding: 0 10px; border-radius: 12px;">${rankVisual}</span></td>
+                    <td style="text-align: center;"><span class="rank ${rankClass}">${rankVisual}</span></td>
                     <td>
                         <span class="student-info">${data.studentName}</span> <span class="action-hint">💸 To'lar</span>
                     </td>
@@ -461,7 +468,9 @@
                     </td>
                     <td class="td-subject-data">${subjectsHTML}</td>
                     <td style="text-align: center;"><span class="score-badge">${Number(data.totalScore).toFixed(1)} ball</span></td>
-                    <td style="text-align: center;"><span class="date-time">${formattedDate}</span></td>
+                    <td style="text-align: center;">
+                        <span class="date-time">${datePart}<br>${timePart}</span>
+                    </td>
                 `;
                 tbody.appendChild(row);
                 rank++;
@@ -470,8 +479,6 @@
 
         downloadPdfBtn.addEventListener('click', () => {
             const area = document.getElementById('pdf-container-area');
-            const thSubject = document.getElementById('th-subject-col');
-            const tdSubjects = document.querySelectorAll('.td-subject-data');
             
             if (!currentLeaderboardData || currentLeaderboardData.length === 0) {
                 alert("Yuklash uchun jadvalda ma'lumot mavjud emas!");
@@ -490,9 +497,6 @@
             const vaqtSatr = `${String(hozir.getDate()).padStart(2, '0')}.${String(hozir.getMonth() + 1).padStart(2, '0')}.${hozir.getFullYear()} | ${String(hozir.getHours()).padStart(2, '0')}:${String(hozir.getMinutes()).padStart(2, '0')}`;
             document.getElementById('pdf-date-info').innerText = `Yaratilgan vaqt: ${vaqtSatr}`;
 
-            if(thSubject) thSubject.style.display = 'none';
-            tdSubjects.forEach(td => td.style.display = 'none');
-
             area.classList.add('pdf-export-mode');
 
             const options = {
@@ -505,14 +509,56 @@
 
             html2pdf().set(options).from(area).save().then(() => {
                 area.classList.remove('pdf-export-mode');
-                if(thSubject) thSubject.style.display = '';
-                tdSubjects.forEach(td => td.style.display = '');
             }).catch(err => {
                 alert("Yuklashda xatolik: " + err.message);
                 area.classList.remove('pdf-export-mode');
-                if(thSubject) thSubject.style.display = '';
-                tdSubjects.forEach(td => td.style.display = '');
             });
+        });
+
+        // --- YANGI: FIREBASE BAZADAN HAMMA O'RINLARNI O'CHIRISH FUNKSIYASI ---
+        clearDatabaseBtn.addEventListener('click', async () => {
+            // Birinchi ogohlantirish
+            const firstConfirm = confirm("Diqqat! Premium blok testning barcha natijalarini bazadan butunlay o'chirib tashlamoqchimisiz?\nBu amalni ortga qaytarib bo'lmaydi!");
+            if (!firstConfirm) return;
+
+            // Xavfsizlik uchun ikkinchi qayta tekshirish tasdig'i
+            const secondConfirm = confirm("Haqiqatdan ham hamma natijalarni o'chirib, bazani tozalamoqchimisiz?");
+            if (!secondConfirm) return;
+
+            clearDatabaseBtn.disabled = true;
+            clearDatabaseBtn.innerText = "⏳ BAZA TOZALANMOQDA...";
+
+            try {
+                // premium_results kolleksiyasidagi barcha hujjatlarni olamiz
+                const querySnapshot = await getDocs(collection(db, "premium_results"));
+                
+                if (querySnapshot.empty) {
+                    alert("O'chirish uchun bazada hech qanday ma'lumot yo'q!");
+                    clearDatabaseBtn.disabled = false;
+                    clearDatabaseBtn.innerText = "🗑️ Hamma o'rinlarni o'chirish";
+                    return;
+                }
+
+                // Batch orqali barchasini birdaniga o'chiramiz (Tez va xavfsiz)
+                const batch = writeBatch(db);
+                querySnapshot.forEach((docSnap) => {
+                    batch.delete(docSnap.ref);
+                });
+
+                await batch.commit();
+                alert("Baza muvaffaqiyatli tozalandi! ✅ Hamma premium o'rinlar o'chirib tashlandi.");
+                
+                // Mahalliy massivni ham tozalab jadvalni yangilaymiz
+                rawFirebaseData = [];
+                renderLeaderboard();
+
+            } catch (error) {
+                console.error("Bazani tozalashda xatolik yuz berdi:", error);
+                alert("Xatolik yuz berdi: " + error.message);
+            } finally {
+                clearDatabaseBtn.disabled = false;
+                clearDatabaseBtn.innerText = "🗑️ Hamma o'rinlarni o'chirish";
+            }
         });
 
         function openPaymentModal(name, sixID, userUID) {
