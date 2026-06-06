@@ -216,7 +216,7 @@
         <div class="table-responsive" id="pdf-container-area">
             
             <div id="pdf-header-title-block">
-                <h2 style="font-size: 20px; text-transform: uppercase; letter-spacing: 0.5px;">Premium Imtihon Natijalari (TOP-10)</h2>
+                <h2 style="font-size: 20px; text-transform: uppercase; letter-spacing: 0.5px;">Premium Imtihon Natijalari</h2>
                 <p style="font-size: 13px; margin-top: 5px;" id="pdf-filter-info">Kombinatsiya: Barcha kombinatsiyalar</p>
                 <p style="font-size: 11px; color: #475569; margin-top: 3px;" id="pdf-date-info">Yaratilgan vaqt: --.--.----</p>
             </div>
@@ -278,7 +278,7 @@
         let currentLeaderboardData = []; 
 
         const downloadPdfBtn = document.getElementById('download-pdf-btn');
-        const q = query(collection(db, "premium_results"), orderBy("totalScore", "desc"));
+        const q = query(collection(db, "premium_results"), orderBy("timestamp", "desc"));
 
         onSnapshot(q, async (snapshot) => {
             if (snapshot.empty) {
@@ -345,7 +345,7 @@
             if (activeSelectedSubjects.length === 0) {
                 statusDiv.innerHTML = "Filtrlash uchun elementlarni bosing. Hozirda: <strong>Barcha kombinatsiyalar ko'rsatilmoqda</strong>";
             } else if (activeSelectedSubjects.length === 1) {
-                statusDiv.innerHTML = `Saralash: 1-blok fani qiblya <strong>${activeSelectedSubjects[0]}</strong> tanlanganlarni qidirmoqda...`;
+                statusDiv.innerHTML = `Saralash: 1-blok fani qilib <strong>${activeSelectedSubjects[0]}</strong> tanlanganlarni qidirmoqda...`;
             } else {
                 statusDiv.innerHTML = `Filtr faollashtirildi: 1-Blok: <strong>${activeSelectedSubjects[0]}</strong>, 2-Blok: <strong>${activeSelectedSubjects[1]}</strong>`;
             }
@@ -379,11 +379,10 @@
                 }
 
                 if (matchesFilter) {
-                    // AGAR FAN TANLANSA: Har bir urinish alohida (filtrga mos aniq test bali) chiqadi. 
-                    // AGAR FAN TANLANMASA: Foydalanuvchining faqat eng yuqori umumiy balli eslab qolinadi.
                     if (activeSelectedSubjects.length > 0) {
-                        const uniqueKey = `${studentUID}_${b1}_${b2}_${data.timestamp ? data.timestamp.seconds : Math.random()}`;
-                        uniqueResults[uniqueKey] = data;
+                        if (!uniqueResults[studentUID]) {
+                            uniqueResults[studentUID] = data;
+                        }
                     } else {
                         if (!uniqueResults[studentUID] || uniqueResults[studentUID].totalScore < data.totalScore) {
                             uniqueResults[studentUID] = data;
@@ -392,14 +391,14 @@
                 }
             });
 
+            // .slice(0, 10) olib tashlandi -> Endi hamma ballar chiqadi (PDFda ham, ekranda ham)
             currentLeaderboardData = Object.values(uniqueResults)
-                .sort((a, b) => b.totalScore - a.totalScore)
-                .slice(0, 10);
+                .sort((a, b) => b.totalScore - a.totalScore);
 
             tbody.innerHTML = "";
             
             if (currentLeaderboardData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="empty-msg">TOP-10 natija topilmadi.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="empty-msg">Natijalar topilmadi.</td></tr>`;
                 return;
             }
 
@@ -469,7 +468,6 @@
             });
         }
 
-        // --- OPTIMALLASHTIRILGAN VA TOZA DIZAYNDAGI PDF EKSPORT FUNKSIYASI ---
         downloadPdfBtn.addEventListener('click', () => {
             const area = document.getElementById('pdf-container-area');
             const thSubject = document.getElementById('th-subject-col');
@@ -517,7 +515,6 @@
             });
         });
 
-        // Modal amallari qismi
         function openPaymentModal(name, sixID, userUID) {
             selectedUserDocId = userUID; 
             document.getElementById('modal-student-name').innerText = "Talaba: " + name;
