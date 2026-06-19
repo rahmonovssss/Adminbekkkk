@@ -137,6 +137,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // GitHub konfiguratsiyasi
+        const GITHUB_TOKEN = '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';
+        const REPO = 'rahmonovssss/DTM-Tizimi';
+
         // Splash screen ketishi
         setTimeout(() => { document.getElementById('splash').style.display = 'none'; }, 1500);
 
@@ -155,7 +159,7 @@
         window.openMsgModal = () => document.getElementById('msgModal').style.display = 'flex';
         window.closeMsgModal = () => document.getElementById('msgModal').style.display = 'none';
 
-        // Xabar yuborish va Barcha foydalanuvchilar qo'ng'iroqchasini yangilash
+        // Xabar yuborish (Firebase + GitHub)
         window.sendToAll = async () => {
             const title = document.getElementById('msg-title').value;
             const text = document.getElementById('msg-text').value;
@@ -163,10 +167,11 @@
 
             if(!title || !text) return alert("Iltimos, barcha maydonlarni to'ldiring!");
 
-            btn.disabled = true; btn.innerText = "YUBORILMOQDA...";
+            btn.disabled = true; 
+            btn.innerText = "YUBORILMOQDA...";
 
             try {
-                // 1. Xabarlar kolleksiyasiga qo'shish
+                // 1. Firebase'ga yozish
                 await addDoc(collection(db, "messages"), {
                     userId: "all",
                     title: title,
@@ -175,28 +180,40 @@
                     createdAt: serverTimestamp()
                 });
 
-                // 2. AVTOMATIKA: Barcha foydalanuvchilarning qo'ng'iroqcha raqamini +1 qilish
+                // 2. Firebase userlarini yangilash
                 const usersSnap = await getDocs(collection(db, "users"));
-                const batchPromises = [];
-
-                usersSnap.forEach((userDoc) => {
-                    const userRef = doc(db, "users", userDoc.id);
-                    batchPromises.push(updateDoc(userRef, {
-                        unreadNotifications: increment(1)
-                    }));
-                });
-
+                const batchPromises = usersSnap.docs.map(userDoc => 
+                    updateDoc(doc(db, "users", userDoc.id), { unreadNotifications: increment(1) })
+                );
                 await Promise.all(batchPromises);
 
-                alert("Xabar yuborildi va foydalanuvchilar xabardor qilindi! ✅");
+                // 3. GitHub Workflow'ni ishga tushirish
+                const ghResponse = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/send-notification.yml/dispatches`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ref: 'main',
+                        inputs: { title: title, body: text }
+                    })
+                });
+
+                if (!ghResponse.ok) throw new Error("GitHub bildirishnoma yuborilmadi");
+
+                alert("Muvaffaqiyatli: Firebase va GitHub ga yuborildi! ✅");
                 document.getElementById('msg-title').value = "";
                 document.getElementById('msg-text').value = "";
                 closeMsgModal();
+
             } catch (e) {
                 console.error(e);
-                alert("Xatolik yuz berdi! Internetni yoki Firebase sozlamalarini tekshiring.");
+                alert("Xatolik: " + e.message);
             } finally {
-                btn.disabled = false; btn.innerText = "YUBORISH";
+                btn.disabled = false; 
+                btn.innerText = "YUBORISH";
             }
         };
     </script>
