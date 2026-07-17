@@ -29,7 +29,6 @@
         }
         .btn-pdf:hover { background: #e03e1f; }
 
-        /* Yangi qo'shilgan Bazani tozalash tugmasi stili */
         .btn-clear-db {
             background: #dc2626; color: white; border: 1px solid #ef4444; padding: 8px 16px;
             border-radius: 10px; font-weight: 600; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px;
@@ -147,7 +146,6 @@
         .btn-confirm { flex: 1; padding: 14px; background: #00ff00; border: none; border-radius: 12px; color: #000; font-weight: bold; cursor: pointer; font-size: 15px; }
         .btn-cancel { flex: 1; padding: 14px; background: #333; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; font-size: 15px; }
 
-        /* --- PDF EKSPORT REJIMIDAGI CHIROYLI VA TOZA OQ STIL --- */
         .pdf-export-mode { background: #ffffff !important; color: #000000 !important; padding: 15px !important; }
         .pdf-export-mode .results-table { white-space: normal !important; table-layout: auto !important; width: 100% !important; }
         .pdf-export-mode th { background: #14222d !important; color: #ffd700 !important; border: 1px solid #cbd5e1 !important; text-align: center !important; vertical-align: middle !important; white-space: normal !important; padding: 12px 6px !important; font-size: 13px !important; }
@@ -292,7 +290,11 @@
             try {
                 const usersSnap = await getDocs(collection(db, "users"));
                 usersSnap.forEach(uDoc => {
-                    globalCachedUsers[uDoc.id] = uDoc.data().studentID || "Yo'q"; 
+                    const uData = uDoc.data();
+                    globalCachedUsers[uDoc.id] = {
+                        studentID: uData.studentID || "Yo'q",
+                        fio: uData.fio || "Ism belgilanmagan"
+                    };
                 });
             } catch (err) {
                 console.error("Foydalanuvchilarni yuklashda xatolik:", err);
@@ -412,7 +414,9 @@
                 const row = document.createElement('tr');
                 row.className = "clickable-row";
                 
-                const sixDigitID = globalCachedUsers[data.studentID] || "Yo'q";
+                const userCached = globalCachedUsers[data.studentID] || { studentID: "Yo'q", fio: data.studentName };
+                const sixDigitID = userCached.studentID;
+                const displayName = userCached.fio;
                 
                 let datePart = "---";
                 let timePart = "";
@@ -430,7 +434,7 @@
                 data.currentRank = rank;
                 data.sixDigitID = String(sixDigitID);
 
-                row.addEventListener('click', () => openPaymentModal(data.studentName, sixDigitID, data.studentID));
+                row.addEventListener('click', () => openPaymentModal(displayName, sixDigitID, data.studentID));
 
                 let rankClass = "rank-other";
                 let rankVisual = rank; 
@@ -461,7 +465,7 @@
                 row.innerHTML = `
                     <td style="text-align: center;"><span class="rank ${rankClass}">${rankVisual}</span></td>
                     <td>
-                        <span class="student-info">${data.studentName}</span> <span class="action-hint">💸 To'lar</span>
+                        <span class="student-info">${displayName}</span> <span class="action-hint">💸 To'lar</span>
                     </td>
                     <td style="text-align: center;">
                         <span class="id-badge-box">${sixDigitID}</span>
@@ -515,13 +519,10 @@
             });
         });
 
-        // --- YANGI: FIREBASE BAZADAN HAMMA O'RINLARNI O'CHIRISH FUNKSIYASI ---
         clearDatabaseBtn.addEventListener('click', async () => {
-            // Birinchi ogohlantirish
             const firstConfirm = confirm("Diqqat! Premium blok testning barcha natijalarini bazadan butunlay o'chirib tashlamoqchimisiz?\nBu amalni ortga qaytarib bo'lmaydi!");
             if (!firstConfirm) return;
 
-            // Xavfsizlik uchun ikkinchi qayta tekshirish tasdig'i
             const secondConfirm = confirm("Haqiqatdan ham hamma natijalarni o'chirib, bazani tozalamoqchimisiz?");
             if (!secondConfirm) return;
 
@@ -529,7 +530,6 @@
             clearDatabaseBtn.innerText = "⏳ BAZA TOZALANMOQDA...";
 
             try {
-                // premium_results kolleksiyasidagi barcha hujjatlarni olamiz
                 const querySnapshot = await getDocs(collection(db, "premium_results"));
                 
                 if (querySnapshot.empty) {
@@ -539,7 +539,6 @@
                     return;
                 }
 
-                // Batch orqali barchasini birdaniga o'chiramiz (Tez va xavfsiz)
                 const batch = writeBatch(db);
                 querySnapshot.forEach((docSnap) => {
                     batch.delete(docSnap.ref);
@@ -548,7 +547,6 @@
                 await batch.commit();
                 alert("Baza muvaffaqiyatli tozalandi! ✅ Hamma premium o'rinlar o'chirib tashlandi.");
                 
-                // Mahalliy massivni ham tozalab jadvalni yangilaymiz
                 rawFirebaseData = [];
                 renderLeaderboard();
 
