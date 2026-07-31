@@ -32,7 +32,6 @@
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px; color: white; outline: none; text-align: center; font-size: 16px;
         }
-        .admin-input:focus { border-color: #ffd700; }
 
         /* --- DASHBOARD --- */
         #admin-dashboard { display: none; padding: 20px; max-width: 800px; margin: auto; }
@@ -50,27 +49,6 @@
         .admin-card i { font-size: 40px; display: block; margin-bottom: 15px; font-style: normal; }
         .admin-card span { font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Maxsus kartalar ranglari */
-        .card-delete {
-            border-color: rgba(255, 107, 107, 0.3) !important;
-            background: rgba(255, 107, 107, 0.05) !important;
-        }
-        .card-delete:hover {
-            border-color: #ff6b6b !important;
-            background: rgba(255, 107, 107, 0.15) !important;
-        }
-        .card-delete i { color: #ff6b6b; }
-
-        .card-payments {
-            border-color: rgba(0, 210, 255, 0.3) !important;
-            background: rgba(0, 210, 255, 0.05) !important;
-        }
-        .card-payments:hover {
-            border-color: #00d2ff !important;
-            background: rgba(0, 210, 255, 0.15) !important;
-        }
-        .card-payments i { color: #00d2ff; }
-
         /* --- MODAL --- */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -80,27 +58,14 @@
         .btn-gold {
             width: 100%; padding: 16px; background: #ffd700; color: #000;
             border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px;
-            transition: 0.3s;
         }
         .btn-gold:hover { background: #ffc400; }
-        .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .btn-danger {
-            background: #ff6b6b;
-            color: white;
+        
+        .btn-red {
+            width: 100%; padding: 16px; background: #ff416c; color: #fff;
+            border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px;
         }
-        .btn-danger:hover {
-            background: #ee5a24;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 480px) {
-            .admin-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-            .admin-card { padding: 20px 12px; }
-            .admin-card i { font-size: 30px; }
-            .admin-card span { font-size: 11px; }
-            .login-card { padding: 25px; }
-        }
+        .btn-red:hover { background: #e0355a; }
     </style>
 </head>
 <body>
@@ -142,24 +107,21 @@
                 <i style="color: #ff9f43;">💎</i><span>Premium Test</span>
             </div>
 
-            <!-- To'lovlar (payments.html) -->
-            <div class="admin-card card-payments" onclick="location.href='payments.html'">
-                <i>💰</i><span>To'lovlar</span>
+            <div class="admin-card" onclick="location.href='admin-panel.html'" style="border-color: #00d2ff;">
+                <i style="color: #00d2ff;">💰</i><span>To'lovlar</span>
             </div>
 
-            <!-- Eski to'lovlarni o'chirish (payments-edit.html) - YANGI! -->
-            <div class="admin-card card-delete" onclick="location.href='payments-edit.html'">
-                <i>🗑️</i><span>Eski to'lovlar</span>
+            <!-- YANGI: Eski to'lovlar tugmasi -->
+            <div class="admin-card" onclick="location.href='payments-edit.html'" style="border-color: #ff6b6b;">
+                <i style="color: #ff6b6b;">🗑️</i><span>Eski to'lovlar</span>
             </div>
 
-            <!-- Chiqish tugmasi -->
-            <div class="admin-card" onclick="logout()" style="grid-column: span 2; max-width: 50%; margin: 0 auto; width: 100%;">
+            <div class="admin-card" onclick="location.reload()" style="grid-column: span 2; max-width: 50%; margin: 0 auto; width: 100%;">
                 <i>🚪</i><span>Chiqish</span>
             </div>
         </div>
     </div>
 
-    <!-- Xabar yuborish MODAL -->
     <div id="msgModal" class="modal">
         <div class="modal-content">
             <h3 style="color: #ffd700; margin-bottom: 20px; text-align: center;">Hammaga bildirishnoma</h3>
@@ -197,15 +159,6 @@
                 document.getElementById('admin-dashboard').style.display = 'block';
             } else { 
                 alert("Parol noto'g'ri!"); 
-            }
-        };
-
-        // Chiqish
-        window.logout = () => {
-            if(confirm("Haqiqatan ham chiqmoqchimisiz?")) {
-                document.getElementById('admin-dashboard').style.display = 'none';
-                document.getElementById('admin-login').style.display = 'flex';
-                document.getElementById('admin-password').value = '';
             }
         };
 
@@ -254,11 +207,6 @@
                 btn.innerText = "YUBORISH";
             }
         };
-
-        // Enter tugmasi bilan kirish
-        document.getElementById('admin-password').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') checkAdmin();
-        });
     </script>
 </body>
-</html>
+    </html>
