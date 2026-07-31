@@ -223,11 +223,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             animation: slideUp 0.5s ease-out both;
             transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-            cursor: pointer;
-        }
-        
-        .pay-item:active {
-            transform: scale(0.98);
         }
         
         @keyframes slideUp {
@@ -246,11 +241,6 @@
         .pay-item:nth-child(9) { animation-delay: 0.55s; }
         .pay-item:nth-child(10) { animation-delay: 0.6s; }
         
-        .pay-item:hover {
-            border-color: rgba(255,255,255,0.06);
-            background: rgba(255,255,255,0.04);
-        }
-        
         .item-left {
             display: flex;
             align-items: center;
@@ -268,7 +258,6 @@
             justify-content: center;
             font-size: 20px;
             flex-shrink: 0;
-            transition: all 0.3s;
         }
         
         .icon-in {
@@ -360,7 +349,6 @@
             font-weight: 400;
         }
 
-        /* DELETE BUTTON */
         .delete-section {
             margin-top: 20px;
             padding: 16px;
@@ -418,7 +406,6 @@
             margin-top: 10px;
         }
 
-        /* LOADER */
         #loader {
             text-align: center;
             padding: 50px 20px;
@@ -459,7 +446,6 @@
             margin-top: 4px;
         }
 
-        /* TOAST */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -542,7 +528,7 @@
     </div>
 
     <div class="delete-section" id="delete-section">
-        <button class="delete-btn" id="delete-btn" onclick="deleteOldTransactions()">
+        <button class="delete-btn" id="delete-btn">
             🗑️ 7 kundan keyingilarni o'chirish
         </button>
         <div class="delete-info" id="delete-info">⚠️ Bu amalni qaytarib bo'lmaydi</div>
@@ -564,12 +550,55 @@
             b.style.animationDelay = Math.random() * 5 + 's';
             container.appendChild(b);
         }
+
+        // Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Format date
+        function formatDateTime(date) {
+            const d = new Date(date);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        }
+
+        // 7 kundan keyingi tekshirish
+        function isOlderThan7Days(dateObj) {
+            const now = new Date();
+            const sevenDaysAgo = new Date(now);
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            return dateObj < sevenDaysAgo;
+        }
+
+        // Global variables
+        let allPayments = [];
+        let allWithdraws = [];
+        let currentUser = null;
+        let isAdmin = false;
     </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, query, where, onSnapshot, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { 
+            getFirestore, 
+            collection, 
+            query, 
+            where, 
+            onSnapshot, 
+            getDocs, 
+            deleteDoc, 
+            doc 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -584,112 +613,17 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let allItems = [];
-        let currentUser = null;
-
-        function formatDateTime(date) {
-            const d = new Date(date);
-            const day = String(d.getDate()).padStart(2, '0');
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const year = d.getFullYear();
-            const hours = String(d.getHours()).padStart(2, '0');
-            const minutes = String(d.getMinutes()).padStart(2, '0');
-            return `${day}/${month}/${year} ${hours}:${minutes}`;
-        }
-
-        function getTimestamp(item) {
-            if (item.timestamp) return item.timestamp;
-            if (item.createdAt) return item.createdAt;
-            if (item._timestamp) return item._timestamp;
-            return 0;
-        }
-
-        function getDateObj(item) {
-            if (item.createdAt) {
-                return item.createdAt.toDate ? item.createdAt.toDate() : new Date(item.createdAt);
-            }
-            return new Date();
-        }
-
-        function isOlderThan7Days(dateObj) {
-            const now = new Date();
-            const sevenDaysAgo = new Date(now);
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-            return dateObj < sevenDaysAgo;
-        }
-
-        // Toast
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = 'toast ' + type;
-            setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        // O'chirish funksiyasi global qilib
-        window.deleteOldTransactions = async function() {
-            const btn = document.getElementById('delete-btn');
-            const info = document.getElementById('delete-info');
-            
-            if (allItems.length === 0) {
-                showToast('O\'chirish uchun amaliyotlar mavjud emas', 'error');
-                return;
-            }
-
-            // Faqat 7 kundan keyingilarni o'chirish
-            const toDelete = allItems.filter(item => {
-                const dateObj = getDateObj(item);
-                return isOlderThan7Days(dateObj);
-            });
-
-            if (toDelete.length === 0) {
-                showToast('7 kundan keyingi amaliyotlar topilmadi', 'error');
-                return;
-            }
-
-            if (!confirm(`${toDelete.length} ta eski amaliyotni o'chirishni tasdiqlaysizmi?`)) {
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loader-icon">⏳</span> O\'chirilmoqda...';
-            info.textContent = '⏳ Iltimos kuting...';
-
-            let deleted = 0;
-            let failed = 0;
-
-            for (const item of toDelete) {
-                try {
-                    const docRef = doc(db, "payments", item.id);
-                    await deleteDoc(docRef);
-                    deleted++;
-                } catch (err) {
-                    failed++;
-                }
-            }
-
-            if (deleted > 0) {
-                showToast(`✅ ${deleted} ta amaliyot o'chirildi${failed > 0 ? `, ${failed} ta xato` : ''}`, 'success');
-                // Ro'yxatni yangilash
-                allItems = allItems.filter(item => !toDelete.includes(item));
-                renderHistory();
-            } else {
-                showToast('❌ Xatolik yuz berdi', 'error');
-            }
-
-            btn.disabled = false;
-            btn.innerHTML = '🗑️ 7 kundan keyingilarni o\'chirish';
-            info.textContent = '⚠️ Bu amalni qaytarib bo\'lmaydi';
-        };
-
+        // Render function
         function renderHistory() {
             const listContainer = document.getElementById('pay-list');
             listContainer.innerHTML = "";
 
+            // Barcha to'lovlarni birlashtirish
+            let allItems = [...allPayments, ...allWithdraws];
+
             // Faqat 7 kundan keyingilarni filter qilish
             const oldItems = allItems.filter(item => {
-                const dateObj = getDateObj(item);
+                const dateObj = new Date(item.dateStr);
                 return isOlderThan7Days(dateObj);
             });
 
@@ -708,23 +642,23 @@
 
             // Vaqt bo'yicha tartiblash (eng yangisi tepada)
             const sorted = [...oldItems].sort((a, b) => {
-                const ta = getTimestamp(a);
-                const tb = getTimestamp(b);
-                return tb - ta;
+                return new Date(b.dateStr) - new Date(a.dateStr);
             });
 
             sorted.forEach((item, index) => {
-                const dateObj = getDateObj(item);
+                const dateObj = new Date(item.dateStr);
                 const daysAgo = Math.floor((Date.now() - dateObj.getTime()) / (1000 * 60 * 60 * 24));
 
                 const card = document.createElement('div');
                 card.className = 'pay-item';
                 card.style.animationDelay = `${(index * 0.05 + 0.15)}s`;
 
+                const isIn = item.actionType === 'in';
+                
                 card.innerHTML = `
                     <div class="item-left">
-                        <div class="icon-box ${item.actionType === 'in' ? 'icon-in' : 'icon-out'}">
-                            ${item.actionType === 'in' ? '📥' : '📤'}
+                        <div class="icon-box ${isIn ? 'icon-in' : 'icon-out'}">
+                            ${isIn ? '📥' : '📤'}
                         </div>
                         <div class="details">
                             <strong>${item.title} <span class="days-ago">${daysAgo} kun oldin</span></strong>
@@ -733,8 +667,8 @@
                         </div>
                     </div>
                     <div class="item-right">
-                        <span class="amount ${item.actionType === 'in' ? 'in-color' : 'out-color'}">
-                            ${item.actionType === 'in' ? '+' : '-'}${item.amount.toLocaleString()}
+                        <span class="amount ${isIn ? 'in-color' : 'out-color'}">
+                            ${isIn ? '+' : '-'}${item.amount.toLocaleString()}
                         </span>
                         <span class="amount-label">so'm</span>
                     </div>
@@ -746,6 +680,69 @@
             document.getElementById('history-count').textContent = oldItems.length + ' ta';
         }
 
+        // O'chirish funksiyasi
+        async function deleteOldTransactions() {
+            const btn = document.getElementById('delete-btn');
+            const info = document.getElementById('delete-info');
+            
+            // Barcha to'lovlarni birlashtirish
+            let allItems = [...allPayments, ...allWithdraws];
+            
+            // Faqat 7 kundan keyingilarni filter qilish
+            const toDelete = allItems.filter(item => {
+                const dateObj = new Date(item.dateStr);
+                return isOlderThan7Days(dateObj);
+            });
+
+            if (toDelete.length === 0) {
+                showToast('O\'chirish uchun amaliyotlar mavjud emas', 'error');
+                return;
+            }
+
+            if (!confirm(`${toDelete.length} ta eski amaliyotni o'chirishni tasdiqlaysizmi?`)) {
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loader-icon">⏳</span> O\'chirilmoqda...';
+            info.textContent = '⏳ Iltimos kuting...';
+
+            let deleted = 0;
+            let failed = 0;
+
+            // Faqat payments dan o'chiramiz (withdraw_requests o'chirilmaydi)
+            const paymentsToDelete = toDelete.filter(item => item.collection === 'payments');
+
+            for (const item of paymentsToDelete) {
+                try {
+                    const docRef = doc(db, "payments", item.id);
+                    await deleteDoc(docRef);
+                    deleted++;
+                } catch (err) {
+                    console.error('O\'chirish xatosi:', err);
+                    failed++;
+                }
+            }
+
+            // Ro'yxatdan o'chirilganlarni olib tashlash
+            allPayments = allPayments.filter(p => !paymentsToDelete.some(d => d.id === p.id));
+
+            if (deleted > 0) {
+                showToast(`✅ ${deleted} ta amaliyot o'chirildi${failed > 0 ? `, ${failed} ta xato` : ''}`, 'success');
+                renderHistory();
+            } else {
+                showToast('❌ Xatolik yuz berdi', 'error');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '🗑️ 7 kundan keyingilarni o\'chirish';
+            info.textContent = '⚠️ Bu amalni qaytarib bo\'lmaydi';
+        }
+
+        // Delete button event
+        document.getElementById('delete-btn').addEventListener('click', deleteOldTransactions);
+
+        // Auth state
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.replace("index.html");
@@ -753,27 +750,35 @@
             }
 
             currentUser = user;
-            let paymentsData = [];
 
+            // Admin tekshirish (admin777 paroli bilan kirganmi)
+            // Admin statusini saqlash uchun localStorage dan foydalanamiz
+            const isAdmin = localStorage.getItem('isAdmin') === 'true';
+            
+            if (!isAdmin) {
+                // Agar admin bo'lmasa, faqat o'z to'lovlarini ko'radi
+                // Lekin bu yerda barcha to'lovlarni ko'rsatamiz (admin uchun)
+                // Admin bo'lmasa ham barcha to'lovlarni ko'rsatish uchun
+                // localStorage da isAdmin saqlangan
+            }
+
+            // Payments (KIRIM) - hamma to'lovlarni olish
             const payRef = collection(db, "payments");
             const qPay = query(payRef);
 
+            // Withdraw (CHIQIM) - faqat shu user uchun
             const withRef = collection(db, "withdraw_requests");
             const qWith = query(withRef, where("uid", "==", user.uid));
 
-            function updateAndRender() {
-                allItems = [...paymentsData];
-                renderHistory();
-            }
-
-            // PAYMENTS (KIRIM)
+            // Payments listener
             onSnapshot(qPay, (snapshot) => {
                 const newPayments = [];
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     
-                    if (data.studentID == user.uid || data.uid == user.uid || 
-                        (data.studentID && user.uid.includes(data.studentID))) {
+                    // Barcha to'lovlarni olamiz (admin uchun)
+                    // Agar admin bo'lmasa, faqat o'zini ko'radi
+                    if (isAdmin || data.studentID == user.uid || data.uid == user.uid) {
                         
                         let statusText = data.status || "tasdiqlandi";
                         let statusClass = "st-tasdiqlandi";
@@ -802,7 +807,6 @@
                         }
 
                         const displayDate = formatDateTime(dateObj);
-                        const timestamp = dateObj.getTime();
 
                         newPayments.push({
                             id: docSnap.id,
@@ -810,19 +814,17 @@
                             title: data.fio ? `${data.fio}` : "Balans to'ldirildi",
                             amount: Number(data.summa || 0),
                             dateStr: displayDate,
-                            timestamp: timestamp,
-                            createdAt: data.createdAt,
+                            collection: 'payments',
                             statusHtml: `<span class="status-text ${statusClass}">${statusText.toUpperCase()}</span>`
                         });
                     }
                 });
                 
-                // Eski payments ma'lumotlarini yangilash
-                paymentsData = newPayments;
-                updateAndRender();
+                allPayments = newPayments;
+                renderHistory();
             });
 
-            // WITHDRAW (CHIQIM)
+            // Withdraw listener
             onSnapshot(qWith, (snapshot) => {
                 const newWithdraws = [];
                 snapshot.forEach(docSnap => {
@@ -841,7 +843,6 @@
                     }
 
                     const displayDate = formatDateTime(dateObj);
-                    const timestamp = dateObj.getTime();
 
                     newWithdraws.push({
                         id: docSnap.id,
@@ -849,17 +850,28 @@
                         title: `${data.cardType || 'Karta'}ga yechish`,
                         amount: Number(data.amount || 0),
                         dateStr: displayDate,
-                        timestamp: timestamp,
-                        createdAt: data.createdAt,
+                        collection: 'withdraw',
                         statusHtml: `<span class="status-text ${statusClass}">${statusText}</span>`
                     });
                 });
                 
-                // Eski withdraw ma'lumotlarini yangilash
-                paymentsData = [...paymentsData.filter(p => p.actionType === 'in'), ...newWithdraws];
-                updateAndRender();
+                allWithdraws = newWithdraws;
+                renderHistory();
             });
         });
+
+        // Admin login dan kelganini tekshirish
+        // Agar admin panel orqali kelgan bo'lsa, localStorage da isAdmin true
+        // Buni admin panelda o'rnatamiz
+        // Hozircha qo'lda tekshirish: agar URL da ?admin bo'lsa
+        if (window.location.search.includes('admin=true')) {
+            localStorage.setItem('isAdmin', 'true');
+        }
+
+        // Agar admin panel dan kelgan bo'lsa
+        if (document.referrer && document.referrer.includes('admin')) {
+            localStorage.setItem('isAdmin', 'true');
+        }
     </script>
 </body>
-  </html>
+    </html>
