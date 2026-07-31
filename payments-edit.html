@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eski To'lovlar - Dr. Rahmonov</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+        
+        body {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            padding: 20px 16px 30px;
+        }
+
+        .water-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/cubes.png');
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .light-rays {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.05) 0%, transparent 50%);
+            animation: rays 10s ease-in-out infinite alternate;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        @keyframes rays {
+            from { transform: rotate(-3deg) scale(1); }
+            to { transform: rotate(3deg) scale(1.05); }
+        }
+
+        .bubbles {
+            position: fixed;
+            bottom: -20px;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            animation: rise var(--d) infinite ease-in;
+            box-shadow: inset 0 0 8px rgba(255,255,255,0.05);
+        }
+        
+        @keyframes rise {
+            0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0; }
+            20% { opacity: 0.3; }
+            100% { transform: translateY(-110vh) scale(1.6) rotate(720deg); opacity: 0; }
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.04);
+            position: relative;
+            z-index: 10;
+            animation: slideDown 0.6s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .back-btn {
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.04);
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            cursor: pointer;
+        }
+        
+        .back-btn:active {
+            transform: scale(0.85);
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .header-title span {
+            font-size: 20px;
+            -webkit-text-fill-color: initial;
+            color: #ff6b6b;
+        }
+        
+        .header-stats {
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            font-weight: 400;
+            background: rgba(255,255,255,0.03);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .info-banner {
+            background: rgba(255, 107, 107, 0.08);
+            border: 1px solid rgba(255, 107, 107, 0.1);
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            z-index: 10;
+            animation: fadeUp 0.6s ease-out 0.05s both;
+        }
+        
+        .info-banner .icon {
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        
+        .info-banner .text {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.4;
+        }
+        
+        .info-banner .text strong {
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 0 4px;
+            position: relative;
+            z-index: 10;
+            animation: fadeUp 0.6s ease-out 0.1s both;
+        }
+        
+        .section-title h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .section-title span {
+            font-size: 11px;
+            color: rgba(255,255,255,0.2);
+            font-weight: 400;
+        }
+
+        #pay-list {
+            position: relative;
+            z-index: 10;
+        }
+        
+        .pay-item {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            padding: 14px 16px;
+            border-radius: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.03);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            animation: slideUp 0.5s ease-out both;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            cursor: pointer;
+        }
+        
+        .pay-item:active {
+            transform: scale(0.98);
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        .pay-item:nth-child(1) { animation-delay: 0.15s; }
+        .pay-item:nth-child(2) { animation-delay: 0.2s; }
+        .pay-item:nth-child(3) { animation-delay: 0.25s; }
+        .pay-item:nth-child(4) { animation-delay: 0.3s; }
+        .pay-item:nth-child(5) { animation-delay: 0.35s; }
+        .pay-item:nth-child(6) { animation-delay: 0.4s; }
+        .pay-item:nth-child(7) { animation-delay: 0.45s; }
+        .pay-item:nth-child(8) { animation-delay: 0.5s; }
+        .pay-item:nth-child(9) { animation-delay: 0.55s; }
+        .pay-item:nth-child(10) { animation-delay: 0.6s; }
+        
+        .pay-item:hover {
+            border-color: rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.04);
+        }
+        
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+        
+        .icon-in {
+            background: rgba(0, 255, 157, 0.08);
+            color: #00ff9d;
+            border: 1px solid rgba(0, 255, 157, 0.06);
+        }
+        
+        .icon-out {
+            background: rgba(255, 107, 107, 0.08);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.06);
+        }
+        
+        .details {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .details strong {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f8fafc;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .details .date-label {
+            font-size: 10px;
+            opacity: 0.3;
+            margin-top: 2px;
+            display: block;
+            font-weight: 400;
+        }
+        
+        .details .days-ago {
+            font-size: 9px;
+            color: #ff6b6b;
+            opacity: 0.6;
+            margin-left: 6px;
+        }
+        
+        .status-text {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .st-kutilmoqda {
+            background: rgba(245, 158, 11, 0.10);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.06);
+        }
+        
+        .st-tasdiqlandi {
+            background: rgba(0, 255, 157, 0.08);
+            color: #00ff9d;
+            border: 1px solid rgba(0, 255, 157, 0.06);
+        }
+        
+        .st-rad {
+            background: rgba(255, 107, 107, 0.08);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.06);
+        }
+        
+        .item-right {
+            text-align: right;
+            flex-shrink: 0;
+            margin-left: 12px;
+        }
+        
+        .item-right .amount {
+            font-size: 15px;
+            font-weight: 800;
+            display: block;
+        }
+        
+        .item-right .amount-label {
+            font-size: 9px;
+            opacity: 0.2;
+            font-weight: 400;
+        }
+
+        /* DELETE BUTTON */
+        .delete-section {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(255, 107, 107, 0.05);
+            border: 1px solid rgba(255, 107, 107, 0.08);
+            border-radius: 16px;
+            position: relative;
+            z-index: 10;
+            animation: fadeUp 0.6s ease-out 0.3s both;
+            text-align: center;
+        }
+        
+        .delete-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            width: 100%;
+            max-width: 300px;
+            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .delete-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .delete-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .delete-btn .loader-icon {
+            display: inline-block;
+            animation: loaderSpin 1s linear infinite;
+        }
+        
+        @keyframes loaderSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .delete-info {
+            font-size: 11px;
+            color: rgba(255,255,255,0.2);
+            margin-top: 10px;
+        }
+
+        /* LOADER */
+        #loader {
+            text-align: center;
+            padding: 50px 20px;
+            color: rgba(255,255,255,0.2);
+            font-size: 14px;
+            font-weight: 400;
+        }
+        
+        #loader .loader-icon {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 10px;
+            animation: loaderSpin 1.5s linear infinite;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: rgba(255,255,255,0.2);
+        }
+        
+        .empty-state .empty-icon {
+            font-size: 44px;
+            display: block;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+        
+        .empty-state h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.3);
+        }
+        
+        .empty-state p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.1);
+            margin-top: 4px;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 14px 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            opacity: 0;
+            pointer-events: none;
+            text-align: center;
+            max-width: 90%;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .toast.success {
+            border-color: rgba(0, 255, 157, 0.2);
+        }
+        
+        .toast.error {
+            border-color: rgba(255, 107, 107, 0.2);
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 12px 10px 20px; }
+            .header { padding: 10px 14px; }
+            .header-title { font-size: 16px; }
+            .pay-item { padding: 12px 14px; }
+            .details strong { font-size: 13px; }
+            .item-right .amount { font-size: 14px; }
+            .icon-box { width: 38px; height: 38px; font-size: 16px; }
+            .delete-btn { padding: 12px 24px; font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="light-rays"></div>
+    <div class="water-overlay"></div>
+    <div class="bubbles" id="bubble-container"></div>
+
+    <div class="header">
+        <div class="back-btn" onclick="window.location.href='payments.html'">⬅</div>
+        <div class="header-title">
+            <span>🗑️</span> Eski To'lovlar
+        </div>
+        <div class="header-stats" id="transaction-count">0 ta</div>
+    </div>
+
+    <div class="info-banner">
+        <div class="icon">⏰</div>
+        <div class="text">
+            <strong>7 kundan keyingi</strong> amaliyotlar ko'rsatilmoqda. 
+            Barcha eski amaliyotlarni o'chirib tashlashingiz mumkin.
+        </div>
+    </div>
+
+    <div class="section-title">
+        <h3>📋 Eski amaliyotlar</h3>
+        <span id="history-count">0 ta</span>
+    </div>
+
+    <div id="pay-list">
+        <div id="loader">
+            <span class="loader-icon">⏳</span>
+            Ma'lumotlar tahlil qilinmoqda...
+        </div>
+    </div>
+
+    <div class="delete-section" id="delete-section">
+        <button class="delete-btn" id="delete-btn" onclick="deleteOldTransactions()">
+            🗑️ 7 kundan keyingilarni o'chirish
+        </button>
+        <div class="delete-info" id="delete-info">⚠️ Bu amalni qaytarib bo'lmaydi</div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // === BUBBLES ===
+        const container = document.getElementById('bubble-container');
+        for (let i = 0; i < 15; i++) {
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            const size = Math.random() * 16 + 4 + 'px';
+            b.style.width = size;
+            b.style.height = size;
+            b.style.left = Math.random() * 100 + '%';
+            b.style.setProperty('--d', Math.random() * 5 + 3 + 's');
+            b.style.animationDelay = Math.random() * 5 + 's';
+            container.appendChild(b);
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, onSnapshot, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
+            authDomain: "quiz-app-3692d.firebaseapp.com",
+            projectId: "quiz-app-3692d",
+            storageBucket: "quiz-app-3692d.firebasestorage.app",
+            messagingSenderId: "526836020845",
+            appId: "1:526836020845:android:3ea991380c104c75e8b164"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let allItems = [];
+        let currentUser = null;
+
+        function formatDateTime(date) {
+            const d = new Date(date);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        }
+
+        function getTimestamp(item) {
+            if (item.timestamp) return item.timestamp;
+            if (item.createdAt) return item.createdAt;
+            if (item._timestamp) return item._timestamp;
+            return 0;
+        }
+
+        function getDateObj(item) {
+            if (item.createdAt) {
+                return item.createdAt.toDate ? item.createdAt.toDate() : new Date(item.createdAt);
+            }
+            return new Date();
+        }
+
+        function isOlderThan7Days(dateObj) {
+            const now = new Date();
+            const sevenDaysAgo = new Date(now);
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            return dateObj < sevenDaysAgo;
+        }
+
+        // Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // O'chirish funksiyasi global qilib
+        window.deleteOldTransactions = async function() {
+            const btn = document.getElementById('delete-btn');
+            const info = document.getElementById('delete-info');
+            
+            if (allItems.length === 0) {
+                showToast('O\'chirish uchun amaliyotlar mavjud emas', 'error');
+                return;
+            }
+
+            // Faqat 7 kundan keyingilarni o'chirish
+            const toDelete = allItems.filter(item => {
+                const dateObj = getDateObj(item);
+                return isOlderThan7Days(dateObj);
+            });
+
+            if (toDelete.length === 0) {
+                showToast('7 kundan keyingi amaliyotlar topilmadi', 'error');
+                return;
+            }
+
+            if (!confirm(`${toDelete.length} ta eski amaliyotni o'chirishni tasdiqlaysizmi?`)) {
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loader-icon">⏳</span> O\'chirilmoqda...';
+            info.textContent = '⏳ Iltimos kuting...';
+
+            let deleted = 0;
+            let failed = 0;
+
+            for (const item of toDelete) {
+                try {
+                    const docRef = doc(db, "payments", item.id);
+                    await deleteDoc(docRef);
+                    deleted++;
+                } catch (err) {
+                    failed++;
+                }
+            }
+
+            if (deleted > 0) {
+                showToast(`✅ ${deleted} ta amaliyot o'chirildi${failed > 0 ? `, ${failed} ta xato` : ''}`, 'success');
+                // Ro'yxatni yangilash
+                allItems = allItems.filter(item => !toDelete.includes(item));
+                renderHistory();
+            } else {
+                showToast('❌ Xatolik yuz berdi', 'error');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '🗑️ 7 kundan keyingilarni o\'chirish';
+            info.textContent = '⚠️ Bu amalni qaytarib bo\'lmaydi';
+        };
+
+        function renderHistory() {
+            const listContainer = document.getElementById('pay-list');
+            listContainer.innerHTML = "";
+
+            // Faqat 7 kundan keyingilarni filter qilish
+            const oldItems = allItems.filter(item => {
+                const dateObj = getDateObj(item);
+                return isOlderThan7Days(dateObj);
+            });
+
+            if (oldItems.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-icon">📅</span>
+                        <h4>Eski amaliyotlar mavjud emas</h4>
+                        <p>7 kundan keyingi amaliyotlar topilmadi</p>
+                    </div>
+                `;
+                document.getElementById('transaction-count').textContent = '0 ta';
+                document.getElementById('history-count').textContent = '0 ta';
+                return;
+            }
+
+            // Vaqt bo'yicha tartiblash (eng yangisi tepada)
+            const sorted = [...oldItems].sort((a, b) => {
+                const ta = getTimestamp(a);
+                const tb = getTimestamp(b);
+                return tb - ta;
+            });
+
+            sorted.forEach((item, index) => {
+                const dateObj = getDateObj(item);
+                const daysAgo = Math.floor((Date.now() - dateObj.getTime()) / (1000 * 60 * 60 * 24));
+
+                const card = document.createElement('div');
+                card.className = 'pay-item';
+                card.style.animationDelay = `${(index * 0.05 + 0.15)}s`;
+
+                card.innerHTML = `
+                    <div class="item-left">
+                        <div class="icon-box ${item.actionType === 'in' ? 'icon-in' : 'icon-out'}">
+                            ${item.actionType === 'in' ? '📥' : '📤'}
+                        </div>
+                        <div class="details">
+                            <strong>${item.title} <span class="days-ago">${daysAgo} kun oldin</span></strong>
+                            <span class="date-label">${item.dateStr}</span>
+                            ${item.statusHtml || ''}
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <span class="amount ${item.actionType === 'in' ? 'in-color' : 'out-color'}">
+                            ${item.actionType === 'in' ? '+' : '-'}${item.amount.toLocaleString()}
+                        </span>
+                        <span class="amount-label">so'm</span>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+
+            document.getElementById('transaction-count').textContent = oldItems.length + ' ta';
+            document.getElementById('history-count').textContent = oldItems.length + ' ta';
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.replace("index.html");
+                return;
+            }
+
+            currentUser = user;
+            let paymentsData = [];
+
+            const payRef = collection(db, "payments");
+            const qPay = query(payRef);
+
+            const withRef = collection(db, "withdraw_requests");
+            const qWith = query(withRef, where("uid", "==", user.uid));
+
+            function updateAndRender() {
+                allItems = [...paymentsData];
+                renderHistory();
+            }
+
+            // PAYMENTS (KIRIM)
+            onSnapshot(qPay, (snapshot) => {
+                const newPayments = [];
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    
+                    if (data.studentID == user.uid || data.uid == user.uid || 
+                        (data.studentID && user.uid.includes(data.studentID))) {
+                        
+                        let statusText = data.status || "tasdiqlandi";
+                        let statusClass = "st-tasdiqlandi";
+                        if (statusText.toLowerCase() === "kutilmoqda") statusClass = "st-kutilmoqda";
+                        if (statusText.toLowerCase() === "rad etildi") statusClass = "st-rad";
+
+                        let dateObj;
+                        if (data.createdAt) {
+                            dateObj = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+                        } else if (data.sana && data.vaqt) {
+                            const dateParts = data.sana.split('/');
+                            const timeParts = data.vaqt.split(':');
+                            if (dateParts.length === 3 && timeParts.length === 2) {
+                                dateObj = new Date(
+                                    parseInt(dateParts[2]),
+                                    parseInt(dateParts[1]) - 1,
+                                    parseInt(dateParts[0]),
+                                    parseInt(timeParts[0]),
+                                    parseInt(timeParts[1])
+                                );
+                            } else {
+                                dateObj = new Date();
+                            }
+                        } else {
+                            dateObj = new Date();
+                        }
+
+                        const displayDate = formatDateTime(dateObj);
+                        const timestamp = dateObj.getTime();
+
+                        newPayments.push({
+                            id: docSnap.id,
+                            actionType: 'in',
+                            title: data.fio ? `${data.fio}` : "Balans to'ldirildi",
+                            amount: Number(data.summa || 0),
+                            dateStr: displayDate,
+                            timestamp: timestamp,
+                            createdAt: data.createdAt,
+                            statusHtml: `<span class="status-text ${statusClass}">${statusText.toUpperCase()}</span>`
+                        });
+                    }
+                });
+                
+                // Eski payments ma'lumotlarini yangilash
+                paymentsData = newPayments;
+                updateAndRender();
+            });
+
+            // WITHDRAW (CHIQIM)
+            onSnapshot(qWith, (snapshot) => {
+                const newWithdraws = [];
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    
+                    let statusClass = "st-kutilmoqda";
+                    let statusText = data.status || "Kutilmoqda";
+                    if (statusText === "Tasdiqlandi") statusClass = "st-tasdiqlandi";
+                    if (statusText === "Rad etildi") statusClass = "st-rad";
+
+                    let dateObj;
+                    if (data.createdAt) {
+                        dateObj = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+                    } else {
+                        dateObj = new Date();
+                    }
+
+                    const displayDate = formatDateTime(dateObj);
+                    const timestamp = dateObj.getTime();
+
+                    newWithdraws.push({
+                        id: docSnap.id,
+                        actionType: 'out',
+                        title: `${data.cardType || 'Karta'}ga yechish`,
+                        amount: Number(data.amount || 0),
+                        dateStr: displayDate,
+                        timestamp: timestamp,
+                        createdAt: data.createdAt,
+                        statusHtml: `<span class="status-text ${statusClass}">${statusText}</span>`
+                    });
+                });
+                
+                // Eski withdraw ma'lumotlarini yangilash
+                paymentsData = [...paymentsData.filter(p => p.actionType === 'in'), ...newWithdraws];
+                updateAndRender();
+            });
+        });
+    </script>
+</body>
+  </html>
