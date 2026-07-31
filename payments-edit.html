@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Eski To'lovlar - Dr. Rahmonov</title>
+    <title>Admin - Barcha Amaliyotlar</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {
@@ -17,65 +17,50 @@
         }
         
         body {
-            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 50%, #0d0d2b 100%);
             color: white;
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
-            padding: 20px 16px 30px;
+            padding: 16px 14px 30px;
         }
 
-        .water-overlay {
+        .bg-glow {
+            position: fixed;
+            top: -30%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 210, 255, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .bg-glow-left {
+            position: fixed;
+            bottom: -30%;
+            left: -20%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.03) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .grid-pattern {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('https://www.transparenttextures.com/patterns/cubes.png');
-            opacity: 0.04;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
+            background-size: 30px 30px;
             pointer-events: none;
             z-index: 0;
-        }
-        
-        .light-rays {
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.05) 0%, transparent 50%);
-            animation: rays 10s ease-in-out infinite alternate;
-            z-index: 0;
-            pointer-events: none;
-        }
-        
-        @keyframes rays {
-            from { transform: rotate(-3deg) scale(1); }
-            to { transform: rotate(3deg) scale(1.05); }
-        }
-
-        .bubbles {
-            position: fixed;
-            bottom: -20px;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-        
-        .bubble {
-            position: absolute;
-            bottom: -50px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-            animation: rise var(--d) infinite ease-in;
-            box-shadow: inset 0 0 8px rgba(255,255,255,0.05);
-        }
-        
-        @keyframes rise {
-            0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0; }
-            20% { opacity: 0.3; }
-            100% { transform: translateY(-110vh) scale(1.6) rotate(720deg); opacity: 0; }
         }
 
         .header {
@@ -83,15 +68,15 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 20px;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.04);
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 20px;
             border: 1px solid rgba(255,255,255,0.04);
             position: relative;
             z-index: 10;
-            animation: slideDown 0.6s ease-out;
+            animation: slideDown 0.5s ease-out;
         }
         
         @keyframes slideDown {
@@ -99,30 +84,10 @@
             to { transform: translateY(0); opacity: 1; }
         }
         
-        .back-btn {
-            text-decoration: none;
-            font-size: 18px;
-            color: white;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.04);
-            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-            cursor: pointer;
-        }
-        
-        .back-btn:active {
-            transform: scale(0.85);
-        }
-        
         .header-title {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 700;
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            background: linear-gradient(135deg, #ffd700, #f59e0b);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             display: flex;
@@ -133,7 +98,7 @@
         .header-title span {
             font-size: 20px;
             -webkit-text-fill-color: initial;
-            color: #ff6b6b;
+            color: #ffd700;
         }
         
         .header-stats {
@@ -141,258 +106,388 @@
             color: rgba(255,255,255,0.3);
             font-weight: 400;
             background: rgba(255,255,255,0.03);
-            padding: 4px 12px;
+            padding: 4px 14px;
             border-radius: 20px;
             border: 1px solid rgba(255,255,255,0.03);
         }
 
-        .info-banner {
-            background: rgba(255, 107, 107, 0.08);
-            border: 1px solid rgba(255, 107, 107, 0.1);
-            border-radius: 16px;
-            padding: 12px 16px;
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
             margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
             position: relative;
             z-index: 10;
-            animation: fadeUp 0.6s ease-out 0.05s both;
+            animation: fadeUp 0.5s ease-out 0.1s both;
         }
         
-        .info-banner .icon {
-            font-size: 22px;
-            flex-shrink: 0;
-        }
-        
-        .info-banner .text {
-            font-size: 12px;
-            color: rgba(255,255,255,0.5);
-            line-height: 1.4;
-        }
-        
-        .info-banner .text strong {
-            color: #ff6b6b;
-            font-weight: 600;
-        }
-
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 12px 10px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.03);
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-box .num {
+            font-size: 20px;
+            font-weight: 800;
+            display: block;
+        }
+        
+        .stat-box .label {
+            font-size: 9px;
+            opacity: 0.4;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        
+        .stat-box .num.gold { color: #ffd700; }
+        .stat-box .num.green { color: #00ff9d; }
+        .stat-box .num.red { color: #ff6b6b; }
 
-        .section-title {
+        .tabs {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 8px;
             margin-bottom: 16px;
-            padding: 0 4px;
             position: relative;
             z-index: 10;
-            animation: fadeUp 0.6s ease-out 0.1s both;
+            animation: fadeUp 0.5s ease-out 0.15s both;
+            flex-wrap: wrap;
         }
         
-        .section-title h3 {
-            font-size: 16px;
-            font-weight: 700;
-            color: rgba(255,255,255,0.8);
-        }
-        
-        .section-title span {
+        .tab-btn {
+            flex: 1;
+            min-width: 70px;
+            padding: 10px 8px;
+            border: none;
+            border-radius: 14px;
+            font-weight: 600;
             font-size: 11px;
-            color: rgba(255,255,255,0.2);
-            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            background: rgba(255,255,255,0.03);
+            color: rgba(255,255,255,0.3);
+            border: 1px solid rgba(255,255,255,0.03);
+            text-align: center;
+        }
+        
+        .tab-btn.active {
+            background: rgba(255, 215, 0, 0.08);
+            color: #ffd700;
+            border-color: rgba(255, 215, 0, 0.1);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.03);
+        }
+        
+        .tab-btn:active {
+            transform: scale(0.95);
         }
 
-        #pay-list {
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 10;
+            animation: fadeUp 0.5s ease-out 0.2s both;
+        }
+        
+        .filter-input {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.03);
+            color: white;
+            font-size: 12px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .filter-input:focus {
+            border-color: rgba(255, 215, 0, 0.2);
+        }
+        
+        .filter-input::placeholder {
+            color: rgba(255,255,255,0.15);
+        }
+        
+        .filter-select {
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.03);
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .filter-select option {
+            background: #1a1a3e;
+            color: white;
+        }
+
+        .delete-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 10;
+            animation: fadeUp 0.5s ease-out 0.25s both;
+            flex-wrap: wrap;
+        }
+        
+        .btn-delete {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.1);
+            flex: 1;
+        }
+        
+        .btn-delete:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-delete:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .btn-delete.danger {
+            background: rgba(255, 107, 107, 0.2);
+            border-color: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+        
+        .btn-delete.danger:active {
+            background: rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-delete.warning {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+
+        #list-container {
             position: relative;
             z-index: 10;
         }
         
-        .pay-item {
+        .item-card {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             padding: 14px 16px;
-            border-radius: 18px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            border-radius: 16px;
+            margin-bottom: 10px;
             border: 1px solid rgba(255,255,255,0.03);
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            animation: slideUp 0.5s ease-out both;
+            animation: slideUp 0.4s ease-out both;
             transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
         }
         
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(15px) scale(0.95); }
+            from { opacity: 0; transform: translateY(12px) scale(0.96); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
         
-        .pay-item:nth-child(1) { animation-delay: 0.15s; }
-        .pay-item:nth-child(2) { animation-delay: 0.2s; }
-        .pay-item:nth-child(3) { animation-delay: 0.25s; }
-        .pay-item:nth-child(4) { animation-delay: 0.3s; }
-        .pay-item:nth-child(5) { animation-delay: 0.35s; }
-        .pay-item:nth-child(6) { animation-delay: 0.4s; }
-        .pay-item:nth-child(7) { animation-delay: 0.45s; }
-        .pay-item:nth-child(8) { animation-delay: 0.5s; }
-        .pay-item:nth-child(9) { animation-delay: 0.55s; }
-        .pay-item:nth-child(10) { animation-delay: 0.6s; }
+        .item-card:hover {
+            border-color: rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.04);
+        }
         
-        .item-left {
+        .item-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .item-user {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 10px;
             flex: 1;
             min-width: 0;
         }
         
-        .icon-box {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 16px;
             flex-shrink: 0;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.04);
         }
         
-        .icon-in {
-            background: rgba(0, 255, 157, 0.08);
-            color: #00ff9d;
-            border: 1px solid rgba(0, 255, 157, 0.06);
-        }
-        
-        .icon-out {
-            background: rgba(255, 107, 107, 0.08);
-            color: #ff6b6b;
-            border: 1px solid rgba(255, 107, 107, 0.06);
-        }
-        
-        .details {
+        .user-info {
             flex: 1;
             min-width: 0;
         }
         
-        .details strong {
-            font-size: 14px;
+        .user-info .name {
+            font-size: 13px;
             font-weight: 600;
-            color: #f8fafc;
+            color: #f0f0f0;
             display: block;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         
-        .details .date-label {
+        .user-info .id {
             font-size: 10px;
             opacity: 0.3;
-            margin-top: 2px;
             display: block;
             font-weight: 400;
         }
         
-        .details .days-ago {
-            font-size: 9px;
-            color: #ff6b6b;
-            opacity: 0.6;
-            margin-left: 6px;
-        }
-        
-        .status-text {
-            font-size: 9px;
-            font-weight: 700;
-            padding: 2px 10px;
-            border-radius: 6px;
-            display: inline-block;
-            margin-top: 3px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .st-kutilmoqda {
-            background: rgba(245, 158, 11, 0.10);
-            color: #f59e0b;
-            border: 1px solid rgba(245, 158, 11, 0.06);
-        }
-        
-        .st-tasdiqlandi {
-            background: rgba(0, 255, 157, 0.08);
-            color: #00ff9d;
-            border: 1px solid rgba(0, 255, 157, 0.06);
-        }
-        
-        .st-rad {
-            background: rgba(255, 107, 107, 0.08);
-            color: #ff6b6b;
-            border: 1px solid rgba(255, 107, 107, 0.06);
-        }
-        
-        .item-right {
+        .item-amount {
             text-align: right;
             flex-shrink: 0;
-            margin-left: 12px;
         }
         
-        .item-right .amount {
+        .item-amount .amount {
             font-size: 15px;
             font-weight: 800;
             display: block;
         }
         
-        .item-right .amount-label {
+        .item-amount .type {
             font-size: 9px;
-            opacity: 0.2;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-top: 2px;
+        }
+        
+        .item-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.03);
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        .item-bottom .date {
+            font-size: 10px;
+            opacity: 0.3;
             font-weight: 400;
         }
-
-        .delete-section {
-            margin-top: 20px;
-            padding: 16px;
-            background: rgba(255, 107, 107, 0.05);
-            border: 1px solid rgba(255, 107, 107, 0.08);
-            border-radius: 16px;
-            position: relative;
-            z-index: 10;
-            animation: fadeUp 0.6s ease-out 0.3s both;
-            text-align: center;
-        }
         
-        .delete-btn {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
-            border: none;
-            padding: 14px 32px;
-            border-radius: 14px;
-            font-size: 15px;
+        .status-badge {
+            font-size: 9px;
             font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-            width: 100%;
-            max-width: 300px;
-            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.2);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            padding: 2px 12px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
-        .delete-btn:active {
-            transform: scale(0.95);
+        .status-pending {
+            background: rgba(245, 158, 11, 0.12);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.06);
         }
         
-        .delete-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
+        .status-approved {
+            background: rgba(0, 255, 157, 0.08);
+            color: #00ff9d;
+            border: 1px solid rgba(0, 255, 157, 0.06);
         }
         
-        .delete-btn .loader-icon {
-            display: inline-block;
-            animation: loaderSpin 1s linear infinite;
+        .status-rejected {
+            background: rgba(255, 107, 107, 0.08);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.06);
+        }
+        
+        .status-in {
+            background: rgba(0, 255, 157, 0.06);
+            color: #00ff9d;
+            border: 1px solid rgba(0, 255, 157, 0.04);
+        }
+        
+        .status-out {
+            background: rgba(255, 107, 107, 0.06);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.04);
+        }
+        
+        .action-badge {
+            font-size: 9px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .old-badge {
+            font-size: 8px;
+            font-weight: 700;
+            padding: 1px 8px;
+            border-radius: 4px;
+            background: rgba(255, 107, 107, 0.12);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.06);
+            margin-left: 4px;
+        }
+        
+        .new-badge {
+            font-size: 8px;
+            font-weight: 700;
+            padding: 1px 8px;
+            border-radius: 4px;
+            background: rgba(0, 255, 157, 0.08);
+            color: #00ff9d;
+            border: 1px solid rgba(0, 255, 157, 0.06);
+            margin-left: 4px;
+        }
+
+        #loader {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255,255,255,0.15);
+            font-size: 13px;
+            font-weight: 400;
+        }
+        
+        #loader .loader-icon {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 10px;
+            animation: loaderSpin 1.5s linear infinite;
         }
         
         @keyframes loaderSpin {
@@ -400,167 +495,157 @@
             100% { transform: rotate(360deg); }
         }
 
-        .delete-info {
-            font-size: 11px;
-            color: rgba(255,255,255,0.2);
-            margin-top: 10px;
-        }
-
-        #loader {
-            text-align: center;
-            padding: 50px 20px;
-            color: rgba(255,255,255,0.2);
-            font-size: 14px;
-            font-weight: 400;
-        }
-        
-        #loader .loader-icon {
-            font-size: 32px;
-            display: block;
-            margin-bottom: 10px;
-            animation: loaderSpin 1.5s linear infinite;
-        }
-
         .empty-state {
             text-align: center;
-            padding: 50px 20px;
-            color: rgba(255,255,255,0.2);
+            padding: 60px 20px;
+            color: rgba(255,255,255,0.15);
         }
         
         .empty-state .empty-icon {
-            font-size: 44px;
+            font-size: 40px;
             display: block;
             margin-bottom: 12px;
-            opacity: 0.4;
+            opacity: 0.5;
         }
         
         .empty-state h4 {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
-            color: rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.25);
         }
         
         .empty-state p {
-            font-size: 13px;
-            color: rgba(255,255,255,0.1);
+            font-size: 12px;
+            color: rgba(255,255,255,0.08);
             margin-top: 4px;
         }
 
-        .toast {
+        #toast {
             position: fixed;
-            bottom: 30px;
+            bottom: -100px;
             left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 14px 24px;
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.05);
-            color: white;
-            font-size: 14px;
-            font-weight: 500;
-            z-index: 1000;
-            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-            opacity: 0;
-            pointer-events: none;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            color: #1a1a3e;
+            padding: 16px 28px;
+            border-radius: 50px;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000;
+            font-weight: 700;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             text-align: center;
+            width: max-content;
             max-width: 90%;
+            backdrop-filter: blur(10px);
+            font-size: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
         
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-        
-        .toast.success {
-            border-color: rgba(0, 255, 157, 0.2);
-        }
-        
-        .toast.error {
-            border-color: rgba(255, 107, 107, 0.2);
+        #toast.show {
+            bottom: 40px;
         }
 
         @media (max-width: 480px) {
-            body { padding: 12px 10px 20px; }
+            body { padding: 10px 8px 20px; }
             .header { padding: 10px 14px; }
-            .header-title { font-size: 16px; }
-            .pay-item { padding: 12px 14px; }
-            .details strong { font-size: 13px; }
-            .item-right .amount { font-size: 14px; }
-            .icon-box { width: 38px; height: 38px; font-size: 16px; }
-            .delete-btn { padding: 12px 24px; font-size: 14px; }
+            .header-title { font-size: 15px; }
+            .stats-row { gap: 6px; }
+            .stat-box { padding: 10px 6px; }
+            .stat-box .num { font-size: 17px; }
+            .item-card { padding: 12px 14px; }
+            .user-info .name { font-size: 12px; }
+            .item-amount .amount { font-size: 13px; }
+            .filter-input { min-width: 80px; padding: 8px 10px; font-size: 11px; }
+            .tab-btn { font-size: 10px; padding: 8px 6px; min-width: 60px; }
+        }
+        
+        @media (max-width: 380px) {
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .stats-row .stat-box:last-child { grid-column: span 2; }
         }
     </style>
 </head>
 <body>
 
-    <div class="light-rays"></div>
-    <div class="water-overlay"></div>
-    <div class="bubbles" id="bubble-container"></div>
+    <div class="bg-glow"></div>
+    <div class="bg-glow-left"></div>
+    <div class="grid-pattern"></div>
 
     <div class="header">
-        <div class="back-btn" onclick="window.location.href='payments.html'">⬅</div>
         <div class="header-title">
-            <span>🗑️</span> Eski To'lovlar
+            <span>📊</span> Admin Panel
         </div>
-        <div class="header-stats" id="transaction-count">0 ta</div>
+        <div class="header-stats" id="total-count">0 ta</div>
     </div>
 
-    <div class="info-banner">
-        <div class="icon">⏰</div>
-        <div class="text">
-            <strong>7 kundan keyingi</strong> amaliyotlar ko'rsatilmoqda. 
-            Barcha eski amaliyotlarni o'chirib tashlashingiz mumkin.
+    <div class="stats-row">
+        <div class="stat-box">
+            <span class="num gold" id="stat-all">0</span>
+            <span class="label">Jami</span>
+        </div>
+        <div class="stat-box">
+            <span class="num green" id="stat-in">0</span>
+            <span class="label">Kirim</span>
+        </div>
+        <div class="stat-box">
+            <span class="num red" id="stat-out">0</span>
+            <span class="label">Chiqim</span>
         </div>
     </div>
 
-    <div class="section-title">
-        <h3>📋 Eski amaliyotlar</h3>
-        <span id="history-count">0 ta</span>
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="all" onclick="setTab('all')">📋 Barchasi</button>
+        <button class="tab-btn" data-tab="in" onclick="setTab('in')">📥 Kirim</button>
+        <button class="tab-btn" data-tab="out" onclick="setTab('out')">📤 Chiqim</button>
+        <button class="tab-btn" data-tab="old" onclick="setTab('old')">🔴 7+ kunlik</button>
+        <button class="tab-btn" data-tab="new" onclick="setTab('new')">🟢 7 kun ichida</button>
     </div>
 
-    <div id="pay-list">
+    <div class="filters">
+        <input class="filter-input" id="searchInput" placeholder="🔍 Ism yoki ID bo'yicha..." oninput="applyFilters()">
+        <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+            <option value="all">📌 Barcha status</option>
+            <option value="tasdiqlandi">✅ Tasdiqlandi</option>
+            <option value="kutilmoqda">⏳ Kutilmoqda</option>
+            <option value="rad etildi">❌ Rad etildi</option>
+        </select>
+    </div>
+
+    <div class="delete-section">
+        <button class="btn-delete warning" id="btnDeleteOld" onclick="deleteOldItems()">
+            🗑️ 7+ kunliklarni o'chirish (0 ta)
+        </button>
+        <button class="btn-delete danger" id="btnDeleteAll" onclick="deleteAll()">
+            ⚠️ HAMMASINI O'CHIRISH (0 ta)
+        </button>
+    </div>
+
+    <div id="list-container">
         <div id="loader">
             <span class="loader-icon">⏳</span>
-            Ma'lumotlar tahlil qilinmoqda...
+            Ma'lumotlar yuklanmoqda...
         </div>
     </div>
 
-    <div class="delete-section" id="delete-section">
-        <button class="delete-btn" id="delete-btn">
-            🗑️ 7 kundan keyingilarni o'chirish
-        </button>
-        <div class="delete-info" id="delete-info">⚠️ Bu amalni qaytarib bo'lmaydi</div>
-    </div>
-
-    <div class="toast" id="toast"></div>
+    <div id="toast"></div>
 
     <script>
-        // === BUBBLES ===
-        const container = document.getElementById('bubble-container');
-        for (let i = 0; i < 15; i++) {
-            const b = document.createElement('div');
-            b.className = 'bubble';
-            const size = Math.random() * 16 + 4 + 'px';
-            b.style.width = size;
-            b.style.height = size;
-            b.style.left = Math.random() * 100 + '%';
-            b.style.setProperty('--d', Math.random() * 5 + 3 + 's');
-            b.style.animationDelay = Math.random() * 5 + 's';
-            container.appendChild(b);
-        }
+        // ===== GLOBAL STATE =====
+        let allItems = [];
+        let currentTab = 'all';
+        let isDeleting = false;
 
-        // Toast
-        function showToast(message, type = 'success') {
+        // ===== TOAST =====
+        function showToast(text, isError = false) {
             const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = 'toast ' + type;
-            setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => toast.classList.remove('show'), 3000);
+            toast.innerText = text;
+            toast.style.color = isError ? '#ff6b6b' : '#1a1a3e';
+            toast.classList.add('show');
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        // Format date
+        // ===== FORMAT DATE =====
         function formatDateTime(date) {
             const d = new Date(date);
             const day = String(d.getDate()).padStart(2, '0');
@@ -571,34 +656,256 @@
             return `${day}/${month}/${year} ${hours}:${minutes}`;
         }
 
-        // 7 kundan keyingi tekshirish
-        function isOlderThan7Days(dateObj) {
-            const now = new Date();
-            const sevenDaysAgo = new Date(now);
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-            return dateObj < sevenDaysAgo;
+        function getTimestamp(item) {
+            if (item.timestamp) return item.timestamp;
+            if (item.createdAt) return item.createdAt;
+            if (item._timestamp) return item._timestamp;
+            return 0;
         }
 
-        // Global variables
-        let allPayments = [];
-        let allWithdraws = [];
-        let currentUser = null;
-        let isAdmin = false;
+        // ===== CHECK IF ITEM IS OLDER THAN 7 DAYS =====
+        function isOlderThan7Days(timestamp) {
+            const now = Date.now();
+            const sevenDays = 7 * 24 * 60 * 60 * 1000;
+            return (now - timestamp) > sevenDays;
+        }
+
+        // ===== SET TAB =====
+        function setTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tab);
+            });
+            renderList();
+        }
+
+        // ===== APPLY FILTERS =====
+        function applyFilters() {
+            renderList();
+        }
+
+        // ===== RENDER LIST =====
+        function renderList() {
+            const container = document.getElementById('list-container');
+            const search = document.getElementById('searchInput').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            let filtered = [...allItems];
+
+            // Tab filter
+            if (currentTab === 'in') {
+                filtered = filtered.filter(item => item.actionType === 'in');
+            } else if (currentTab === 'out') {
+                filtered = filtered.filter(item => item.actionType === 'out');
+            } else if (currentTab === 'old') {
+                filtered = filtered.filter(item => isOlderThan7Days(item.timestamp || 0));
+            } else if (currentTab === 'new') {
+                filtered = filtered.filter(item => !isOlderThan7Days(item.timestamp || 0));
+            }
+
+            // Search filter
+            if (search) {
+                filtered = filtered.filter(item => 
+                    (item.userName && item.userName.toLowerCase().includes(search)) ||
+                    (item.userId && item.userId.toLowerCase().includes(search))
+                );
+            }
+
+            // Status filter
+            if (statusFilter !== 'all') {
+                filtered = filtered.filter(item => 
+                    item.status && item.status.toLowerCase() === statusFilter.toLowerCase()
+                );
+            }
+
+            // Sort by timestamp (newest first)
+            filtered.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+            // Update stats
+            const totalIn = allItems.filter(i => i.actionType === 'in').length;
+            const totalOut = allItems.filter(i => i.actionType === 'out').length;
+            const oldCount = allItems.filter(i => isOlderThan7Days(i.timestamp || 0)).length;
+            const newCount = allItems.filter(i => !isOlderThan7Days(i.timestamp || 0)).length;
+            
+            document.getElementById('stat-all').textContent = allItems.length;
+            document.getElementById('stat-in').textContent = totalIn;
+            document.getElementById('stat-out').textContent = totalOut;
+            document.getElementById('total-count').textContent = allItems.length + ' ta';
+
+            // Update delete buttons
+            document.getElementById('btnDeleteOld').textContent = `🗑️ 7+ kunliklarni o'chirish (${oldCount} ta)`;
+            document.getElementById('btnDeleteAll').textContent = `⚠️ HAMMASINI O'CHIRISH (${allItems.length} ta)`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-icon">📭</span>
+                        <h4>Amaliyotlar topilmadi</h4>
+                        <p>${allItems.length === 0 ? 'Hali hech qanday to\'lov amalga oshirilmagan' : 'Qidiruv natijalari bo\'sh'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            filtered.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.style.animationDelay = `${(index * 0.03 + 0.1)}s`;
+
+                const isIn = item.actionType === 'in';
+                const statusClass = item.statusClass || 'status-pending';
+                const actionClass = isIn ? 'status-in' : 'status-out';
+                const actionLabel = isIn ? '📥 KIRIM' : '📤 CHIQIM';
+                
+                const isOld = isOlderThan7Days(item.timestamp || 0);
+                const ageBadge = isOld ? 
+                    '<span class="old-badge">🔴 7+ kun</span>' : 
+                    '<span class="new-badge">🟢 7 kun ichida</span>';
+
+                card.innerHTML = `
+                    <div class="item-top">
+                        <div class="item-user">
+                            <div class="user-avatar">${isIn ? '📥' : '📤'}</div>
+                            <div class="user-info">
+                                <span class="name">${item.userName || 'Noma\'lum foydalanuvchi'} ${ageBadge}</span>
+                                <span class="id">🆔 ${item.userId || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <div class="item-amount">
+                            <span class="amount ${isIn ? 'green' : 'red'}">${isIn ? '+' : '-'}${item.amount.toLocaleString()}</span>
+                            <span class="type">so'm</span>
+                        </div>
+                    </div>
+                    <div class="item-bottom">
+                        <span class="date">📅 ${item.dateStr || 'N/A'}</span>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <span class="action-badge ${actionClass}">${actionLabel}</span>
+                            ${item.status ? `<span class="status-badge ${statusClass}">${item.status.toUpperCase()}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ===== DELETE OLD ITEMS (7+ days) =====
+        function deleteOldItems() {
+            if (isDeleting) return;
+            
+            const oldItems = allItems.filter(item => isOlderThan7Days(item.timestamp || 0));
+            
+            if (oldItems.length === 0) {
+                showToast("📭 7+ kunlik amaliyotlar mavjud emas!");
+                return;
+            }
+
+            if (!confirm(`⚠️ ${oldItems.length} ta 7+ kunlik amaliyot o'chiriladi. Davom etasizmi?`)) {
+                return;
+            }
+
+            isDeleting = true;
+            document.getElementById('btnDeleteOld').disabled = true;
+            document.getElementById('btnDeleteAll').disabled = true;
+            showToast(`⏳ ${oldItems.length} ta amaliyot o'chirilmoqda...`);
+
+            const deletePromises = oldItems.map(item => {
+                const collectionName = item.actionType === 'in' ? 'payments' : 'withdraw_requests';
+                return deleteFromFirebase(collectionName, item.id);
+            });
+
+            Promise.all(deletePromises).then(() => {
+                const idsToRemove = new Set(oldItems.map(i => i.id + '_' + i.actionType));
+                allItems = allItems.filter(item => !idsToRemove.has(item.id + '_' + item.actionType));
+                
+                isDeleting = false;
+                document.getElementById('btnDeleteOld').disabled = false;
+                document.getElementById('btnDeleteAll').disabled = false;
+                showToast(`✅ ${oldItems.length} ta amaliyot o'chirildi!`);
+                renderList();
+            }).catch(err => {
+                console.error('Delete error:', err);
+                isDeleting = false;
+                document.getElementById('btnDeleteOld').disabled = false;
+                document.getElementById('btnDeleteAll').disabled = false;
+                showToast('❌ Xatolik yuz berdi!', true);
+            });
+        }
+
+        // ===== DELETE ALL =====
+        function deleteAll() {
+            if (isDeleting) return;
+            
+            if (allItems.length === 0) {
+                showToast("📭 O'chirish uchun amaliyotlar mavjud emas!");
+                return;
+            }
+
+            if (!confirm(`⚠️⚠️⚠️ BARCHA (${allItems.length} ta) amaliyotlar o'chiriladi. Bu amalni qaytarib bo'lmaydi! Davom etasizmi?`)) {
+                return;
+            }
+
+            if (!confirm(`❗️ HAQIQATAN HAM BARCHASINI O'CHIRMOQCHIMISIZ? (${allItems.length} ta)`)) {
+                return;
+            }
+
+            isDeleting = true;
+            document.getElementById('btnDeleteOld').disabled = true;
+            document.getElementById('btnDeleteAll').disabled = true;
+            showToast(`⏳ ${allItems.length} ta amaliyot o'chirilmoqda...`);
+
+            const deletePromises = allItems.map(item => {
+                const collectionName = item.actionType === 'in' ? 'payments' : 'withdraw_requests';
+                return deleteFromFirebase(collectionName, item.id);
+            });
+
+            Promise.all(deletePromises).then(() => {
+                allItems = [];
+                isDeleting = false;
+                document.getElementById('btnDeleteOld').disabled = false;
+                document.getElementById('btnDeleteAll').disabled = false;
+                showToast(`✅ Barcha amaliyotlar o'chirildi!`);
+                renderList();
+            }).catch(err => {
+                console.error('Delete error:', err);
+                isDeleting = false;
+                document.getElementById('btnDeleteOld').disabled = false;
+                document.getElementById('btnDeleteAll').disabled = false;
+                showToast('❌ Xatolik yuz berdi!', true);
+            });
+        }
+
+        // ===== DELETE FROM FIREBASE =====
+        function deleteFromFirebase(collectionName, docId) {
+            return new Promise((resolve, reject) => {
+                import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js').then(({ deleteDoc, doc }) => {
+                    const db = window._db;
+                    if (!db) {
+                        reject('Firestore not initialized');
+                        return;
+                    }
+                    deleteDoc(doc(db, collectionName, docId))
+                        .then(resolve)
+                        .catch(reject);
+                }).catch(reject);
+            });
+        }
+
+        // ===== GLOBAL FUNCTIONS =====
+        window.setTab = setTab;
+        window.applyFilters = applyFilters;
+        window.renderList = renderList;
+        window.formatDateTime = formatDateTime;
+        window.allItems = allItems;
+        window.deleteOldItems = deleteOldItems;
+        window.deleteAll = deleteAll;
+        window.showToast = showToast;
+        window.isOlderThan7Days = isOlderThan7Days;
     </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            query, 
-            where, 
-            onSnapshot, 
-            getDocs, 
-            deleteDoc, 
-            doc 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
@@ -610,268 +917,138 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
+        window._db = db;
 
-        // Render function
-        function renderHistory() {
-            const listContainer = document.getElementById('pay-list');
-            listContainer.innerHTML = "";
-
-            // Barcha to'lovlarni birlashtirish
-            let allItems = [...allPayments, ...allWithdraws];
-
-            // Faqat 7 kundan keyingilarni filter qilish
-            const oldItems = allItems.filter(item => {
-                const dateObj = new Date(item.dateStr);
-                return isOlderThan7Days(dateObj);
-            });
-
-            if (oldItems.length === 0) {
-                listContainer.innerHTML = `
-                    <div class="empty-state">
-                        <span class="empty-icon">📅</span>
-                        <h4>Eski amaliyotlar mavjud emas</h4>
-                        <p>7 kundan keyingi amaliyotlar topilmadi</p>
-                    </div>
-                `;
-                document.getElementById('transaction-count').textContent = '0 ta';
-                document.getElementById('history-count').textContent = '0 ta';
-                return;
-            }
-
-            // Vaqt bo'yicha tartiblash (eng yangisi tepada)
-            const sorted = [...oldItems].sort((a, b) => {
-                return new Date(b.dateStr) - new Date(a.dateStr);
-            });
-
-            sorted.forEach((item, index) => {
-                const dateObj = new Date(item.dateStr);
-                const daysAgo = Math.floor((Date.now() - dateObj.getTime()) / (1000 * 60 * 60 * 24));
-
-                const card = document.createElement('div');
-                card.className = 'pay-item';
-                card.style.animationDelay = `${(index * 0.05 + 0.15)}s`;
-
-                const isIn = item.actionType === 'in';
-                
-                card.innerHTML = `
-                    <div class="item-left">
-                        <div class="icon-box ${isIn ? 'icon-in' : 'icon-out'}">
-                            ${isIn ? '📥' : '📤'}
-                        </div>
-                        <div class="details">
-                            <strong>${item.title} <span class="days-ago">${daysAgo} kun oldin</span></strong>
-                            <span class="date-label">${item.dateStr}</span>
-                            ${item.statusHtml || ''}
-                        </div>
-                    </div>
-                    <div class="item-right">
-                        <span class="amount ${isIn ? 'in-color' : 'out-color'}">
-                            ${isIn ? '+' : '-'}${item.amount.toLocaleString()}
-                        </span>
-                        <span class="amount-label">so'm</span>
-                    </div>
-                `;
-                listContainer.appendChild(card);
-            });
-
-            document.getElementById('transaction-count').textContent = oldItems.length + ' ta';
-            document.getElementById('history-count').textContent = oldItems.length + ' ta';
-        }
-
-        // O'chirish funksiyasi
-        async function deleteOldTransactions() {
-            const btn = document.getElementById('delete-btn');
-            const info = document.getElementById('delete-info');
-            
-            // Barcha to'lovlarni birlashtirish
-            let allItems = [...allPayments, ...allWithdraws];
-            
-            // Faqat 7 kundan keyingilarni filter qilish
-            const toDelete = allItems.filter(item => {
-                const dateObj = new Date(item.dateStr);
-                return isOlderThan7Days(dateObj);
-            });
-
-            if (toDelete.length === 0) {
-                showToast('O\'chirish uchun amaliyotlar mavjud emas', 'error');
-                return;
-            }
-
-            if (!confirm(`${toDelete.length} ta eski amaliyotni o'chirishni tasdiqlaysizmi?`)) {
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loader-icon">⏳</span> O\'chirilmoqda...';
-            info.textContent = '⏳ Iltimos kuting...';
-
-            let deleted = 0;
-            let failed = 0;
-
-            // Faqat payments dan o'chiramiz (withdraw_requests o'chirilmaydi)
-            const paymentsToDelete = toDelete.filter(item => item.collection === 'payments');
-
-            for (const item of paymentsToDelete) {
-                try {
-                    const docRef = doc(db, "payments", item.id);
-                    await deleteDoc(docRef);
-                    deleted++;
-                } catch (err) {
-                    console.error('O\'chirish xatosi:', err);
-                    failed++;
-                }
-            }
-
-            // Ro'yxatdan o'chirilganlarni olib tashlash
-            allPayments = allPayments.filter(p => !paymentsToDelete.some(d => d.id === p.id));
-
-            if (deleted > 0) {
-                showToast(`✅ ${deleted} ta amaliyot o'chirildi${failed > 0 ? `, ${failed} ta xato` : ''}`, 'success');
-                renderHistory();
-            } else {
-                showToast('❌ Xatolik yuz berdi', 'error');
-            }
-
-            btn.disabled = false;
-            btn.innerHTML = '🗑️ 7 kundan keyingilarni o\'chirish';
-            info.textContent = '⚠️ Bu amalni qaytarib bo\'lmaydi';
-        }
-
-        // Delete button event
-        document.getElementById('delete-btn').addEventListener('click', deleteOldTransactions);
-
-        // Auth state
-        onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.replace("index.html");
-                return;
-            }
-
-            currentUser = user;
-
-            // Admin tekshirish (admin777 paroli bilan kirganmi)
-            // Admin statusini saqlash uchun localStorage dan foydalanamiz
-            const isAdmin = localStorage.getItem('isAdmin') === 'true';
-            
-            if (!isAdmin) {
-                // Agar admin bo'lmasa, faqat o'z to'lovlarini ko'radi
-                // Lekin bu yerda barcha to'lovlarni ko'rsatamiz (admin uchun)
-                // Admin bo'lmasa ham barcha to'lovlarni ko'rsatish uchun
-                // localStorage da isAdmin saqlangan
-            }
-
-            // Payments (KIRIM) - hamma to'lovlarni olish
+        // ===== LISTEN PAYMENTS =====
+        function listenPayments() {
             const payRef = collection(db, "payments");
-            const qPay = query(payRef);
+            onSnapshot(payRef, (snapshot) => {
+                snapshot.docChanges().forEach(change => {
+                    const data = change.doc.data();
+                    const id = change.doc.id;
 
-            // Withdraw (CHIQIM) - faqat shu user uchun
-            const withRef = collection(db, "withdraw_requests");
-            const qWith = query(withRef, where("uid", "==", user.uid));
-
-            // Payments listener
-            onSnapshot(qPay, (snapshot) => {
-                const newPayments = [];
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    
-                    // Barcha to'lovlarni olamiz (admin uchun)
-                    // Agar admin bo'lmasa, faqat o'zini ko'radi
-                    if (isAdmin || data.studentID == user.uid || data.uid == user.uid) {
-                        
-                        let statusText = data.status || "tasdiqlandi";
-                        let statusClass = "st-tasdiqlandi";
-                        if (statusText.toLowerCase() === "kutilmoqda") statusClass = "st-kutilmoqda";
-                        if (statusText.toLowerCase() === "rad etildi") statusClass = "st-rad";
-
-                        let dateObj;
-                        if (data.createdAt) {
-                            dateObj = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-                        } else if (data.sana && data.vaqt) {
-                            const dateParts = data.sana.split('/');
-                            const timeParts = data.vaqt.split(':');
-                            if (dateParts.length === 3 && timeParts.length === 2) {
-                                dateObj = new Date(
-                                    parseInt(dateParts[2]),
-                                    parseInt(dateParts[1]) - 1,
-                                    parseInt(dateParts[0]),
-                                    parseInt(timeParts[0]),
-                                    parseInt(timeParts[1])
-                                );
-                            } else {
-                                dateObj = new Date();
-                            }
-                        } else {
-                            dateObj = new Date();
-                        }
-
-                        const displayDate = formatDateTime(dateObj);
-
-                        newPayments.push({
-                            id: docSnap.id,
-                            actionType: 'in',
-                            title: data.fio ? `${data.fio}` : "Balans to'ldirildi",
-                            amount: Number(data.summa || 0),
-                            dateStr: displayDate,
-                            collection: 'payments',
-                            statusHtml: `<span class="status-text ${statusClass}">${statusText.toUpperCase()}</span>`
-                        });
-                    }
-                });
-                
-                allPayments = newPayments;
-                renderHistory();
-            });
-
-            // Withdraw listener
-            onSnapshot(qWith, (snapshot) => {
-                const newWithdraws = [];
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    
-                    let statusClass = "st-kutilmoqda";
-                    let statusText = data.status || "Kutilmoqda";
-                    if (statusText === "Tasdiqlandi") statusClass = "st-tasdiqlandi";
-                    if (statusText === "Rad etildi") statusClass = "st-rad";
+                    let statusText = data.status || "tasdiqlandi";
+                    let statusClass = "status-approved";
+                    if (statusText.toLowerCase() === "kutilmoqda") statusClass = "status-pending";
+                    if (statusText.toLowerCase() === "rad etildi") statusClass = "status-rejected";
 
                     let dateObj;
                     if (data.createdAt) {
                         dateObj = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+                    } else if (data.sana && data.vaqt) {
+                        const dateParts = data.sana.split('/');
+                        const timeParts = data.vaqt.split(':');
+                        if (dateParts.length === 3 && timeParts.length === 2) {
+                            dateObj = new Date(
+                                parseInt(dateParts[2]),
+                                parseInt(dateParts[1]) - 1,
+                                parseInt(dateParts[0]),
+                                parseInt(timeParts[0]),
+                                parseInt(timeParts[1])
+                            );
+                        } else {
+                            dateObj = new Date();
+                        }
                     } else {
                         dateObj = new Date();
                     }
 
-                    const displayDate = formatDateTime(dateObj);
+                    const displayDate = window.formatDateTime(dateObj);
+                    const timestamp = dateObj.getTime();
 
-                    newWithdraws.push({
-                        id: docSnap.id,
+                    const item = {
+                        id: id,
+                        actionType: 'in',
+                        userName: data.fio || "Noma'lum",
+                        userId: data.studentID || data.uid || "N/A",
+                        amount: Number(data.summa || 0),
+                        dateStr: displayDate,
+                        timestamp: timestamp,
+                        status: statusText,
+                        statusClass: statusClass,
+                        raw: data
+                    };
+
+                    const existingIndex = window.allItems.findIndex(i => i.id === id && i.actionType === 'in');
+                    if (existingIndex !== -1) {
+                        window.allItems[existingIndex] = item;
+                    } else {
+                        window.allItems.push(item);
+                    }
+                    window.renderList();
+                });
+            });
+        }
+
+        // ===== LISTEN WITHDRAWS =====
+        function listenWithdraws() {
+            const withRef = collection(db, "withdraw_requests");
+            onSnapshot(withRef, (snapshot) => {
+                snapshot.docChanges().forEach(change => {
+                    const data = change.doc.data();
+                    const id = change.doc.id;
+
+                    let statusText = data.status || "Kutilmoqda";
+                    let statusClass = "status-pending";
+                    if (statusText === "Tasdiqlandi") statusClass = "status-approved";
+                    if (statusText === "Rad etildi") statusClass = "status-rejected";
+
+                    let dateObj;
+                    if (data.createdAt) {
+                        dateObj = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+                    } else if (data.sana && data.vaqt) {
+                        const dateParts = data.sana.split('/');
+                        const timeParts = data.vaqt.split(':');
+                        if (dateParts.length === 3 && timeParts.length === 2) {
+                            dateObj = new Date(
+                                parseInt(dateParts[2]),
+                                parseInt(dateParts[1]) - 1,
+                                parseInt(dateParts[0]),
+                                parseInt(timeParts[0]),
+                                parseInt(timeParts[1])
+                            );
+                        } else {
+                            dateObj = new Date();
+                        }
+                    } else {
+                        dateObj = new Date();
+                    }
+
+                    const displayDate = window.formatDateTime(dateObj);
+                    const timestamp = dateObj.getTime();
+
+                    const item = {
+                        id: id,
                         actionType: 'out',
-                        title: `${data.cardType || 'Karta'}ga yechish`,
+                        userName: data.userFio || data.fio || "Noma'lum",
+                        userId: data.studentID || data.uid || "N/A",
                         amount: Number(data.amount || 0),
                         dateStr: displayDate,
-                        collection: 'withdraw',
-                        statusHtml: `<span class="status-text ${statusClass}">${statusText}</span>`
-                    });
+                        timestamp: timestamp,
+                        status: statusText,
+                        statusClass: statusClass,
+                        raw: data
+                    };
+
+                    const existingIndex = window.allItems.findIndex(i => i.id === id && i.actionType === 'out');
+                    if (existingIndex !== -1) {
+                        window.allItems[existingIndex] = item;
+                    } else {
+                        window.allItems.push(item);
+                    }
+                    window.renderList();
                 });
-                
-                allWithdraws = newWithdraws;
-                renderHistory();
             });
-        });
-
-        // Admin login dan kelganini tekshirish
-        // Agar admin panel orqali kelgan bo'lsa, localStorage da isAdmin true
-        // Buni admin panelda o'rnatamiz
-        // Hozircha qo'lda tekshirish: agar URL da ?admin bo'lsa
-        if (window.location.search.includes('admin=true')) {
-            localStorage.setItem('isAdmin', 'true');
         }
 
-        // Agar admin panel dan kelgan bo'lsa
-        if (document.referrer && document.referrer.includes('admin')) {
-            localStorage.setItem('isAdmin', 'true');
-        }
+        // ===== START =====
+        listenPayments();
+        listenWithdraws();
+
+        setTimeout(() => {
+            window.renderList();
+        }, 1000);
     </script>
 </body>
     </html>
