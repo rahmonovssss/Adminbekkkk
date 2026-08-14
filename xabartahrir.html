@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Xabarlarni boshqarish - Dr. Rahmonov</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #0f2027;
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            color: #ffd700;
+            text-decoration: none;
+            padding: 8px 18px;
+            border: 1px solid rgba(255, 215, 0, 0.25);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(255, 215, 0, 0.05);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 215, 0, 0.12);
+            border-color: rgba(255, 215, 0, 0.4);
+            transform: translateX(-2px);
+        }
+
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffd700, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .msg-count {
+            font-size: 13px;
+            opacity: 0.5;
+            font-weight: 400;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 4px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: white;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: rotate(45deg);
+        }
+
+        .refresh-btn:active {
+            transform: rotate(90deg) scale(0.9);
+        }
+
+        /* FILTER */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.02);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .filter-btn.active {
+            background: rgba(255, 215, 0, 0.12);
+            border-color: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+        }
+
+        /* MESSAGE ITEM */
+        .msg-item {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 18px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 14px;
+            animation: slideIn 0.4s ease-out forwards;
+            position: relative;
+        }
+
+        .msg-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.08);
+            transform: translateX(4px);
+        }
+
+        .msg-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .msg-item.public::before {
+            background: linear-gradient(180deg, #ffd700, #f59e0b);
+        }
+
+        .msg-item.private::before {
+            background: linear-gradient(180deg, #00d2ff, #0088cc);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .msg-item:nth-child(1) { animation-delay: 0.02s; }
+        .msg-item:nth-child(2) { animation-delay: 0.04s; }
+        .msg-item:nth-child(3) { animation-delay: 0.06s; }
+        .msg-item:nth-child(4) { animation-delay: 0.08s; }
+        .msg-item:nth-child(5) { animation-delay: 0.10s; }
+        .msg-item:nth-child(6) { animation-delay: 0.12s; }
+        .msg-item:nth-child(7) { animation-delay: 0.14s; }
+        .msg-item:nth-child(8) { animation-delay: 0.16s; }
+        .msg-item:nth-child(9) { animation-delay: 0.18s; }
+        .msg-item:nth-child(10) { animation-delay: 0.20s; }
+
+        .msg-content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .msg-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .msg-badge {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 3px 12px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-public {
+            background: rgba(255, 215, 0, 0.12);
+            color: #ffd700;
+            border: 1px solid rgba(255, 215, 0, 0.06);
+        }
+
+        .badge-private {
+            background: rgba(0, 210, 255, 0.12);
+            color: #00d2ff;
+            border: 1px solid rgba(0, 210, 255, 0.06);
+        }
+
+        .msg-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: #fff;
+            word-break: break-word;
+        }
+
+        .msg-text {
+            font-size: 13px;
+            opacity: 0.75;
+            line-height: 1.6;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .msg-footer {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 6px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .msg-time {
+            font-size: 11px;
+            opacity: 0.3;
+            font-weight: 400;
+        }
+
+        .msg-user {
+            font-size: 10px;
+            opacity: 0.2;
+            font-weight: 400;
+            font-family: monospace;
+        }
+
+        /* ACTIONS */
+        .msg-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex-shrink: 0;
+            justify-content: center;
+        }
+
+        .btn-icon {
+            width: 38px;
+            height: 38px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .btn-icon:active {
+            transform: scale(0.85);
+        }
+
+        .btn-icon .tooltip {
+            position: absolute;
+            right: 110%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-icon:hover .tooltip {
+            opacity: 1;
+        }
+
+        .btn-edit {
+            background: rgba(255, 215, 0, 0.08);
+            color: #ffd700;
+            border: 1px solid rgba(255, 215, 0, 0.04);
+        }
+
+        .btn-edit:hover {
+            background: rgba(255, 215, 0, 0.18);
+            border-color: rgba(255, 215, 0, 0.1);
+            transform: scale(1.05);
+        }
+
+        .btn-delete {
+            background: rgba(255, 65, 108, 0.08);
+            color: #ff416c;
+            border: 1px solid rgba(255, 65, 108, 0.04);
+        }
+
+        .btn-delete:hover {
+            background: rgba(255, 65, 108, 0.18);
+            border-color: rgba(255, 65, 108, 0.1);
+            transform: scale(1.05);
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 56px;
+            display: block;
+            margin-bottom: 16px;
+            animation: floatEmpty 3s ease-in-out infinite;
+        }
+
+        @keyframes floatEmpty {
+            0%,
+            100% {
+                transform: translateY(0) rotate(-3deg);
+            }
+            50% {
+                transform: translateY(-12px) rotate(3deg);
+            }
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.15);
+            margin-top: 4px;
+        }
+
+        /* LOADING */
+        .loading-state {
+            text-align: center;
+            padding: 40px 20px;
+            opacity: 0.4;
+        }
+
+        .loading-state .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.05);
+            border-top-color: #ffd700;
+            border-radius: 50%;
+            animation: spin 0.8s infinite linear;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ERROR */
+        .error-state {
+            background: rgba(255, 65, 108, 0.06);
+            border: 1px solid rgba(255, 65, 108, 0.08);
+            padding: 20px;
+            border-radius: 16px;
+            color: #ff6b6b;
+            text-align: center;
+        }
+
+        .error-state .error-icon {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            z-index: 4000;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-box {
+            background: #1a2a33;
+            border-radius: 24px;
+            padding: 32px;
+            width: 100%;
+            max-width: 440px;
+            border: 1px solid rgba(255, 215, 0, 0.08);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from {
+                transform: translateY(30px) scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-box .modal-icon {
+            text-align: center;
+            font-size: 36px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .modal-box h3 {
+            color: #ffd700;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .modal-box .form-group {
+            margin-bottom: 14px;
+        }
+
+        .modal-box .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.4;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-box input,
+        .modal-box textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            color: white;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-box input:focus,
+        .modal-box textarea:focus {
+            border-color: rgba(255, 215, 0, 0.2);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .modal-box textarea {
+            height: 100px;
+            resize: vertical;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .modal-box .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .modal-box .btn-group button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #ffd700, #f59e0b);
+            color: #000;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
+        }
+
+        .btn-save:active {
+            transform: scale(0.97);
+        }
+
+        .btn-cancel-modal {
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .btn-cancel-modal:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 14px 28px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 5000;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            animation: toastIn 0.4s ease;
+            display: none;
+            max-width: 90%;
+        }
+
+        .toast.success {
+            border-color: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+        }
+
+        .toast.error {
+            border-color: rgba(255, 65, 108, 0.2);
+            color: #ff6b6b;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .header {
+                padding: 10px 0 15px 0;
+            }
+
+            .header-title {
+                font-size: 17px;
+            }
+
+            .back-btn {
+                padding: 6px 14px;
+                font-size: 12px;
+            }
+
+            .msg-item {
+                padding: 14px 16px;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .msg-actions {
+                flex-direction: row;
+                justify-content: flex-end;
+                gap: 8px;
+            }
+
+            .btn-icon {
+                width: 34px;
+                height: 34px;
+                font-size: 14px;
+                border-radius: 10px;
+            }
+
+            .btn-icon .tooltip {
+                display: none;
+            }
+
+            .modal-box {
+                padding: 24px 20px;
+            }
+
+            .modal-box .btn-group {
+                flex-direction: column;
+            }
+
+            .filter-bar {
+                gap: 6px;
+            }
+
+            .filter-btn {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+
+            .msg-count {
+                font-size: 11px;
+                padding: 3px 10px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+
+            .header-left {
+                justify-content: space-between;
+            }
+
+            .header-right {
+                justify-content: flex-end;
+            }
+
+            .msg-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="goBack()">⬅ Orqaga</button>
+                <span class="header-title">📬 Xabarlar</span>
+            </div>
+            <div class="header-right">
+                <span class="msg-count" id="msgCount">0 ta</span>
+                <button class="refresh-btn" onclick="refreshMessages()" title="Yangilash">⟳</button>
+            </div>
+        </header>
+
+        <!-- FILTER -->
+        <div class="filter-bar">
+            <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">📋 Hammasi</button>
+            <button class="filter-btn" data-filter="public" onclick="setFilter('public')">📢 Hammaga</button>
+            <button class="filter-btn" data-filter="private" onclick="setFilter('private')">📩 Shaxsiy</button>
+        </div>
+
+        <!-- MESSAGES LIST -->
+        <div id="messagesList">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Xabarlar yuklanmoqda...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <!-- EDIT MODAL -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-box">
+            <span class="modal-icon">✏️</span>
+            <h3>Xabarni tahrirlash</h3>
+            <div class="form-group">
+                <label>Sarlavha</label>
+                <input type="text" id="editTitle" placeholder="Sarlavhani kiriting...">
+            </div>
+            <div class="form-group">
+                <label>Matn</label>
+                <textarea id="editText" placeholder="Xabar matnini kiriting..."></textarea>
+            </div>
+            <div class="btn-group">
+                <button class="btn-save" id="saveEditBtn">💾 Saqlash</button>
+                <button class="btn-cancel-modal" onclick="closeEditModal()">Bekor qilish</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            onSnapshot,
+            query,
+            orderBy,
+            doc,
+            deleteDoc,
+            updateDoc
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // --- FIREBASE CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
+            authDomain: "quiz-app-3692d.firebaseapp.com",
+            projectId: "quiz-app-3692d",
+            storageBucket: "quiz-app-3692d.firebasestorage.app",
+            messagingSenderId: "526836020845",
+            appId: "1:526836020845:android:3ea991380c104c75e8b164"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- STATE ---
+        let allMessages = [];
+        let currentFilter = 'all';
+        let currentEditId = null;
+        let unsubscribe = null;
+
+        // --- DOM REFS ---
+        const messagesList = document.getElementById('messagesList');
+        const msgCount = document.getElementById('msgCount');
+        const toast = document.getElementById('toast');
+
+        // --- START LISTENING (AUTH YO'Q! FAQAT FIRESTORE) ---
+        function startListening() {
+            if (unsubscribe) unsubscribe();
+
+            const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
+
+            unsubscribe = onSnapshot(q, (snapshot) => {
+                allMessages = [];
+                snapshot.forEach((doc) => {
+                    allMessages.push({ id: doc.id, ...doc.data() });
+                });
+                renderMessages();
+            }, (error) => {
+                messagesList.innerHTML = `
+                    <div class="error-state">
+                        <span class="error-icon">⚠️</span>
+                        <p>Xatolik yuz berdi: ${error.message}</p>
+                    </div>
+                `;
+                console.error("Firestore error:", error);
+            });
+        }
+
+        // --- RENDER ---
+        function renderMessages() {
+            const filtered = allMessages.filter(msg => {
+                if (currentFilter === 'public') return msg.userId === 'all';
+                if (currentFilter === 'private') return msg.userId !== 'all';
+                return true;
+            });
+
+            msgCount.textContent = filtered.length + ' ta';
+
+            if (filtered.length === 0) {
+                messagesList.innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-icon">📭</span>
+                        <h3>Xabarlar yo'q</h3>
+                        <p>${allMessages.length === 0 ? 'Hali hech qanday xabar kelmagan' : 'Bu filtr bo\'yicha xabarlar topilmadi'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            messagesList.innerHTML = '';
+
+            filtered.forEach((data, index) => {
+                const isPublic = data.userId === 'all';
+                const date = data.createdAt?.toDate?.()?.toLocaleString('uz-UZ', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                }) || "Noma'lum vaqt";
+
+                const div = document.createElement('div');
+                div.className = `msg-item ${isPublic ? 'public' : 'private'}`;
+                div.style.animationDelay = `${(index % 10) * 0.03}s`;
+
+                // User ID (shaxsiy xabarlar uchun)
+                const userIdDisplay = !isPublic && data.userId ?
+                    `ID: ${data.userId.slice(0, 8)}...` :
+                    '';
+
+                div.innerHTML = `
+                    <div class="msg-content">
+                        <div class="msg-top">
+                            <span class="msg-badge ${isPublic ? 'badge-public' : 'badge-private'}">
+                                ${isPublic ? '📢 Hammaga' : '📩 Shaxsiy'}
+                            </span>
+                        </div>
+                        <div class="msg-title">${escapeHtml(data.title || 'Xabar')}</div>
+                        <div class="msg-text">${escapeHtml(data.text || '')}</div>
+                        <div class="msg-footer">
+                            <span class="msg-time">${date}</span>
+                            ${userIdDisplay ? `<span class="msg-user">${userIdDisplay}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="msg-actions">
+                        <button class="btn-icon btn-edit" data-id="${data.id}" title="Tahrirlash">
+                            ✏️
+                            <span class="tooltip">Tahrirlash</span>
+                        </button>
+                        <button class="btn-icon btn-delete" data-id="${data.id}" title="O'chirish">
+                            🗑️
+                            <span class="tooltip">O'chirish</span>
+                        </button>
+                    </div>
+                `;
+
+                messagesList.appendChild(div);
+
+                // --- DELETE ---
+                div.querySelector('.btn-delete').addEventListener('click', async () => {
+                    if (confirm(`"${data.title || 'Xabar'}" xabarini o'chirmoqchimisiz?`)) {
+                        try {
+                            await deleteDoc(doc(db, "messages", data.id));
+                            showToast("✅ Xabar o'chirildi!", "success");
+                        } catch (err) {
+                            showToast("❌ Xatolik: " + err.message, "error");
+                        }
+                    }
+                });
+
+                // --- EDIT ---
+                div.querySelector('.btn-edit').addEventListener('click', () => {
+                    openEditModal(data.id, data.title || '', data.text || '');
+                });
+            });
+        }
+
+        // --- ESCAPE HTML ---
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // --- FILTER ---
+        window.setFilter = (filter) => {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            renderMessages();
+        };
+
+        // --- REFRESH ---
+        window.refreshMessages = () => {
+            showToast("🔄 Yangilanmoqda...", "success");
+            if (unsubscribe) {
+                unsubscribe();
+                startListening();
+            }
+        };
+
+        // --- GO BACK ---
+        window.goBack = () => {
+            window.location.href = 'admin-panel.html';
+        };
+
+        // --- TOAST ---
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.style.display = 'block';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // --- EDIT MODAL ---
+        window.openEditModal = (id, title, text) => {
+            currentEditId = id;
+            document.getElementById('editTitle').value = title;
+            document.getElementById('editText').value = text;
+            document.getElementById('editModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeEditModal = () => {
+            document.getElementById('editModal').classList.remove('active');
+            document.body.style.overflow = '';
+            currentEditId = null;
+        };
+
+        // --- SAVE EDIT ---
+        document.getElementById('saveEditBtn').addEventListener('click', async () => {
+            if (!currentEditId) return;
+
+            const title = document.getElementById('editTitle').value.trim();
+            const text = document.getElementById('editText').value.trim();
+
+            if (!title || !text) {
+                showToast("⚠️ Iltimos, barcha maydonlarni to'ldiring!", "error");
+                return;
+            }
+
+            try {
+                await updateDoc(doc(db, "messages", currentEditId), {
+                    title: title,
+                    text: text
+                });
+                showToast("✅ Xabar muvaffaqiyatli yangilandi!", "success");
+                closeEditModal();
+            } catch (err) {
+                showToast("❌ Xatolik: " + err.message, "error");
+            }
+        });
+
+        // --- KEYBOARD SHORTCUTS ---
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (document.getElementById('editModal').classList.contains('active')) {
+                    closeEditModal();
+                }
+            }
+            if (e.key === 'r' && e.ctrlKey) {
+                e.preventDefault();
+                refreshMessages();
+            }
+        });
+
+        // --- CLOSE MODAL ON OVERLAY CLICK ---
+        document.getElementById('editModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closeEditModal();
+            }
+        });
+
+        // --- START ---
+        startListening();
+        console.log("✅ messages-edit.html yuklandi! (Auth yo'q, chiqib ketmaydi)");
+    </script>
+
+</body>
+  </html>
