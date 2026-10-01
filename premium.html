@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Dr. Rahmonov</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: #0f2027; color: white; padding: 20px; line-height: 1.6; }
+        
+        .card { background: #1a2a33; padding: 25px; border-radius: 20px; margin-bottom: 20px; max-width: 650px; margin-inline: auto; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h3 { color: #ffd700; margin-bottom: 20px; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 10px; font-size: 18px; text-transform: uppercase; }
+
+        .section-label { font-size: 13px; color: #ffd700; margin: 15px 0 8px; font-weight: 600; opacity: 0.9; }
+        .grid-select { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        
+        .choice-btn {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; font-size: 12px; color: #ccc;
+        }
+        .choice-btn.active { border-color: #ffd700; background: rgba(255, 215, 0, 0.15); color: #ffd700; font-weight: 600; box-shadow: 0 0 15px rgba(255, 215, 0, 0.1); }
+        .choice-btn.mandatory-btn.active { border-color: #00d2ff; background: rgba(0, 210, 255, 0.1); color: #00d2ff; }
+
+        .admin-input { width: 100%; padding: 12px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; margin-bottom: 10px; outline: none; transition: 0.3s; }
+        .admin-input:focus { border-color: #ffd700; }
+        
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; text-transform: uppercase; display: block; text-align: center; text-decoration: none; }
+        .btn-gold { background: #ffd700; color: #000; }
+        .btn-blue { background: #00d2ff; color: white; }
+
+        #toast { 
+            position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); 
+            background: #ffd700; color: #000; padding: 12px 25px; border-radius: 50px; 
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s; 
+            z-index: 5000; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            opacity: 0; pointer-events: none; white-space: nowrap;
+        }
+        #toast.show { bottom: 40px; opacity: 1; }
+        
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 4000; align-items: center; justify-content: center; flex-direction: column; }
+    </style>
+<style id="guard-hide">body{visibility:hidden}</style>
+<script type="module" src="admin-guard.js"></script>
+</head>
+<body>
+
+    <div class="loading-overlay" id="loader">
+        <div style="color:#ffd700; font-weight: bold; letter-spacing: 1px;">SAQLANMOQDA...</div>
+    </div>
+
+    <div class="card">
+        <h3>📝 Savol Qo'shish (Cheksiz Ro'yxat)</h3>
+
+        <div class="section-label">1. Test turini tanlang:</div>
+        <div class="grid-select">
+            <div class="choice-btn active" id="m-type-premium" onclick="setType('premium')">💎 Premium Imtihon</div>
+            <div class="choice-btn mandatory-btn" id="m-type-premium_mandatory" onclick="setType('premium_mandatory')">🔥 Premium Majburiy</div>
+        </div>
+
+        <div class="section-label">2. Fanni tanlang:</div>
+        <div class="grid-select" id="subject-container"></div>
+
+        <div class="section-label">3. Savol:</div>
+        <textarea id="m-q" class="admin-input" rows="3" placeholder="Savol matnini kiriting..."></textarea>
+        
+        <div class="grid-select">
+            <input type="text" id="m-a" class="admin-input" placeholder="A variant">
+            <input type="text" id="m-b" class="admin-input" placeholder="B variant">
+            <input type="text" id="m-c" class="admin-input" placeholder="C variant">
+            <input type="text" id="m-d" class="admin-input" placeholder="D variant">
+        </div>
+
+        <select id="m-cor" class="admin-input">
+            <option value="A">To'g'ri javob: A</option>
+            <option value="B">To'g'ri javob: B</option>
+            <option value="C">To'g'ri javob: C</option>
+            <option value="D">To'g'ri javob: D</option>
+        </select>
+
+        <button class="btn btn-gold" onclick="saveToFirebase()">BAZAGA QO'SHISH</button>
+        
+        <a href="premium-vaqt.html" class="btn btn-blue" style="margin-top: 15px;">🕒 PREMIUM VAQT QO'YISH</a>
+    </div>
+
+    <div style="max-width: 650px; margin-inline: auto; margin-bottom: 40px;">
+        <a href="premium_tugma_edit.html" class="btn btn-blue">⚙️ BARCHA TESTLARNI TAHRIRLASH</a>
+    </div>
+
+    <div id="toast">Xabar!</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        // Ruxsat muammosini hal qilish uchun setDoc va doc modullari optimallashtirildi
+        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2G8cD0JezEKXRCtKLYiZL0bzDyTp06Vs",
+            authDomain: "quiz-app-3692d.firebaseapp.com",
+            projectId: "quiz-app-3692d",
+            storageBucket: "quiz-app-3692d.firebasestorage.app",
+            messagingSenderId: "526836020845",
+            appId: "1:526836020845:android:3ea991380c104c75e8b164"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let currentType = 'premium';
+        let currentSub = 'Matematika';
+
+        const allSubs = ["Matematika", "Ona tili", "Tarix", "Kimyo", "Biologiya", "Ingiliz tili", "Huquq", "Geografiya", "Fizika"];
+        const mandatorySubs = ["Matematika", "Ona tili", "Tarix"];
+
+        window.renderSubs = () => {
+            const container = document.getElementById('subject-container');
+            container.innerHTML = "";
+            const list = (currentType.includes('mandatory')) ? mandatorySubs : allSubs;
+            
+            list.forEach(s => {
+                const btn = document.createElement('div');
+                btn.className = `choice-btn ${s === currentSub ? 'active' : ''}`;
+                btn.innerText = s;
+                btn.onclick = () => { currentSub = s; renderSubs(); };
+                container.appendChild(btn);
+            });
+        };
+
+        window.setType = (t) => {
+            currentType = t;
+            document.querySelectorAll('.grid-select:first-of-type .choice-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`m-type-${t}`).classList.add('active');
+            
+            if(t.includes('mandatory') && !mandatorySubs.includes(currentSub)) {
+                currentSub = 'Matematika';
+            }
+            renderSubs();
+        };
+
+        window.saveToFirebase = async () => {
+            const q = document.getElementById('m-q').value.trim();
+            if(!q) return showToast("⚠️ Savol matnini kiriting!");
+
+            document.getElementById('loader').style.display = 'flex';
+
+            try {
+                // CHEKSIZ SAVOL QO'SHISH KALITI: Har bir qo'shilgan test uchun unikal ID hosil qilamiz
+                const uniqueId = "quiz_" + Date.now(); 
+                
+                // premium_admin ruxsat berilgan asosiy papka ostida har bir savolni alohida hujjat qilib saqlaymiz
+                const docRef = doc(db, "premium_admin", uniqueId);
+                
+                await setDoc(docRef, {
+                    id: uniqueId,
+                    type: currentType,
+                    subject: currentSub,
+                    question: q,
+                    options: { 
+                        A: document.getElementById('m-a').value.trim(), 
+                        B: document.getElementById('m-b').value.trim(), 
+                        C: document.getElementById('m-c').value.trim(), 
+                        D: document.getElementById('m-d').value.trim() 
+                    },
+                    correctAnswer: document.getElementById('m-cor').value,
+                    status: "ACTIVE",
+                    createdAt: serverTimestamp()
+                });
+                
+                showToast(`✅ ${currentSub} fani uchun yangi savol qo'shildi!`);
+                
+                // Formani inputlarini keyingi yangi savol uchun tozalash
+                document.getElementById('m-q').value = "";
+                ['m-a','m-b','m-c','m-d'].forEach(id => document.getElementById(id).value = "");
+            } catch (e) {
+                showToast("❌ Bazaga yozishda xatolik yuz berdi!");
+                console.error("Firebase xatosi tafsiloti:", e);
+            } finally {
+                document.getElementById('loader').style.display = 'none';
+            }
+        };
+
+        let toastTimer = null;
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        renderSubs();
+    </script>
+</body>
+</html>
