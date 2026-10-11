@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Monitoring - Dr. Rahmonov</title>
+<style>
+  body{background:#0f172a;color:#fff;font-family:sans-serif;padding:20px;margin:0}
+  .container{max-width:520px;margin:0 auto}
+  h2{color:#00d2ff;font-size:16px;margin:26px 0 10px;text-transform:uppercase;letter-spacing:1px}
+  .top{display:flex;justify-content:space-between;align-items:center}
+  .btn{background:#00d2ff;color:#0f172a;border:0;border-radius:10px;padding:10px 16px;font-weight:bold;cursor:pointer}
+  .back{background:#334155;color:#fff}
+  .card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:14px;margin-bottom:12px}
+  .row{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-bottom:6px}
+  .bar{height:12px;background:#0f172a;border-radius:8px;overflow:hidden}
+  .fill{height:100%;width:0;background:#10b981;transition:width .4s}
+  .warn .fill{background:#f59e0b}.crit .fill{background:#ef4444}
+  .muted{color:#94a3b8;font-size:12px;margin-top:6px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stat{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:12px;text-align:center}
+  .stat b{display:block;font-size:22px;color:#38bdf8}
+  .stat span{font-size:12px;color:#94a3b8}
+  .err{background:#3f1d1d;border:1px solid #7f1d1d;color:#fecaca;border-radius:12px;padding:12px;font-size:13px;margin-bottom:10px}
+  a.link{display:block;background:#1e293b;border:1px solid #334155;color:#e2e8f0;text-decoration:none;border-radius:12px;padding:12px;margin-bottom:8px;font-size:14px}
+  input{width:100%;box-sizing:border-box;background:#0f172a;border:1px solid #334155;color:#fff;border-radius:10px;padding:12px;font-size:14px;margin-bottom:8px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  td,th{padding:6px 4px;border-bottom:1px solid #334155;text-align:left;vertical-align:top}
+  th{color:#94a3b8;font-weight:normal;font-size:12px}
+  .r{text-align:right;white-space:nowrap}
+  .scroll{overflow-x:auto}
+</style>
+<style id="guard-hide">body{visibility:hidden}</style>
+<script type="module" src="admin-guard.js"></script>
+</head>
+<body>
+<div class="container">
+  <div class="top">
+    <button class="btn back" onclick="location.href='index.html'">← Orqaga</button>
+    <button class="btn" id="refresh">🔄 Yangilash</button>
+  </div>
+
+  <h2>📊 Firebase kunlik limit</h2>
+  <div id="usage"><div class="card">Yuklanmoqda...</div></div>
+
+  <h2>💰 Premium statistika</h2>
+  <div id="stats"><div class="card">Yuklanmoqda...</div></div>
+
+  <h2>🧠 Eng qiyin savollar</h2>
+  <div id="hard"><div class="card">Yuklanmoqda...</div></div>
+
+  <h2>🔎 Foydalanuvchi qidirish</h2>
+  <input id="q" placeholder="ID (masalan A1B2C3) yoki email" autocapitalize="off">
+  <button class="btn" id="find" style="width:100%">Qidirish</button>
+  <div id="found" style="margin-top:10px"></div>
+
+  <h2>⚙️ Worker holati</h2>
+  <div id="worker"><div class="card">Yuklanmoqda...</div></div>
+
+  <h2>🐞 Oxirgi xatolar</h2>
+  <div id="errors"><div class="card">Yuklanmoqda...</div></div>
+
+  <h2>🗂 Bazadagi ma'lumotlar</h2>
+  <button class="btn" id="countBtn" style="width:100%;margin-bottom:10px">Sonlarni hisoblash (~10 o'qish)</button>
+  <div class="grid" id="counts"></div>
+
+  <h2>🔗 Tezkor havolalar</h2>
+  <a class="link" target="_blank" href="https://console.firebase.google.com/project/quiz-app-3692d/firestore/usage">Firebase: Firestore Usage</a>
+  <a class="link" target="_blank" href="https://console.firebase.google.com/project/quiz-app-3692d/authentication/users">Firebase: foydalanuvchilar</a>
+  <a class="link" target="_blank" href="https://dash.cloudflare.com/?to=/:account/workers/services/view/rahmonov-api/production/metrics">Cloudflare: Worker so'rovlari va CPU</a>
+</div>
+
+<script type="module">
+import { getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, collection, query, where, limit, getDocs, getDoc, doc, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const API = "https://rahmonov-api.sarrr084.workers.dev";
+const app = getApps().length ? getApp() : null;
+const auth = getAuth(app);
+const db = getFirestore(app);
+const fmt = (n) => Number(n || 0).toLocaleString("en-US").replace(/,/g, " ");
+const $ = (id) => document.getElementById(id);
+const esc = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function bar(label, used, lim) {
+  const pct = Math.min(100, Math.round(used / lim * 100));
+  const cls = pct >= 90 ? "crit" : pct >= 70 ? "warn" : "";
+  return '<div class="card ' + cls + '"><div class="row"><span>' + label + '</span><b>' + fmt(used) + ' / ' + fmt(lim) + ' (' + pct + '%)</b></div>' +
+         '<div class="bar"><div class="fill" style="width:' + pct + '%"></div></div></div>';
+}
+
+/* ---------- Limit va Worker holati (1 ta Worker so'rovi, 60 soniya saqlanadi) ---------- */
+async function loadUsage() {
+  try {
+    let j = null;
+    try {
+      const c = JSON.parse(sessionStorage.getItem("mon_usage") || "null");
+      if (c && Date.now() - c.t < 60000) j = c.v;
+    } catch (e) {}
+    if (!j) {
+      await auth.authStateReady();
+      const token = await auth.currentUser.getIdToken();
+      const r = await fetch(API + "/admin/usage", { method: "POST", headers: { Authorization: "Bearer " + token } });
+      j = await r.json();
+      if (!r.ok) throw new Error(j.error || "xato");
+      try { sessionStorage.setItem("mon_usage", JSON.stringify({ t: Date.now(), v: j })); } catch (e) {}
+    }
+    const m = j.monitoring;
+    if (m && m.ok) {
+      const left = Math.max(0, j.limits.reads - m.reads);
+      $("usage").innerHTML =
+        bar("O'qish (reads)", m.reads, j.limits.reads) +
+        bar("Yozish (writes)", m.writes, j.limits.writes) +
+        bar("O'chirish (deletes)", m.deletes, j.limits.deletes) +
+        '<div class="muted">Qolgan o\'qish ≈ ' + fmt(left) + '. Bir foydalanuvchiga ~50 o\'qish tushsa, yana ≈ ' + fmt(Math.floor(left / 50)) + ' ta foydalanuvchiga yetadi. Hisob Tinch okeani vaqti bilan yarim tunda (O\'zbekistonda ~10:00-11:00) nolga tushadi. Ma\'lumot bir necha daqiqa kechikishi mumkin.</div>';
+    } else {
+      $("usage").innerHTML = '<div class="err">' + esc((m && m.message) || "Ma'lumot yo'q") + '<br><br>Sozlash: <a style="color:#93c5fd" target="_blank" href="https://console.cloud.google.com/iam-admin/iam?project=quiz-app-3692d">Google Cloud → IAM</a> da <b>firebase-adminsdk-fbsvc@...</b> akkauntini toping, Edit → Add role → <b>Monitoring Viewer</b> → Save.</div>';
+    }
+    $("worker").innerHTML =
+      '<div class="card"><div class="row"><span>Keshdagi yozuvlar</span><b>' + fmt(j.cache.entries) + '</b></div>' +
+      '<div class="row"><span>Keshdagi rasmlar</span><b>' + j.cache.imageMB + ' MB / 40 MB</b></div>' +
+      '<div class="row"><span>Worker nusxasi ishlagan vaqt</span><b>' + fmt(j.cache.workerUptimeMin) + ' daqiqa</b></div>' +
+      '<div class="muted">Bepul tarif: kuniga 100 000 so\'rov va har so\'rovga ~10 ms CPU. Aniq so\'rovlar sonini Cloudflare havolasidan ko\'ring. Kesh har Worker nusxasida alohida.</div></div>';
+    const errs = j.errors || [];
+    $("errors").innerHTML = errs.length
+      ? '<div class="card scroll"><table>' + errs.map(e => '<tr><td>' + esc(String(e.t).slice(11, 19)) + '</td><td>' + esc(e.where) + '</td><td>' + esc(e.msg) + '</td></tr>').join("") + '</table><div class="muted">Faqat shu Worker nusxasidagi oxirgi xatolar. To\'liq jurnal: Cloudflare → Worker → Logs.</div></div>'
+      : '<div class="card">Xato yo\'q ✅<div class="muted">Faqat shu Worker nusxasi bo\'yicha.</div></div>';
+  } catch (e) {
+    $("usage").innerHTML = '<div class="err">Yuklab bo\'lmadi: ' + esc(e.message) + '</div>';
+    $("worker").innerHTML = ""; $("errors").innerHTML = "";
+  }
+}
+
+/* ---------- Premium statistika va qiyin savollar (1 ta o'qish: stats/main) ---------- */
+async function loadStats() {
+  try {
+    const snap = await getDoc(doc(db, "stats", "main"));
+    if (!snap.exists()) {
+      $("stats").innerHTML = '<div class="card">Hali ma\'lumot yo\'q. Yangi premium test topshirilgach shu yerda chiqadi.</div>';
+      $("hard").innerHTML = '<div class="card">Hali ma\'lumot yo\'q.</div>';
+      return;
+    }
+    const d = snap.data();
+    const days = Object.values(d.days || {}).sort((a, b) => (a.d < b.d ? 1 : -1)).slice(0, 7);
+    const today = new Date(Date.now() + 5 * 3600 * 1000).toISOString().slice(0, 10);
+    const t = (d.days || {})[today] || { submits: 0, revenue: 0, score10: 0 };
+    const avg = t.submits ? (t.score10 / 10 / t.submits).toFixed(1) : "—";
+    $("stats").innerHTML =
+      '<div class="grid"><div class="stat"><b>' + fmt(t.submits) + '</b><span>Bugun topshirdi</span></div>' +
+      '<div class="stat"><b>' + fmt(t.revenue) + '</b><span>Bugungi tushum (so\'m)</span></div></div>' +
+      '<div class="card" style="margin-top:12px"><div class="row"><span>Bugungi o\'rtacha ball</span><b>' + avg + '</b></div></div>' +
+      '<div class="card scroll"><table><tr><th>Kun</th><th class="r">Topshirdi</th><th class="r">O\'rt. ball</th><th class="r">Tushum</th></tr>' +
+      days.map(x => '<tr><td>' + esc(x.d) + '</td><td class="r">' + fmt(x.submits) + '</td><td class="r">' + (x.submits ? (x.score10 / 10 / x.submits).toFixed(1) : "—") + '</td><td class="r">' + fmt(x.revenue) + '</td></tr>').join("") +
+      '</table><div class="muted">Tushum premium testni topshirgan foydalanuvchilar to\'lovidan hisoblanadi.</div></div>';
+
+    const qs = Object.entries(d.q || {}).map(([id, v]) => ({ id, n: v.n || id, a: v.a || 0, w: v.w || 0 }))
+      .filter(x => x.a >= 5).map(x => ({ ...x, p: Math.round(x.w / x.a * 100) }))
+      .sort((a, b) => b.p - a.p).slice(0, 10);
+    $("hard").innerHTML = qs.length
+      ? '<div class="card scroll"><table><tr><th>Savol</th><th class="r">Xato</th></tr>' +
+        qs.map(x => '<tr><td>' + esc(x.n) + '</td><td class="r"><b>' + x.p + '%</b><br><span class="muted">' + x.w + '/' + x.a + '</span></td></tr>').join("") +
+        '</table><div class="muted">Kamida 5 marta javob berilgan savollar. Foiz yuqori bo\'lsa, savol qiyin yoki javobi xato bo\'lishi mumkin.</div></div>'
+      : '<div class="card">Hali yetarli ma\'lumot yo\'q (kamida 5 ta javob kerak).</div>';
+  } catch (e) {
+    $("stats").innerHTML = '<div class="err">Statistikani o\'qib bo\'lmadi: ' + esc(e.message) + '<br>Qoidalarga <b>stats</b> bloki qo\'shilganini tekshiring.</div>';
+    $("hard").innerHTML = "";
+  }
+}
+
+/* ---------- Foydalanuvchi qidirish (taxminan 2-12 o'qish, faqat bosilganda) ---------- */
+$("find").onclick = async () => {
+  const raw = $("q").value.trim();
+  const out = $("found");
+  if (!raw) return;
+  out.innerHTML = '<div class="card">Qidirilmoqda...</div>';
+  try {
+    const byEmail = raw.includes("@");
+    const field = byEmail ? "email" : "studentID";
+    const val = byEmail ? raw.toLowerCase() : raw.toUpperCase();
+    const us = await getDocs(query(collection(db, "users"), where(field, "==", val), limit(1)));
+    if (us.empty) { out.innerHTML = '<div class="card">Topilmadi.</div>'; return; }
+    const ud = us.docs[0], u = ud.data();
+    const [lb, rs] = await Promise.all([
+      getDoc(doc(db, "leaderboard", ud.id)),
+      getDocs(query(collection(db, "premium_results"), where("studentID", "==", ud.id), limit(10))),
+    ]);
+    const list = rs.docs.map(x => x.data()).sort((a, b) => String(b.timestamp && b.timestamp.seconds || b.timestamp).localeCompare(String(a.timestamp && a.timestamp.seconds || a.timestamp))).slice(0, 5);
+    out.innerHTML =
+      '<div class="card"><div class="row"><span>Ism</span><b>' + esc(u.fio || "—") + '</b></div>' +
+      '<div class="row"><span>Email</span><b>' + esc(u.email || "—") + '</b></div>' +
+      '<div class="row"><span>ID</span><b>' + esc(u.studentID || "—") + '</b></div>' +
+      '<div class="row"><span>Balans</span><b>' + fmt(u.balance) + ' so\'m</b></div>' +
+      '<div class="row"><span>Reytingdagi eng yaxshi ball</span><b>' + (lb.exists() ? esc(lb.data().totalScore) : "—") + '</b></div></div>' +
+      '<div class="card scroll"><table><tr><th>Oxirgi premium natijalar</th><th class="r">Ball</th></tr>' +
+      (list.length ? list.map(x => {
+        const ts = x.timestamp && x.timestamp.toDate ? x.timestamp.toDate() : null;
+        return '<tr><td>' + (ts ? esc(ts.toLocaleString("uz-UZ")) : "—") + ' · ' + esc(x.mode || "") + '</td><td class="r"><b>' + esc(x.totalScore) + '</b></td></tr>';
+      }).join("") : '<tr><td colspan="2">Natija yo\'q</td></tr>') + '</table></div>';
+  } catch (e) {
+    out.innerHTML = '<div class="err">Xato: ' + esc(e.message) + '</div>';
+  }
+};
+
+/* ---------- Hujjatlar soni (faqat bosilganda, ~10 o'qish) ---------- */
+async function cnt(q) { try { return (await getCountFromServer(q)).data().count; } catch (e) { return "—"; } }
+$("countBtn").onclick = async () => {
+  const grid = $("counts");
+  grid.innerHTML = "";
+  const items = [
+    ["Foydalanuvchilar", collection(db, "users")],
+    ["Premium natijalar", collection(db, "premium_results")],
+    ["Reytingda", collection(db, "leaderboard")],
+    ["Bepul natijalar", collection(db, "results")],
+    ["Kutilayotgan kirim", query(collection(db, "payments"), where("status", "==", "kutilmoqda"))],
+    ["Kutilayotgan chiqim", query(collection(db, "withdraw_requests"), where("status", "==", "Kutilmoqda"))],
+    ["Xabarlar", collection(db, "messages")],
+    ["Bepul savollar", query(collection(db, "quizzes"), where("type", "in", ["free", "free_mandatory"]))],
+    ["Mashq savollari", query(collection(db, "quizzes"), where("type", "in", ["premium", "premium_mandatory"]))],
+    ["Imtihon savollari", collection(db, "premium_admin")],
+  ];
+  const vals = await Promise.all(items.map(([, q]) => cnt(q)));
+  items.forEach(([name], i) => {
+    const d = document.createElement("div");
+    d.className = "stat";
+    d.innerHTML = "<b>" + fmt(vals[i]) + "</b><span>" + esc(name) + "</span>";
+    grid.appendChild(d);
+  });
+};
+
+function refresh() { try { sessionStorage.removeItem("mon_usage"); } catch (e) {} loadUsage(); loadStats(); }
+$("refresh").onclick = refresh;
+loadUsage();
+loadStats();
+</script>
+</body>
+</html>
