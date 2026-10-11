@@ -103,6 +103,7 @@ async function loadUsage() {
       const token = await auth.currentUser.getIdToken();
       const r = await fetch(API + "/admin/usage", { method: "POST", headers: { Authorization: "Bearer " + token } });
       j = await r.json();
+      if (r.status === 429) throw new Error("Juda tez-tez so'raldi. 1 daqiqa kutib, qayta yangilang.");
       if (!r.ok) throw new Error(j.error || "xato");
       try { sessionStorage.setItem("mon_usage", JSON.stringify({ t: Date.now(), v: j })); } catch (e) {}
     }
@@ -172,33 +173,55 @@ async function loadStats() {
 $("find").onclick = async () => {
   const raw = $("q").value.trim();
   const out = $("found");
-  if (!raw) return;
+  if (!raw) { out.innerHTML = '<div class="card">ID, email yoki UID yozing.</div>'; return; }
   out.innerHTML = '<div class="card">Qidirilmoqda...</div>';
   try {
-    const byEmail = raw.includes("@");
-    const field = byEmail ? "email" : "studentID";
-    const val = byEmail ? raw.toLowerCase() : raw.toUpperCase();
-    const us = await getDocs(query(collection(db, "users"), where(field, "==", val), limit(1)));
-    if (us.empty) { out.innerHTML = '<div class="card">Topilmadi.</div>'; return; }
-    const ud = us.docs[0], u = ud.data();
-    const [lb, rs] = await Promise.all([
-      getDoc(doc(db, "leaderboard", ud.id)),
-      getDocs(query(collection(db, "premium_results"), where("studentID", "==", ud.id), limit(10))),
-    ]);
-    const list = rs.docs.map(x => x.data()).sort((a, b) => String(b.timestamp && b.timestamp.seconds || b.timestamp).localeCompare(String(a.timestamp && a.timestamp.seconds || a.timestamp))).slice(0, 5);
+    let ud = null;
+    if (raw.includes("@")) {
+      for (const v of [...new Set([raw, raw.toLowerCase()])]) {
+        const q1 = await getDocs(query(collection(db, "users"), where("email", "==", v), limit(1)));
+        if (!q1.empty) { ud = q1.docs[0]; break; }
+      }
+    } else if (raw.length > 20) {
+      const one = await getDoc(doc(db, "users", raw));
+      if (one.exists()) ud = one;
+    } else {
+      const q2 = await getDocs(query(collection(db, "users"), where("studentID", "==", raw.toUpperCase()), limit(1)));
+      if (!q2.empty) ud = q2.docs[0];
+    }
+    if (!ud) {
+      out.innerHTML = '<div class="card">Topilmadi. ID ni tekshiring (harf va raqam, 6 belgi) yoki foydalanuvchi hali ID olmagan bo\'lishi mumkin. Email yoki UID bilan ham qidirib ko\'ring.</div>';
+      return;
+    }
+    const u = ud.data();
+    let lbText = "—";
+    let list = [];
+    try {
+      const lb = await getDoc(doc(db, "leaderboard", ud.id));
+      if (lb.exists()) lbText = String(lb.data().totalScore);
+    } catch (e) {}
+    try {
+      const rs = await getDocs(query(collection(db, "premium_results"), where("studentID", "==", ud.id), limit(10)));
+      list = rs.docs.map(x => x.data()).sort((x, y) => {
+        const tx = x.timestamp && x.timestamp.seconds ? x.timestamp.seconds : 0;
+        const ty = y.timestamp && y.timestamp.seconds ? y.timestamp.seconds : 0;
+        return ty - tx;
+      }).slice(0, 5);
+    } catch (e) {}
     out.innerHTML =
       '<div class="card"><div class="row"><span>Ism</span><b>' + esc(u.fio || "—") + '</b></div>' +
       '<div class="row"><span>Email</span><b>' + esc(u.email || "—") + '</b></div>' +
       '<div class="row"><span>ID</span><b>' + esc(u.studentID || "—") + '</b></div>' +
       '<div class="row"><span>Balans</span><b>' + fmt(u.balance) + ' so\'m</b></div>' +
-      '<div class="row"><span>Reytingdagi eng yaxshi ball</span><b>' + (lb.exists() ? esc(lb.data().totalScore) : "—") + '</b></div></div>' +
+      '<div class="row"><span>Reytingdagi eng yaxshi ball</span><b>' + esc(lbText) + '</b></div>' +
+      '<div class="muted">UID: ' + esc(ud.id) + '</div></div>' +
       '<div class="card scroll"><table><tr><th>Oxirgi premium natijalar</th><th class="r">Ball</th></tr>' +
       (list.length ? list.map(x => {
         const ts = x.timestamp && x.timestamp.toDate ? x.timestamp.toDate() : null;
         return '<tr><td>' + (ts ? esc(ts.toLocaleString("uz-UZ")) : "—") + ' · ' + esc(x.mode || "") + '</td><td class="r"><b>' + esc(x.totalScore) + '</b></td></tr>';
       }).join("") : '<tr><td colspan="2">Natija yo\'q</td></tr>') + '</table></div>';
   } catch (e) {
-    out.innerHTML = '<div class="err">Xato: ' + esc(e.message) + '</div>';
+    out.innerHTML = '<div class="err">Xato: ' + esc((e.code ? e.code + " — " : "") + e.message) + '</div>';
   }
 };
 
